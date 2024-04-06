@@ -1,31 +1,32 @@
-version: "3.8"
-
+version: '3.0'
 services:
-  web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: app
-    container_name: app
-    restart: unless-stopped
-    env_file: .env
+#  mysql:
+#    image: "mysql"
+#    restart: "always"
+#    command: "--default-authentication-plugin=mysql_native_password"
+#    environment:
+#      MYSQL_ROOT_PASSWORD: "root"
+#    volumes:
+#      - "./script/mysql/:/docker-entrypoint-initdb.d/"
+#    ports:
+#      - "3306:3306"
+#  redis:
+#    image: "redis"
+#    environment:
+#      - ALLOW_EMPTY_PASSWORD=yes
+#    ports:
+#      - "6379:6379"
+#  etcd:
+#    image: "bitnami/etcd:latest"
+#    environment:
+#      - ALLOW_NONE_AUTHENTICATION=yes
+#    ports:
+#      - "23790:2379"
+  mongo:
+    image: mongo
+    restart: always
     ports:
-      - "$PORT:$PORT"
-    depends_on:
-      - mongodb
-
-  mongodb:
-    image: mongo:6.0
-    container_name: mongodb
-    restart: unless-stopped
-    env_file: .env
+      - "27017:27017"
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=$DB_USER
-      - MONGO_INITDB_ROOT_PASSWORD=$DB_PASS
-    ports:
-      - "$DB_PORT:$DB_PORT"
-    volumes:
-      - dbdata:/data/db
-
-volumes:
-  dbdata:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
