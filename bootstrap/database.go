@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"log/slog"
 	"time"
 
-	"github.com/amitshekhariitbhu/go-backend-clean-architecture/mongo"
+	"github.com/LXJ0000/go-backend/mongo"
 )
 
 func NewMongoDatabase(env *Env) mongo.Client {
@@ -52,5 +53,5 @@ func CloseMongoDBConnection(client mongo.Client) {
 		log.Fatal(err)
 	}
 
-	log.Println("Connection to MongoDB closed.")
+	slog.Info("Connection to MongoDB closed.")
 }
