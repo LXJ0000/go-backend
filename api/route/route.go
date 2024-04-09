@@ -1,6 +1,7 @@
 package route
 
 import (
+	"github.com/LXJ0000/go-backend/orm"
 	"time"
 
 	"github.com/LXJ0000/go-backend/api/middleware"
@@ -9,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Setup(env *bootstrap.Env, timeout time.Duration, db mongo.Database, gin *gin.Engine) {
+func Setup(env *bootstrap.Env, timeout time.Duration, db mongo.Database, gin *gin.Engine, orm orm.Database) {
 	publicRouter := gin.Group("")
 	// All Public APIs
 	NewSignupRouter(env, timeout, db, publicRouter)
@@ -22,4 +23,7 @@ func Setup(env *bootstrap.Env, timeout time.Duration, db mongo.Database, gin *gi
 	// All Private APIs
 	NewProfileRouter(env, timeout, db, protectedRouter)
 	NewTaskRouter(env, timeout, db, protectedRouter)
+
+	testRouter := gin.Group("")
+	NewPostRouter(env, timeout, testRouter, orm)
 }

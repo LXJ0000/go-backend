@@ -3,6 +3,10 @@ package bootstrap
 import (
 	"context"
 	"fmt"
+	"github.com/LXJ0000/go-backend/domain"
+	"github.com/LXJ0000/go-backend/orm"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 	"log"
 	"log/slog"
 	"time"
@@ -54,4 +58,20 @@ func CloseMongoDBConnection(client mongo.Client) {
 	}
 
 	slog.Info("Connection to MongoDB closed.")
+}
+
+func NewOrmDatabase(env *Env) orm.Database {
+	db, err := gorm.Open(sqlite.Open(fmt.Sprintf("%s.db", env.DBName)), &gorm.Config{})
+	//dsn := "root:root@tcp(127.0.0.1:3306)/go-backend?charset=utf8mb4&parseTime=True&loc=Local"
+	//db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err = db.AutoMigrate(&domain.Post{}); err != nil {
+		log.Fatal(err)
+	}
+	db.Debug()
+	database := orm.NewDatabase(db)
+
+	return database
 }

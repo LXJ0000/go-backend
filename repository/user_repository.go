@@ -70,3 +70,23 @@ func (ur *userRepository) GetByID(c context.Context, id string) (domain.User, er
 	err = collection.FindOne(c, bson.M{"_id": idHex}).Decode(&user)
 	return user, err
 }
+
+//type userRepositoryWith struct {
+//	database orm.Dao
+//}
+//
+//func (ur *userRepositoryWith) Create(c context.Context, user *domain.User) error {
+//	_, err := ur.database.InsertOne(c, &domain.User{}, &user)
+//	return err
+//}
+//
+//func (ur *userRepositoryWith) GetByEmail(c context.Context, email string) (domain.User, error) {
+//	user, err := ur.database.FindOne(c, &domain.User{}, domain.User{Email: email})
+//	return user.(domain.User), err
+//}
+//
+//func (ur *userRepositoryWith) GetByID(c context.Context, id int64) (domain.User, error) {
+//	user, err := ur.database.FindOne(c, &domain.User{}, domain.User{UserID: id})
+//	return user.(domain.User), err
+//}
+//

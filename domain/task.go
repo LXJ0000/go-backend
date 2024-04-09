@@ -2,7 +2,6 @@ package domain
 
 import (
 	"context"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -15,6 +14,17 @@ type Task struct {
 	Title  string             `bson:"title" form:"title" binding:"required" json:"title"`
 	UserID primitive.ObjectID `bson:"userID" json:"-"`
 }
+
+func (Task) TableName() string {
+	return `task`
+}
+
+//type Task struct {
+//	orm.Model
+//	TaskID int64  `json:"task_id"`
+//	Title  string `json:"title"`
+//	UserID int64  `json:"user_id"`
+//}
 
 type TaskRepository interface {
 	Create(c context.Context, task *Task) error

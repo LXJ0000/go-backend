@@ -17,11 +17,13 @@ func main() {
 	db := app.Mongo.Database(env.DBName)
 	defer app.CloseDBConnection()
 
+	orm := app.Orm
+
 	timeout := time.Duration(env.ContextTimeout) * time.Second
 
 	server := gin.Default()
 
-	route.Setup(env, timeout, db, server)
+	route.Setup(env, timeout, db, server, orm)
 
 	_ = server.Run(env.ServerAddress)
 }
