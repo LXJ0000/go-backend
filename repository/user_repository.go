@@ -2,91 +2,40 @@ package repository
 
 import (
 	"context"
+	"github.com/LXJ0000/go-backend/orm"
 
 	"github.com/LXJ0000/go-backend/domain"
-	"github.com/LXJ0000/go-backend/mongo"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type userRepository struct {
-	database   mongo.Database
-	collection string
+	db orm.Database
+	//collection string
 }
 
-func NewUserRepository(db mongo.Database, collection string) domain.UserRepository {
+func NewUserRepository(db orm.Database) domain.UserRepository {
 	return &userRepository{
-		database:   db,
-		collection: collection,
+		db: db,
+		//collection: collection,
 	}
 }
 
-func (ur *userRepository) Create(c context.Context, user *domain.User) error {
-	collection := ur.database.Collection(ur.collection)
-
-	_, err := collection.InsertOne(c, user)
-
+func (repo *userRepository) Create(c context.Context, user *domain.User) error {
+	_, err := repo.db.InsertOne(c, &domain.User{}, user)
 	return err
 }
 
-func (ur *userRepository) Fetch(c context.Context) ([]domain.User, error) {
-	collection := ur.database.Collection(ur.collection)
-
-	opts := options.Find().SetProjection(bson.D{{Key: "password", Value: 0}})
-	cursor, err := collection.Find(c, bson.D{}, opts)
-
+func (repo *userRepository) GetByEmail(c context.Context, email string) (domain.User, error) {
+	user, err := repo.db.FindOne(c, &domain.User{}, &domain.User{Email: email})
 	if err != nil {
-		return nil, err
+		return domain.User{}, err
 	}
-
-	var users []domain.User
-
-	err = cursor.All(c, &users)
-	if users == nil {
-		return []domain.User{}, err
-	}
-
-	return users, err
+	return *user.(*domain.User), nil
 }
 
-func (ur *userRepository) GetByEmail(c context.Context, email string) (domain.User, error) {
-	collection := ur.database.Collection(ur.collection)
-	var user domain.User
-	err := collection.FindOne(c, bson.M{"email": email}).Decode(&user)
-	return user, err
-}
-
-func (ur *userRepository) GetByID(c context.Context, id string) (domain.User, error) {
-	collection := ur.database.Collection(ur.collection)
-
-	var user domain.User
-
-	idHex, err := primitive.ObjectIDFromHex(id)
+func (repo *userRepository) GetByID(c context.Context, id int64) (domain.User, error) {
+	user, err := repo.db.FindOne(c, &domain.User{}, &domain.User{UserID: id})
 	if err != nil {
-		return user, err
+		return domain.User{}, err
 	}
-
-	err = collection.FindOne(c, bson.M{"_id": idHex}).Decode(&user)
-	return user, err
+	return *user.(*domain.User), nil
 }
-
-//type userRepositoryWith struct {
-//	database orm.Dao
-//}
-//
-//func (ur *userRepositoryWith) Create(c context.Context, user *domain.User) error {
-//	_, err := ur.database.InsertOne(c, &domain.User{}, &user)
-//	return err
-//}
-//
-//func (ur *userRepositoryWith) GetByEmail(c context.Context, email string) (domain.User, error) {
-//	user, err := ur.database.FindOne(c, &domain.User{}, domain.User{Email: email})
-//	return user.(domain.User), err
-//}
-//
-//func (ur *userRepositoryWith) GetByID(c context.Context, id int64) (domain.User, error) {
-//	user, err := ur.database.FindOne(c, &domain.User{}, domain.User{UserID: id})
-//	return user.(domain.User), err
-//}
-//

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/LXJ0000/go-backend/domain"
+	snowflake "github.com/LXJ0000/go-backend/internal/snowflakeutil"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -11,15 +12,17 @@ type PostController struct {
 }
 
 func (col *PostController) Create(c *gin.Context) {
-	post := &domain.Post{
-		PostID:   2,
-		Title:    "222 123",
-		Abstract: "222 234",
-		Content:  "222 345",
-	}
-	if err := col.Usecase.Create(c, post); err != nil {
-		c.String(http.StatusOK, err.Error())
+	userID := c.MustGet("x-user-id")
+	var post domain.Post
+	if err := c.ShouldBind(&post); err != nil {
+		c.JSON(http.StatusBadRequest, domain.ErrorResponse{Message: err.Error()})
 		return
 	}
-	c.String(http.StatusOK, "success")
+	post.UserID = userID.(int64)
+	post.PostID = snowflake.GenID()
+	if err := col.Usecase.Create(c, &post); err != nil {
+		c.JSON(http.StatusOK, domain.ErrorResponse{Message: err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, domain.SuccessResponse{Message: "Post created successfully"})
 }

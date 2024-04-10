@@ -20,16 +20,16 @@ func NewLoginUsecase(userRepository domain.UserRepository, timeout time.Duration
 	}
 }
 
-func (lu *loginUsecase) GetUserByEmail(c context.Context, email string) (domain.User, error) {
-	ctx, cancel := context.WithTimeout(c, lu.contextTimeout)
+func (uc *loginUsecase) GetUserByEmail(c context.Context, email string) (domain.User, error) {
+	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
-	return lu.userRepository.GetByEmail(ctx, email)
+	return uc.userRepository.GetByEmail(ctx, email)
 }
 
-func (lu *loginUsecase) CreateAccessToken(user *domain.User, secret string, expiry int) (accessToken string, err error) {
+func (uc *loginUsecase) CreateAccessToken(user *domain.User, secret string, expiry int) (accessToken string, err error) {
 	return tokenutil.CreateAccessToken(user, secret, expiry)
 }
 
-func (lu *loginUsecase) CreateRefreshToken(user *domain.User, secret string, expiry int) (refreshToken string, err error) {
+func (uc *loginUsecase) CreateRefreshToken(user *domain.User, secret string, expiry int) (refreshToken string, err error) {
 	return tokenutil.CreateRefreshToken(user, secret, expiry)
 }

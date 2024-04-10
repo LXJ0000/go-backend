@@ -7,13 +7,13 @@ import (
 
 type Post struct {
 	gorm.Model
-	PostID int64 `json:"post_id" orm:"primaryKey"`
+	PostID int64 `json:"post_id" gorm:"primaryKey"`
 
-	Title    string `json:"title"`
-	Abstract string `json:"abstract"`
-	Content  string `json:"content"`
+	Title    string `json:"title" form:"title"`
+	Abstract string `json:"abstract" form:"abstract"`
+	Content  string `json:"content" form:"content"`
 
-	//UserID int64 `json:"user_id"`
+	UserID int64 `json:"user_id"`
 }
 
 func (Post) TableName() string {

@@ -6,24 +6,24 @@ import (
 
 	"github.com/LXJ0000/go-backend/api/middleware"
 	"github.com/LXJ0000/go-backend/bootstrap"
-	"github.com/LXJ0000/go-backend/mongo"
 	"github.com/gin-gonic/gin"
 )
 
-func Setup(env *bootstrap.Env, timeout time.Duration, db mongo.Database, gin *gin.Engine, orm orm.Database) {
-	publicRouter := gin.Group("")
+func Setup(env *bootstrap.Env, timeout time.Duration, db orm.Database, gin *gin.Engine) {
+	publicRouter := gin.Group("/api")
 	// All Public APIs
 	NewSignupRouter(env, timeout, db, publicRouter)
 	NewLoginRouter(env, timeout, db, publicRouter)
 	NewRefreshTokenRouter(env, timeout, db, publicRouter)
 
-	protectedRouter := gin.Group("")
+	protectedRouter := gin.Group("/api")
 	// Middleware to verify AccessToken
 	protectedRouter.Use(middleware.JwtAuthMiddleware(env.AccessTokenSecret))
 	// All Private APIs
+	// User
 	NewProfileRouter(env, timeout, db, protectedRouter)
+	// Task
 	NewTaskRouter(env, timeout, db, protectedRouter)
-
-	testRouter := gin.Group("")
-	NewPostRouter(env, timeout, testRouter, orm)
+	// Post
+	NewPostRouter(env, timeout, db, protectedRouter)
 }

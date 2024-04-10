@@ -8,25 +8,25 @@ import (
 )
 
 type taskUsecase struct {
-	taskRepository domain.TaskRepository
+	repo           domain.TaskRepository
 	contextTimeout time.Duration
 }
 
 func NewTaskUsecase(taskRepository domain.TaskRepository, timeout time.Duration) domain.TaskUsecase {
 	return &taskUsecase{
-		taskRepository: taskRepository,
+		repo:           taskRepository,
 		contextTimeout: timeout,
 	}
 }
 
-func (tu *taskUsecase) Create(c context.Context, task *domain.Task) error {
-	ctx, cancel := context.WithTimeout(c, tu.contextTimeout)
+func (uc *taskUsecase) Create(c context.Context, task *domain.Task) error {
+	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
-	return tu.taskRepository.Create(ctx, task)
+	return uc.repo.Create(ctx, task)
 }
 
-func (tu *taskUsecase) FetchByUserID(c context.Context, userID string) ([]domain.Task, error) {
-	ctx, cancel := context.WithTimeout(c, tu.contextTimeout)
+func (uc *taskUsecase) Delete(c context.Context, taskID int64) error {
+	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
-	return tu.taskRepository.FetchByUserID(ctx, userID)
+	return uc.repo.Delete(ctx, taskID)
 }

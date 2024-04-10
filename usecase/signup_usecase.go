@@ -9,33 +9,33 @@ import (
 )
 
 type signupUsecase struct {
-	userRepository domain.UserRepository
+	repo           domain.UserRepository
 	contextTimeout time.Duration
 }
 
 func NewSignupUsecase(userRepository domain.UserRepository, timeout time.Duration) domain.SignupUsecase {
 	return &signupUsecase{
-		userRepository: userRepository,
+		repo:           userRepository,
 		contextTimeout: timeout,
 	}
 }
 
-func (su *signupUsecase) Create(c context.Context, user *domain.User) error {
-	ctx, cancel := context.WithTimeout(c, su.contextTimeout)
+func (uc *signupUsecase) Create(c context.Context, user *domain.User) error {
+	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
-	return su.userRepository.Create(ctx, user)
+	return uc.repo.Create(ctx, user)
 }
 
-func (su *signupUsecase) GetUserByEmail(c context.Context, email string) (domain.User, error) {
-	ctx, cancel := context.WithTimeout(c, su.contextTimeout)
+func (uc *signupUsecase) GetUserByEmail(c context.Context, email string) (domain.User, error) {
+	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
-	return su.userRepository.GetByEmail(ctx, email)
+	return uc.repo.GetByEmail(ctx, email)
 }
 
-func (su *signupUsecase) CreateAccessToken(user *domain.User, secret string, expiry int) (accessToken string, err error) {
+func (uc *signupUsecase) CreateAccessToken(user *domain.User, secret string, expiry int) (accessToken string, err error) {
 	return tokenutil.CreateAccessToken(user, secret, expiry)
 }
 
-func (su *signupUsecase) CreateRefreshToken(user *domain.User, secret string, expiry int) (refreshToken string, err error) {
+func (uc *signupUsecase) CreateRefreshToken(user *domain.User, secret string, expiry int) (refreshToken string, err error) {
 	return tokenutil.CreateRefreshToken(user, secret, expiry)
 }

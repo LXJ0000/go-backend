@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func NewPostRouter(env *bootstrap.Env, timeout time.Duration, group *gin.RouterGroup, orm orm.Database) {
+func NewPostRouter(env *bootstrap.Env, timeout time.Duration, orm orm.Database, group *gin.RouterGroup) {
 	repo := repository.NewPostRepository(orm)
 	col := &controller.PostController{
 		Usecase: usecase.NewPostUsecase(repo, timeout),

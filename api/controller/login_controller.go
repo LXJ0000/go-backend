@@ -15,7 +15,7 @@ type LoginController struct {
 	Env          *bootstrap.Env
 }
 
-func (lc *LoginController) Login(c *gin.Context) {
+func (col *LoginController) Login(c *gin.Context) {
 	var request domain.LoginRequest
 
 	err := c.ShouldBind(&request)
@@ -24,7 +24,7 @@ func (lc *LoginController) Login(c *gin.Context) {
 		return
 	}
 
-	user, err := lc.LoginUsecase.GetUserByEmail(c, request.Email)
+	user, err := col.LoginUsecase.GetUserByEmail(c, request.Email)
 	if err != nil {
 		c.JSON(http.StatusNotFound, domain.ErrorResponse{Message: "User not found with the given email"})
 		return
@@ -35,13 +35,13 @@ func (lc *LoginController) Login(c *gin.Context) {
 		return
 	}
 
-	accessToken, err := lc.LoginUsecase.CreateAccessToken(&user, lc.Env.AccessTokenSecret, lc.Env.AccessTokenExpiryHour)
+	accessToken, err := col.LoginUsecase.CreateAccessToken(&user, col.Env.AccessTokenSecret, col.Env.AccessTokenExpiryHour)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
 		return
 	}
 
-	refreshToken, err := lc.LoginUsecase.CreateRefreshToken(&user, lc.Env.RefreshTokenSecret, lc.Env.RefreshTokenExpiryHour)
+	refreshToken, err := col.LoginUsecase.CreateRefreshToken(&user, col.Env.RefreshTokenSecret, col.Env.RefreshTokenExpiryHour)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
 		return

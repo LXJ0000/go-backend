@@ -1,18 +1,18 @@
 package controller
 
 import (
-	"net/http"
-
 	"github.com/LXJ0000/go-backend/domain"
+	snowflake "github.com/LXJ0000/go-backend/internal/snowflakeutil"
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"net/http"
+	"strconv"
 )
 
 type TaskController struct {
 	TaskUsecase domain.TaskUsecase
 }
 
-func (tc *TaskController) Create(c *gin.Context) {
+func (col *TaskController) Create(c *gin.Context) {
 	var task domain.Task
 
 	err := c.ShouldBind(&task)
@@ -21,16 +21,10 @@ func (tc *TaskController) Create(c *gin.Context) {
 		return
 	}
 
-	userID := c.GetString("x-user-id")
-	task.ID = primitive.NewObjectID()
+	task.TaskID = snowflake.GenID()
+	task.UserID = c.MustGet("x-user-id").(int64)
 
-	task.UserID, err = primitive.ObjectIDFromHex(userID)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResponse{Message: err.Error()})
-		return
-	}
-
-	err = tc.TaskUsecase.Create(c, &task)
+	err = col.TaskUsecase.Create(c, &task)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
 		return
@@ -41,14 +35,15 @@ func (tc *TaskController) Create(c *gin.Context) {
 	})
 }
 
-func (u *TaskController) Fetch(c *gin.Context) {
-	userID := c.GetString("x-user-id")
-
-	tasks, err := u.TaskUsecase.FetchByUserID(c, userID)
+func (col *TaskController) Delete(c *gin.Context) {
+	taskIDRaw := c.Query("task_id")
+	taskID, err := strconv.ParseInt(taskIDRaw, 10, 64)
 	if err != nil {
+		c.JSON(http.StatusBadRequest, domain.ErrorResponse{Message: err.Error()})
+		return
+	}
+	if err = col.TaskUsecase.Delete(c, taskID); err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
 		return
 	}
-
-	c.JSON(http.StatusOK, tasks)
 }

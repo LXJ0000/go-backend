@@ -1,12 +1,12 @@
 package controller
 
 import (
+	snowflake "github.com/LXJ0000/go-backend/internal/snowflakeutil"
 	"net/http"
 
 	"github.com/LXJ0000/go-backend/bootstrap"
 	"github.com/LXJ0000/go-backend/domain"
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -42,8 +42,8 @@ func (sc *SignupController) Signup(c *gin.Context) {
 	request.Password = string(encryptedPassword)
 
 	user := domain.User{
-		ID:       primitive.NewObjectID(),
-		Name:     request.Name,
+		UserID:   snowflake.GenID(),
+		UserName: request.UserName,
 		Email:    request.Email,
 		Password: request.Password,
 	}
