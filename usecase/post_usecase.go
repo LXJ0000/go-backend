@@ -22,3 +22,9 @@ func (uc *postUsecase) Create(c context.Context, post *domain.Post) error {
 	defer cancel()
 	return uc.repo.Create(ctx, post)
 }
+
+func (uc *postUsecase) List(c context.Context, filter *domain.Post, page, size int) ([]domain.Post, error) {
+	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
+	defer cancel()
+	return uc.repo.FindMany(ctx, filter, page, size)
+}

@@ -6,7 +6,8 @@ import (
 )
 
 type Database interface {
-	FindOne(c context.Context, model interface{}, item interface{}) (interface{}, error)
+	FindOne(c context.Context, model interface{}, filter interface{}) (interface{}, error)
+	FindMany(c context.Context, model interface{}, filter interface{}, page, size int, items interface{}) error
 	InsertOne(c context.Context, model interface{}, item interface{}) (interface{}, error)
 	DeleteOne(c context.Context, model interface{}, item interface{}) (interface{}, error)
 	UpdateOne(c context.Context, model interface{}, filter interface{}, update interface{}) (interface{}, error)
@@ -20,9 +21,14 @@ func NewDatabase(db *gorm.DB) Database {
 	return &database{db: db}
 }
 
-func (dao *database) FindOne(c context.Context, model interface{}, item interface{}) (interface{}, error) {
-	err := dao.db.WithContext(c).Model(model).First(item).Error
-	return item, err
+func (dao *database) FindOne(c context.Context, model interface{}, filter interface{}) (interface{}, error) {
+	err := dao.db.WithContext(c).Model(model).Where(filter).First(filter).Error
+	return filter, err
+}
+
+func (dao *database) FindMany(c context.Context, model interface{}, filter interface{}, page, size int, items interface{}) error {
+	err := dao.db.WithContext(c).Model(model).Where(filter).Offset((page - 1) * size).Limit(size).Find(items).Error
+	return err
 }
 
 func (dao *database) InsertOne(c context.Context, model interface{}, item interface{}) (interface{}, error) {

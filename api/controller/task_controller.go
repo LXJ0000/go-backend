@@ -46,4 +46,5 @@ func (col *TaskController) Delete(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
 		return
 	}
+	c.JSON(http.StatusOK, domain.SuccessResponse{Message: "Task deleted successfully"})
 }

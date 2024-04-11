@@ -5,6 +5,16 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	DefaultPage = 0
+	DefaultSize = 10
+)
+
+const (
+	PostStatusHide uint8 = iota
+	PostStatusPublish
+)
+
 type Post struct {
 	gorm.Model
 	PostID int64 `json:"post_id" gorm:"primaryKey"`
@@ -13,7 +23,9 @@ type Post struct {
 	Abstract string `json:"abstract" form:"abstract"`
 	Content  string `json:"content" form:"content"`
 
-	UserID int64 `json:"user_id"`
+	AuthorID int64 `json:"author_id" form:"author_id"`
+
+	Status uint8 `json:"status"`
 }
 
 func (Post) TableName() string {
@@ -21,10 +33,24 @@ func (Post) TableName() string {
 }
 
 type PostRepository interface {
-	Create(c context.Context, user *Post) error
+	Create(c context.Context, post *Post) error
 	GetByID(c context.Context, id int64) (Post, error)
+	FindMany(c context.Context, filter *Post, page, size int) ([]Post, error)
 }
 
 type PostUsecase interface {
 	Create(c context.Context, post *Post) error
+	List(c context.Context, filter *Post, page, size int) ([]Post, error)
+}
+
+type PostListRequest struct {
+	Page     int   `json:"page" form:"page"`
+	Size     int   `json:"size" form:"size"`
+	AuthorID int64 `json:"author_id" form:"author_id"`
+	Status   uint8 `json:"status" form:"status"`
+}
+
+type PostListResponse struct {
+	Count int    `json:"count"`
+	Data  []Post `json:"data"`
 }

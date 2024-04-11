@@ -13,7 +13,9 @@ import (
 func NewPostRouter(env *bootstrap.Env, timeout time.Duration, orm orm.Database, group *gin.RouterGroup) {
 	repo := repository.NewPostRepository(orm)
 	col := &controller.PostController{
-		Usecase: usecase.NewPostUsecase(repo, timeout),
+		PostUsecase: usecase.NewPostUsecase(repo, timeout),
 	}
-	group.POST("/post", col.Create)
+	group.POST("/post/create", col.Create)
+	group.GET("/post/publish", col.ReaderList)
+	group.GET("/post/private", col.WriterList)
 }
