@@ -3,25 +3,34 @@ package repository
 import (
 	"github.com/LXJ0000/go-backend/domain"
 	"github.com/LXJ0000/go-backend/orm"
+	"github.com/LXJ0000/go-backend/redis"
 	"golang.org/x/net/context"
+	"gorm.io/gorm"
+	"time"
 )
 
 type interactionRepository struct {
-	db orm.Database
+	dao   orm.Database
+	cache redis.Cache
 }
 
-func NewInteractionRepository(db orm.Database) domain.InteractionRepository {
+func NewInteractionRepository(dao orm.Database, cache redis.Cache) domain.InteractionRepository {
 	return &interactionRepository{
-		db: db,
+		dao:   dao,
+		cache: cache,
 	}
 }
 
 func (repo *interactionRepository) IncrReadCount(c context.Context, biz string, id int64) error {
-	// upset!
-	//filter := map[string]interface{}{
-	//	"read_cnt": "read_cnt + 1",
-	//  "update_at": ...
-	//}
-	//repo.db.UpdateOne()
-	return nil
+	now := time.Now()
+	update := map[string]interface{}{
+		"read_cnt":   gorm.Expr("read_cnt + 1"),
+		"updated_at": now,
+	}
+	create := &domain.Interaction{
+		BizID:   id,
+		Biz:     biz,
+		ReadCnt: 1,
+	}
+	return repo.dao.Upsert(c, &domain.Interaction{}, update, create)
 }

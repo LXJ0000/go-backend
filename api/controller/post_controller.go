@@ -4,12 +4,14 @@ import (
 	"github.com/LXJ0000/go-backend/domain"
 	snowflake "github.com/LXJ0000/go-backend/internal/snowflakeutil"
 	"github.com/gin-gonic/gin"
+	"log/slog"
 	"net/http"
 	"strconv"
 )
 
 type PostController struct {
-	PostUsecase domain.PostUsecase
+	PostUsecase        domain.PostUsecase
+	InteractionUseCase domain.InteractionUseCase
 }
 
 func (col *PostController) CreateOrPublish(c *gin.Context) {
@@ -96,7 +98,9 @@ func (col *PostController) Info(c *gin.Context) {
 		return
 	}
 	go func() {
-		//	TODO cache readCnt
+		if err := col.InteractionUseCase.IncrReadCount(c, domain.BizPost, post.PostID); err != nil {
+			slog.Warn("Add post read count fail", "post_id", post.PostID)
+		}
 	}()
 	c.JSON(http.StatusOK, post)
 }

@@ -3,6 +3,7 @@ package orm
 import (
 	"context"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type Database interface {
@@ -11,6 +12,7 @@ type Database interface {
 	InsertOne(c context.Context, model interface{}, item interface{}) (interface{}, error)
 	DeleteOne(c context.Context, model interface{}, item interface{}) (interface{}, error)
 	UpdateOne(c context.Context, model interface{}, filter interface{}, update interface{}) (interface{}, error)
+	Upsert(c context.Context, model interface{}, update map[string]interface{}, create interface{}) error
 }
 
 type database struct {
@@ -44,4 +46,11 @@ func (dao *database) DeleteOne(c context.Context, model interface{}, item interf
 func (dao *database) UpdateOne(c context.Context, model interface{}, filter interface{}, update interface{}) (interface{}, error) {
 	err := dao.db.WithContext(c).Model(model).Where(filter).Updates(update).Error
 	return nil, err
+}
+
+func (dao *database) Upsert(c context.Context, model interface{}, update map[string]interface{}, create interface{}) error {
+	err := dao.db.WithContext(c).Model(model).Clauses(clause.OnConflict{
+		DoUpdates: clause.Assignments(update),
+	}).Create(create).Error
+	return err
 }

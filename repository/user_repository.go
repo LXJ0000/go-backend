@@ -8,24 +8,24 @@ import (
 )
 
 type userRepository struct {
-	db orm.Database
+	dao orm.Database
 	//collection string
 }
 
-func NewUserRepository(db orm.Database) domain.UserRepository {
+func NewUserRepository(dao orm.Database) domain.UserRepository {
 	return &userRepository{
-		db: db,
+		dao: dao,
 		//collection: collection,
 	}
 }
 
 func (repo *userRepository) Create(c context.Context, user *domain.User) error {
-	_, err := repo.db.InsertOne(c, &domain.User{}, user)
+	_, err := repo.dao.InsertOne(c, &domain.User{}, user)
 	return err
 }
 
 func (repo *userRepository) GetByEmail(c context.Context, email string) (domain.User, error) {
-	user, err := repo.db.FindOne(c, &domain.User{}, &domain.User{Email: email})
+	user, err := repo.dao.FindOne(c, &domain.User{}, &domain.User{Email: email})
 	if err != nil {
 		return domain.User{}, err
 	}
@@ -33,7 +33,7 @@ func (repo *userRepository) GetByEmail(c context.Context, email string) (domain.
 }
 
 func (repo *userRepository) GetByID(c context.Context, id int64) (domain.User, error) {
-	user, err := repo.db.FindOne(c, &domain.User{}, &domain.User{UserID: id})
+	user, err := repo.dao.FindOne(c, &domain.User{}, &domain.User{UserID: id})
 	if err != nil {
 		return domain.User{}, err
 	}

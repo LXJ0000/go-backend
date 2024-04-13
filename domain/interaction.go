@@ -13,8 +13,9 @@ type Interaction struct {
 	gorm.Model
 	// idx_biz select * from . where biz ==
 	// idx_bizID_biz 联合索引 (bizID区分度高)
-	BizID   int64  `gorm:"primarykey"`
-	Biz     string `gorm:"primarykey"`
+	BizID int64 `gorm:"uniqueIndex:idx_bizID_biz"`
+	//Biz     string `gorm:"uniqueIndex:idx_bizID_biz"`
+	Biz     string `gorm:"type:varchar(255);uniqueIndex:idx_bizID_biz"`
 	ReadCnt int64
 }
 

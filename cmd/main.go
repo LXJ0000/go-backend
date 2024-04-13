@@ -18,13 +18,14 @@ func main() {
 	//defer app.CloseDBConnection()
 
 	db := app.Orm
+	cache := app.Cache
 
 	timeout := time.Duration(env.ContextTimeout) * time.Hour // TODO
 
 	server := gin.Default()
 
 	//route.Setup(env, timeout, db, server, orm)
-	route.Setup(env, timeout, db, server)
+	route.Setup(env, timeout, db, cache, server)
 
 	_ = server.Run(env.ServerAddress)
 }
