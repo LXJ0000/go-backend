@@ -10,6 +10,7 @@ type Cache interface {
 	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error
 	Get(ctx context.Context, key string) (string, error)
 	Del(ctx context.Context, key string) error
+	Lua(ctx context.Context, luaPath string, key []string, args ...string) (int, error)
 }
 
 type cache struct {
@@ -27,6 +28,11 @@ func (c *cache) Set(ctx context.Context, key string, value interface{}, expirati
 func (c *cache) Get(ctx context.Context, key string) (string, error) {
 	return c.cmd.Get(ctx, key).Result()
 }
+
 func (c *cache) Del(ctx context.Context, key string) error {
 	return c.cmd.Del(ctx, key).Err()
+}
+
+func (c *cache) Lua(ctx context.Context, luaPath string, key []string, args ...string) (int, error) {
+	return c.cmd.Eval(ctx, luaPath, key, args).Int()
 }

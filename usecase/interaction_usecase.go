@@ -20,3 +20,15 @@ func (uc *interactionUsecase) IncrReadCount(c context.Context, biz string, id in
 	defer cancel()
 	return uc.repo.IncrReadCount(ctx, biz, id)
 }
+
+func (uc *interactionUsecase) IncrLikeCount(c context.Context, biz string, id int64) error {
+	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
+	defer cancel()
+	return uc.repo.IncrLikeCount(ctx, biz, id)
+}
+
+func (uc *interactionUsecase) IncrCollectCount(c context.Context, biz string, id int64) error {
+	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
+	defer cancel()
+	return uc.repo.IncrCollectCount(ctx, biz, id)
+}

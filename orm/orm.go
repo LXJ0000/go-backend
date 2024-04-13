@@ -50,6 +50,7 @@ func (dao *database) UpdateOne(c context.Context, model interface{}, filter inte
 
 func (dao *database) Upsert(c context.Context, model interface{}, update map[string]interface{}, create interface{}) error {
 	err := dao.db.WithContext(c).Model(model).Clauses(clause.OnConflict{
+		//Columns:  // mysql 可以不写
 		DoUpdates: clause.Assignments(update),
 	}).Create(create).Error
 	return err
