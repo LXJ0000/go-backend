@@ -22,3 +22,12 @@ type UserRepository interface {
 	GetByEmail(c context.Context, email string) (User, error)
 	GetByID(c context.Context, id int64) (User, error)
 }
+
+type Profile struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
+type ProfileUsecase interface {
+	GetProfileByID(c context.Context, userID int64) (*Profile, error)
+}

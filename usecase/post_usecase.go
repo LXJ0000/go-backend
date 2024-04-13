@@ -28,3 +28,9 @@ func (uc *postUsecase) List(c context.Context, filter *domain.Post, page, size i
 	defer cancel()
 	return uc.repo.FindMany(ctx, filter, page, size)
 }
+
+func (uc *postUsecase) Info(c context.Context, postID int64) (domain.Post, error) {
+	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
+	defer cancel()
+	return uc.repo.GetByID(ctx, postID)
+}

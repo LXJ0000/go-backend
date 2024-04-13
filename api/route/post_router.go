@@ -15,7 +15,8 @@ func NewPostRouter(env *bootstrap.Env, timeout time.Duration, orm orm.Database, 
 	col := &controller.PostController{
 		PostUsecase: usecase.NewPostUsecase(repo, timeout),
 	}
-	group.POST("/post/create", col.Create)
+	group.POST("/post", col.CreateOrPublish)
+	group.GET("/post", col.Info)
 	group.GET("/post/publish", col.ReaderList)
 	group.GET("/post/private", col.WriterList)
 }

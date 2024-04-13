@@ -19,13 +19,19 @@ type Post struct {
 	gorm.Model
 	PostID int64 `json:"post_id" gorm:"primaryKey"`
 
-	Title    string `json:"title" form:"title"`
-	Abstract string `json:"abstract" form:"abstract"`
-	Content  string `json:"content" form:"content"`
+	//Title    string `json:"title" form:"title"`
+	//Abstract string `json:"abstract" form:"abstract"`
+	//Content  string `json:"content" form:"content"`
+	//
+	//AuthorID int64 `json:"author_id" form:"author_id"`
+	//
+	//Status uint8 `json:"status" form:"status"`
 
-	AuthorID int64 `json:"author_id" form:"author_id"`
-
-	Status uint8 `json:"status"`
+	Title    string `json:"title" form:"title" binding:"required"`
+	Abstract string `json:"abstract" form:"abstract" binding:"required"`
+	Content  string `json:"content" form:"content" binding:"required"`
+	AuthorID int64  `json:"author_id,string" form:"author_id" binding:"required"`
+	Status   uint8  `json:"status" form:"status" binding:"required"`
 }
 
 func (Post) TableName() string {
@@ -41,6 +47,7 @@ type PostRepository interface {
 type PostUsecase interface {
 	Create(c context.Context, post *Post) error
 	List(c context.Context, filter *Post, page, size int) ([]Post, error)
+	Info(c context.Context, postID int64) (Post, error)
 }
 
 type PostListRequest struct {

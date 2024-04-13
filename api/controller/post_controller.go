@@ -5,13 +5,14 @@ import (
 	snowflake "github.com/LXJ0000/go-backend/internal/snowflakeutil"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 type PostController struct {
 	PostUsecase domain.PostUsecase
 }
 
-func (col *PostController) Create(c *gin.Context) {
+func (col *PostController) CreateOrPublish(c *gin.Context) {
 	userID := c.MustGet("x-user-id")
 	var post domain.Post
 	if err := c.ShouldBind(&post); err != nil {
@@ -20,7 +21,6 @@ func (col *PostController) Create(c *gin.Context) {
 	}
 	post.AuthorID = userID.(int64)
 	post.PostID = snowflake.GenID()
-	post.Status = domain.PostStatusHide
 	if err := col.PostUsecase.Create(c, &post); err != nil {
 		c.JSON(http.StatusOK, domain.ErrorResponse{Message: err.Error()})
 		return
@@ -81,4 +81,22 @@ func (col *PostController) WriterList(c *gin.Context) {
 		Count: len(posts),
 		Data:  posts,
 	})
+}
+
+func (col *PostController) Info(c *gin.Context) {
+	postIDRaw := c.Query("post_id")
+	postID, err := strconv.ParseInt(postIDRaw, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, domain.ErrorResponse{Message: err.Error()})
+		return
+	}
+	post, err := col.PostUsecase.Info(c, postID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
+		return
+	}
+	go func() {
+		//	TODO cache readCnt
+	}()
+	c.JSON(http.StatusOK, post)
 }
