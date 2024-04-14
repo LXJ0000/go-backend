@@ -20,6 +20,7 @@ func (repo *postRepository) Create(c context.Context, post *domain.Post) error {
 	_, err := repo.dao.InsertOne(c, &domain.Post{}, post)
 	return err
 }
+
 func (repo *postRepository) GetByID(c context.Context, id int64) (domain.Post, error) {
 	post, err := repo.dao.FindOne(c, &domain.Post{}, &domain.Post{PostID: id})
 	if err != nil {

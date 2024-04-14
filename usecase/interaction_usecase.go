@@ -32,3 +32,9 @@ func (uc *interactionUsecase) CancelLike(c context.Context, biz string, bizID, u
 	defer cancel()
 	return uc.repo.CancelLike(ctx, biz, bizID, userID)
 }
+
+func (uc *interactionUsecase) Info(c context.Context, biz string, bizID, userID int64) (domain.Interaction, domain.UserInteractionInfo, error) {
+	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
+	defer cancel()
+	return uc.repo.Info(ctx, biz, bizID, userID)
+}

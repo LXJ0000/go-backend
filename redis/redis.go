@@ -10,7 +10,8 @@ type Cache interface {
 	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error
 	Get(ctx context.Context, key string) (string, error)
 	Del(ctx context.Context, key string) error
-	Lua(ctx context.Context, luaPath string, key []string, args ...string) (int, error)
+	Lua(ctx context.Context, luaPath string, key []string, args ...interface{}) (int, error)
+	HSet(ctx context.Context, key string, values ...interface{}) error
 }
 
 type cache struct {
@@ -33,6 +34,14 @@ func (c *cache) Del(ctx context.Context, key string) error {
 	return c.cmd.Del(ctx, key).Err()
 }
 
-func (c *cache) Lua(ctx context.Context, luaPath string, key []string, args ...string) (int, error) {
+func (c *cache) Lua(ctx context.Context, luaPath string, key []string, args ...interface{}) (int, error) {
 	return c.cmd.Eval(ctx, luaPath, key, args).Int()
+}
+
+func (c *cache) HSet(ctx context.Context, key string, values ...interface{}) error {
+	return c.cmd.HSet(ctx, key, values).Err()
+}
+
+func (c *cache) HGetAll(ctx context.Context, key string) (map[string]string, error) {
+	return c.cmd.HGetAll(ctx, key).Result()
 }

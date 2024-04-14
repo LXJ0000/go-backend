@@ -17,7 +17,7 @@ const (
 
 type Post struct {
 	gorm.Model
-	PostID int64 `json:"post_id" gorm:"primaryKey"`
+	PostID int64 `json:"post_id,string" gorm:"primaryKey"`
 
 	Title    string `json:"title" form:"title" binding:"required"`
 	Abstract string `json:"abstract" form:"abstract" binding:"required"`
@@ -52,4 +52,14 @@ type PostListRequest struct {
 type PostListResponse struct {
 	Count int    `json:"count"`
 	Data  []Post `json:"data"`
+}
+
+type PostV0 struct {
+	Post
+	ReadCnt    int
+	LikeCnt    int
+	CollectCnt int
+
+	Collected bool
+	Liked     bool
 }

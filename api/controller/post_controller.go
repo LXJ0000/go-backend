@@ -4,6 +4,7 @@ import (
 	"github.com/LXJ0000/go-backend/domain"
 	snowflake "github.com/LXJ0000/go-backend/internal/snowflakeutil"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/sync/errgroup"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -15,13 +16,13 @@ type PostController struct {
 }
 
 func (col *PostController) CreateOrPublish(c *gin.Context) {
-	userID := c.MustGet("x-user-id")
+	userID := c.MustGet("x-user-id").(int64)
 	var post domain.Post
 	if err := c.ShouldBind(&post); err != nil {
 		c.JSON(http.StatusBadRequest, domain.ErrorResponse{Message: err.Error()})
 		return
 	}
-	post.AuthorID = userID.(int64)
+	post.AuthorID = userID
 	post.PostID = snowflake.GenID()
 	if err := col.PostUsecase.Create(c, &post); err != nil {
 		c.JSON(http.StatusOK, domain.ErrorResponse{Message: err.Error()})
@@ -88,12 +89,27 @@ func (col *PostController) WriterList(c *gin.Context) {
 func (col *PostController) Info(c *gin.Context) {
 	postIDRaw := c.Query("post_id")
 	postID, err := strconv.ParseInt(postIDRaw, 10, 64)
+	userID := c.MustGet("x-user-id").(int64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, domain.ErrorResponse{Message: err.Error()})
 		return
 	}
-	post, err := col.PostUsecase.Info(c, postID)
-	if err != nil {
+	var post domain.Post
+	var interaction domain.Interaction
+	var userInteractionInfo domain.UserInteractionInfo
+	eg := errgroup.Group{}
+	eg.Go(func() error {
+		post, err = col.PostUsecase.Info(c, postID)
+		return err
+	})
+	eg.Go(func() error {
+		interaction, userInteractionInfo, err = col.InteractionUseCase.Info(c, domain.BizPost, postID, userID)
+		if err != nil {
+			slog.Warn("InteractionUseCase Info Error", "error", err.Error())
+		}
+		return nil
+	})
+	if err = eg.Wait(); err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
 		return
 	}
@@ -101,8 +117,15 @@ func (col *PostController) Info(c *gin.Context) {
 		if err := col.InteractionUseCase.IncrReadCount(c, domain.BizPost, post.PostID); err != nil {
 			slog.Warn("Add post read count fail", "post_id", post.PostID)
 		}
-	}()
-	c.JSON(http.StatusOK, post)
+	}() // 添加文件阅读数
+	c.JSON(http.StatusOK, domain.PostV0{
+		Post:       post,
+		ReadCnt:    interaction.ReadCnt,
+		LikeCnt:    interaction.LikeCnt,
+		CollectCnt: interaction.CollectCnt,
+		Collected:  userInteractionInfo.Collected,
+		Liked:      userInteractionInfo.Liked,
+	})
 }
 
 func (col *PostController) Like(c *gin.Context) {
