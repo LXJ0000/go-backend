@@ -13,6 +13,7 @@ type Database interface {
 	DeleteOne(c context.Context, model interface{}, item interface{}) (interface{}, error)
 	UpdateOne(c context.Context, model interface{}, filter interface{}, update interface{}) (interface{}, error)
 	Upsert(c context.Context, model interface{}, update map[string]interface{}, create interface{}) error
+	Transaction(c context.Context, fn func(tx *gorm.DB) error) error
 }
 
 type database struct {
@@ -53,5 +54,10 @@ func (dao *database) Upsert(c context.Context, model interface{}, update map[str
 		//Columns:  // mysql 可以不写
 		DoUpdates: clause.Assignments(update),
 	}).Create(create).Error
+	return err
+}
+
+func (dao *database) Transaction(c context.Context, fn func(tx *gorm.DB) error) error {
+	err := dao.db.WithContext(c).Transaction(fn)
 	return err
 }

@@ -104,3 +104,30 @@ func (col *PostController) Info(c *gin.Context) {
 	}()
 	c.JSON(http.StatusOK, post)
 }
+
+func (col *PostController) Like(c *gin.Context) {
+	isLikeRaw := c.Request.FormValue("is_like")
+	postIDRaw := c.Request.FormValue("post_id")
+	postID, err := strconv.ParseInt(postIDRaw, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, domain.ErrorResponse{Message: err.Error()})
+		return
+	}
+	isLike, err := strconv.ParseBool(isLikeRaw)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, domain.ErrorResponse{Message: err.Error()})
+		return
+	}
+	userID := c.MustGet("x-user-id").(int64)
+
+	if isLike {
+		err = col.InteractionUseCase.Like(c, domain.BizPost, postID, userID)
+	} else {
+		err = col.InteractionUseCase.CancelLike(c, domain.BizPost, postID, userID)
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, domain.SuccessResponse{Message: "Success"})
+}

@@ -31,14 +31,31 @@ func (Interaction) TableName() string {
 
 type InteractionUseCase interface {
 	IncrReadCount(c context.Context, biz string, id int64) error
-	IncrLikeCount(c context.Context, biz string, id int64) error
-	IncrCollectCount(c context.Context, biz string, id int64) error
+	Like(c context.Context, biz string, bizID, userID int64) error
+	CancelLike(c context.Context, biz string, bizID, userID int64) error
 }
 
 type InteractionRepository interface {
 	IncrReadCount(c context.Context, biz string, id int64) error
-	IncrLikeCount(c context.Context, biz string, id int64) error
-	IncrCollectCount(c context.Context, biz string, id int64) error
+	Like(c context.Context, biz string, bizID, userID int64) error
+	CancelLike(c context.Context, biz string, bizID, userID int64) error
 
 	CacheIncrCnt(c context.Context, biz string, id int64, cntType string) error
+	CacheDecrCnt(c context.Context, biz string, id int64, cntType string) error
+}
+
+type UserLike struct {
+	gorm.Model
+	UserID int64
+	BizID  int64
+	Biz    string
+	Status bool // true 点赞 false 取消点赞
+	// `gorm:"uniqueIndex:idx_userID_bizID_biz"`
+	//	具体索引顺序，需要根据业务需求规定，此外还需根据字段区分度
+	//1. 查询用户喜欢的东西 select * from user_like where user_id = ? and biz = ?
+	//2. 查询某个东西的点赞数 select * from user_like where bizID = ? and biz = ?
+}
+
+func (UserLike) TableName() string {
+	return `user_like`
 }
