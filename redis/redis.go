@@ -12,6 +12,7 @@ type Cache interface {
 	Del(ctx context.Context, key string) error
 	Lua(ctx context.Context, luaPath string, key []string, args ...interface{}) (int, error)
 	HSet(ctx context.Context, key string, values ...interface{}) error
+	HGetAll(ctx context.Context, key string) (map[string]string, error)
 }
 
 type cache struct {

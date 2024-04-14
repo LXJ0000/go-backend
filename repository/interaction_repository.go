@@ -1,7 +1,8 @@
 package repository
 
 import (
-	"encoding/json"
+	"github.com/LXJ0000/go-backend/script"
+
 	"errors"
 	"fmt"
 	"github.com/LXJ0000/go-backend/domain"
@@ -11,7 +12,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm"
 	"log/slog"
-	"math"
+	"strconv"
 	"time"
 )
 
@@ -154,13 +155,11 @@ func (repo *interactionRepository) Info(c context.Context, biz string, bizID, us
 		return err
 	})
 	eg.Go(func() error {
-		var cacheValue domain.CacheInteractionKey
-		res, err := repo.cache.Get(c, key(biz, bizID))
-		if err == nil {
-			_ = json.Unmarshal([]byte(res), &cacheValue)
-			interaction.CollectCnt = cacheValue.CollectCnt
-			interaction.ReadCnt = cacheValue.ReadCnt
-			interaction.LikeCnt = cacheValue.LikeCnt
+		res, err := repo.cache.HGetAll(c, key(biz, bizID))
+		if err == nil && len(res) > 0 {
+			interaction.CollectCnt, _ = strconv.Atoi(res["collect_cnt"])
+			interaction.ReadCnt, _ = strconv.Atoi(res["read_cnt"])
+			interaction.LikeCnt, _ = strconv.Atoi(res["like_cnt"])
 			return nil
 		}
 		item, err := repo.dao.FindOne(c, &domain.Interaction{}, &domain.Interaction{
@@ -172,12 +171,13 @@ func (repo *interactionRepository) Info(c context.Context, biz string, bizID, us
 		}
 		interaction = *item.(*domain.Interaction)
 		go func() {
-			cacheValue.LikeCnt = interaction.LikeCnt
-			cacheValue.ReadCnt = interaction.ReadCnt
-			cacheValue.CollectCnt = interaction.CollectCnt
-			val, _ := json.Marshal(cacheValue)
-			if err := repo.cache.Set(context.Background(), key(biz, bizID), val, time.Duration(math.MaxInt)); err != nil {
-				slog.Warn("Redis 操作失败, Set", "biz", biz, "bizID", bizID, "Key", cacheValue, "error", err.Error())
+			if err := repo.cache.HSet(context.Background(),
+				key(biz, bizID),
+				"read_cnt", interaction.ReadCnt,
+				"collect_cnt", interaction.CollectCnt,
+				"like_cnt", interaction.LikeCnt,
+			); err != nil {
+				slog.Warn("Redis 操作失败, HSet", "biz", biz, "bizID", bizID, "Key", key(biz, bizID), "error", err.Error())
 			}
 		}()
 		return nil
@@ -219,12 +219,12 @@ func (repo *interactionRepository) isCollect(c context.Context, biz string, bizI
 }
 
 func (repo *interactionRepository) cacheIncrCnt(c context.Context, biz string, id int64, cntType string) error {
-	_, err := repo.cache.Lua(c, domain.LuaInteractionIncrCnt, []string{key(biz, id)}, cntType, 1)
+	_, err := repo.cache.Lua(c, script.LuaInteractionIncrCnt, []string{key(biz, id)}, cntType, 1)
 	return err
 }
 
 func (repo *interactionRepository) cacheDecrCnt(c context.Context, biz string, id int64, cntType string) error {
-	_, err := repo.cache.Lua(c, domain.LuaInteractionIncrCnt, []string{key(biz, id)}, cntType, -1)
+	_, err := repo.cache.Lua(c, script.LuaInteractionIncrCnt, []string{key(biz, id)}, cntType, -1)
 	return err
 }
 

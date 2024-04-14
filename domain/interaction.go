@@ -9,10 +9,6 @@ const (
 	BizPost = "post"
 )
 
-const (
-	LuaInteractionIncrCnt = "script/redis/interaction_incr_cnt.lua"
-)
-
 type Interaction struct {
 	gorm.Model
 	// idx_biz select * from . where biz ==
