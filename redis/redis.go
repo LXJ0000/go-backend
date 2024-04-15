@@ -11,6 +11,7 @@ type Cache interface {
 	Get(ctx context.Context, key string) (string, error)
 	Del(ctx context.Context, key string) error
 	Lua(ctx context.Context, luaPath string, key []string, args ...interface{}) (int, error)
+	LuaWithReturnBool(ctx context.Context, luaPath string, key []string, args ...interface{}) (bool, error)
 	HSet(ctx context.Context, key string, values ...interface{}) error
 	HGetAll(ctx context.Context, key string) (map[string]string, error)
 }
@@ -37,6 +38,10 @@ func (c *cache) Del(ctx context.Context, key string) error {
 
 func (c *cache) Lua(ctx context.Context, luaPath string, key []string, args ...interface{}) (int, error) {
 	return c.cmd.Eval(ctx, luaPath, key, args).Int()
+}
+
+func (c *cache) LuaWithReturnBool(ctx context.Context, luaPath string, key []string, args ...interface{}) (bool, error) {
+	return c.cmd.Eval(ctx, luaPath, key, args).Bool()
 }
 
 func (c *cache) HSet(ctx context.Context, key string, values ...interface{}) error {

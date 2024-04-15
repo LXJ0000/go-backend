@@ -38,3 +38,15 @@ func (uc *interactionUsecase) Info(c context.Context, biz string, bizID, userID 
 	defer cancel()
 	return uc.repo.Info(ctx, biz, bizID, userID)
 }
+
+func (uc *interactionUsecase) Collect(c context.Context, biz string, bizID, userID, collectionID int64) error {
+	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
+	defer cancel()
+	return uc.repo.Collect(ctx, biz, bizID, userID, collectionID)
+}
+
+func (uc *interactionUsecase) CancelCollect(c context.Context, biz string, bizID, userID, collectionID int64) error {
+	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
+	defer cancel()
+	return uc.repo.CancelCollect(ctx, biz, bizID, userID, collectionID)
+}

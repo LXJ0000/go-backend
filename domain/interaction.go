@@ -21,12 +21,6 @@ type Interaction struct {
 	CollectCnt int // 3个cnt 相比较 type+cnt 在读性能友好, 每次只需要读一行
 }
 
-type CacheInteractionKey struct {
-	ReadCnt    int
-	LikeCnt    int
-	CollectCnt int
-}
-
 func (Interaction) TableName() string {
 	return `interaction`
 }
@@ -36,6 +30,9 @@ type InteractionUseCase interface {
 	Like(c context.Context, biz string, bizID, userID int64) error
 	CancelLike(c context.Context, biz string, bizID, userID int64) error
 	Info(c context.Context, biz string, bizID, userID int64) (Interaction, UserInteractionInfo, error)
+	Collect(c context.Context, biz string, bizID, userID, collectionID int64) error
+	CancelCollect(c context.Context, biz string, bizID, userID, collectionID int64) error
+	//	TODO 展示用户收藏、点赞列表 select bizID from 。。。 where biz and userID
 }
 
 type InteractionRepository interface {
@@ -43,6 +40,8 @@ type InteractionRepository interface {
 	Like(c context.Context, biz string, bizID, userID int64) error
 	CancelLike(c context.Context, biz string, bizID, userID int64) error
 	Info(c context.Context, biz string, bizID, userID int64) (Interaction, UserInteractionInfo, error)
+	Collect(c context.Context, biz string, bizID, userID, collectionID int64) error
+	CancelCollect(c context.Context, biz string, bizID, userID, collectionID int64) error
 }
 
 type UserLike struct {
@@ -63,10 +62,11 @@ func (UserLike) TableName() string {
 
 type UserCollect struct {
 	gorm.Model
-	UserID int64  `gorm:"uniqueIndex:idx_userCollect_userID_bizID_biz"`
-	BizID  int64  `gorm:"uniqueIndex:idx_userCollect_userID_bizID_biz"`
-	Biz    string `gorm:"uniqueIndex:idx_userCollect_userID_bizID_biz"`
-	Status bool
+	UserID       int64  `gorm:"uniqueIndex:idx_userCollect_userID_bizID_biz"`
+	BizID        int64  `gorm:"uniqueIndex:idx_userCollect_userID_bizID_biz"`
+	Biz          string `gorm:"uniqueIndex:idx_userCollect_userID_bizID_biz"`
+	CollectionID int64  `gorm:"index"`
+	Status       bool
 }
 
 func (UserCollect) TableName() string {

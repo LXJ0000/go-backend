@@ -13,7 +13,6 @@ import (
 	"gorm.io/gorm"
 	"log/slog"
 	"strconv"
-	"time"
 )
 
 type interactionRepository struct {
@@ -29,10 +28,8 @@ func NewInteractionRepository(dao orm.Database, cache redis.Cache) domain.Intera
 }
 
 func (repo *interactionRepository) IncrReadCount(c context.Context, biz string, id int64) error {
-	now := time.Now()
 	update := map[string]interface{}{
-		"read_cnt":   gorm.Expr("`read_cnt` + 1"),
-		"updated_at": now,
+		"read_cnt": gorm.Expr("`read_cnt` + 1"),
 	}
 	create := &domain.Interaction{
 		BizID:   id,
@@ -44,7 +41,7 @@ func (repo *interactionRepository) IncrReadCount(c context.Context, biz string, 
 	}
 	go func() {
 		if err := repo.cacheIncrCnt(context.Background(), biz, id, "read_cnt"); err != nil {
-			slog.Warn("Redis操作失败 CacheIncrCnt", "biz", biz, "bizID", id, "error", err.Error())
+			slog.Warn("Redis操作失败 CacheIncrReadCnt", "biz", biz, "bizID", id, "error", err.Error())
 		}
 	}()
 	// 数据库操作成功即认为业务处理成功
@@ -52,10 +49,8 @@ func (repo *interactionRepository) IncrReadCount(c context.Context, biz string, 
 }
 
 func (repo *interactionRepository) Like(c context.Context, biz string, bizID, userID int64) error {
-	now := time.Now()
 	updateInteraction := map[string]interface{}{
-		"like_cnt":   gorm.Expr("`like_cnt` + 1"),
-		"updated_at": now,
+		"like_cnt": gorm.Expr("`like_cnt` + 1"),
 	}
 	createInteraction := &domain.Interaction{
 		BizID:   bizID,
@@ -63,8 +58,7 @@ func (repo *interactionRepository) Like(c context.Context, biz string, bizID, us
 		LikeCnt: 1,
 	}
 	updateUserLike := map[string]interface{}{
-		"status":     true,
-		"updated_at": now,
+		"status": true,
 	}
 	createUserLike := &domain.UserLike{
 		BizID:  bizID,
@@ -85,7 +79,7 @@ func (repo *interactionRepository) Like(c context.Context, biz string, bizID, us
 	}
 	go func() {
 		if err := repo.cacheIncrCnt(context.Background(), biz, bizID, "like_cnt"); err != nil {
-			slog.Warn("Redis操作失败 CacheIncrCnt", "biz", biz, "bizID", bizID, "error", err.Error())
+			slog.Warn("Redis操作失败 CacheIncrLikeCnt", "biz", biz, "bizID", bizID, "error", err.Error())
 		}
 	}()
 	return nil
@@ -129,7 +123,7 @@ func (repo *interactionRepository) CancelLike(c context.Context, biz string, biz
 	}
 	go func() {
 		if err := repo.cacheDecrCnt(context.Background(), biz, bizID, "like_cnt"); err != nil {
-			slog.Warn("Redis操作失败 CacheIncrCnt", "biz", biz, "bizID", bizID, "error", err.Error())
+			slog.Warn("Redis操作失败 CacheDecrLikeCnt", "biz", biz, "bizID", bizID, "error", err.Error())
 		}
 	}()
 	return nil
@@ -190,6 +184,89 @@ func (repo *interactionRepository) Info(c context.Context, biz string, bizID, us
 			Liked:     isLike,
 			Collected: isCollect,
 		}, nil
+}
+
+func (repo *interactionRepository) Collect(c context.Context, biz string, bizID, userID, collectionID int64) error {
+	updateInteraction := map[string]interface{}{
+		"collect_cnt": gorm.Expr("`collect_cnt` + 1"),
+	}
+	createInteraction := &domain.Interaction{
+		BizID:      bizID,
+		Biz:        biz,
+		CollectCnt: 1,
+	}
+	updateUserCollect := map[string]interface{}{
+		"status": true,
+	}
+	createUserCollect := &domain.UserCollect{
+		BizID:        bizID,
+		Biz:          biz,
+		UserID:       userID,
+		CollectionID: collectionID,
+		Status:       true,
+	}
+	fn := func(tx *gorm.DB) error {
+		dao := orm.NewDatabase(tx)
+		if err := dao.Upsert(c, &domain.Interaction{}, updateInteraction, createInteraction); err != nil {
+			return err
+		}
+		return dao.Upsert(c, &domain.UserCollect{}, updateUserCollect, createUserCollect)
+	}
+	err := repo.dao.Transaction(c, fn)
+	if err != nil {
+		return err
+	}
+	go func() {
+		if err := repo.cacheIncrCnt(context.Background(), biz, bizID, "collect_cnt"); err != nil {
+			slog.Warn("Redis操作失败 CacheIncrCollectCnt", "biz", biz, "bizID", bizID, "error", err.Error())
+		}
+	}()
+	return nil
+}
+
+func (repo *interactionRepository) CancelCollect(c context.Context, biz string, bizID, userID, collectionID int64) error {
+	fn := func(tx *gorm.DB) error {
+		dao := orm.NewDatabase(tx)
+		//1. 更新 UserLike status = false
+		if _, err := dao.UpdateOne(c,
+			&domain.UserCollect{},
+			&domain.UserCollect{
+				UserID:       userID,
+				BizID:        bizID,
+				CollectionID: collectionID,
+				Biz:          biz,
+			},
+			map[string]interface{}{
+				"status": false,
+			},
+		); err != nil {
+			return err
+		}
+		//2. 更新 interaction like_cnt - 1
+		if _, err := dao.UpdateOne(c,
+			&domain.Interaction{},
+			&domain.Interaction{
+				BizID: bizID,
+				Biz:   biz,
+			},
+			map[string]interface{}{
+				"collect_cnt": gorm.Expr("`collect_cnt` - 1"),
+			},
+		); err != nil {
+			return err
+		}
+		return nil
+	}
+	err := repo.dao.Transaction(c, fn)
+	if err != nil {
+		return err
+	}
+	go func() {
+		if err := repo.cacheDecrCnt(context.Background(), biz, bizID, "collect_cnt"); err != nil {
+			slog.Warn("Redis操作失败 CacheDecrCollectCnt", "biz", biz, "bizID", bizID, "error", err.Error())
+		}
+	}()
+	return nil
 }
 
 func (repo *interactionRepository) isLike(c context.Context, biz string, bizID, userID int64) (bool, error) {

@@ -154,3 +154,36 @@ func (col *PostController) Like(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, domain.SuccessResponse{Message: "Success"})
 }
+
+func (col *PostController) Collect(c *gin.Context) {
+	isLikeRaw := c.Request.FormValue("is_collect")
+	postIDRaw := c.Request.FormValue("post_id")
+	collectionIDRaw := c.Request.FormValue("collection_id")
+	postID, err := strconv.ParseInt(postIDRaw, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, domain.ErrorResponse{Message: err.Error()})
+		return
+	}
+	isLike, err := strconv.ParseBool(isLikeRaw)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, domain.ErrorResponse{Message: err.Error()})
+		return
+	}
+	collectID, err := strconv.ParseInt(collectionIDRaw, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, domain.ErrorResponse{Message: err.Error()})
+		return
+	}
+	userID := c.MustGet("x-user-id").(int64)
+
+	if isLike {
+		err = col.InteractionUseCase.Collect(c, domain.BizPost, postID, userID, collectID)
+	} else {
+		err = col.InteractionUseCase.CancelCollect(c, domain.BizPost, postID, userID, collectID)
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, domain.SuccessResponse{Message: "Success"})
+}

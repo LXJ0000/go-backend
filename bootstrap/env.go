@@ -20,7 +20,9 @@ type Env struct {
 	AccessTokenSecret      string `mapstructure:"ACCESS_TOKEN_SECRET"`
 	RefreshTokenSecret     string `mapstructure:"REFRESH_TOKEN_SECRET"`
 	RedisAddr              string `mapstructure:"REDIS_ADDR"`
-	RedisExpiration        int    `mapstructure:"REDIS_Expiration"`
+	RedisExpiration        int    `mapstructure:"REDIS_EXPIRATION"`
+	RateLimit              int    `mapstructure:"RATE_LIMIT"`
+	RateLimitWindow        int    `mapstructure:"RATE_LIMIT_WINDOW"`
 }
 
 func NewEnv() *Env {

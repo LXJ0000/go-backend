@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/LXJ0000/go-backend/api/middleware"
 	"time"
 
 	route "github.com/LXJ0000/go-backend/api/route"
@@ -20,10 +21,11 @@ func main() {
 	db := app.Orm
 	cache := app.Cache
 
-	timeout := time.Duration(env.ContextTimeout) * time.Hour // TODO
+	timeout := time.Duration(env.ContextTimeout) * time.Second // TODO
 
 	server := gin.Default()
-
+	server.Use(middleware.CORSMiddleware())
+	server.Use(middleware.RateLimitMiddleware(cache, time.Duration(env.RateLimit)*time.Second, env.RateLimitWindow))
 	//route.Setup(env, timeout, db, server, orm)
 	route.Setup(env, timeout, db, cache, server)
 
