@@ -1,3 +1,4 @@
+CREATE DATABASE `go-backend`;
 /*
  Navicat Premium Data Transfer
 
