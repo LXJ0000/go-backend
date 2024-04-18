@@ -15,9 +15,6 @@ func main() {
 
 	env := app.Env
 
-	//db := app.Mongo.Database(env.DBName)
-	//defer app.CloseDBConnection()
-
 	db := app.Orm
 	cache := app.Cache
 
@@ -25,8 +22,7 @@ func main() {
 
 	server := gin.Default()
 	server.Use(middleware.CORSMiddleware())
-	server.Use(middleware.RateLimitMiddleware(cache, time.Duration(env.RateLimit)*time.Second, env.RateLimitWindow))
-	//route.Setup(env, timeout, db, server, orm)
+	server.Use(middleware.RateLimitMiddleware())
 	route.Setup(env, timeout, db, cache, server)
 
 	_ = server.Run(env.ServerAddress)
