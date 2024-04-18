@@ -23,6 +23,7 @@ type Env struct {
 	RedisExpiration        int    `mapstructure:"REDIS_EXPIRATION"`
 	RateLimit              int    `mapstructure:"RATE_LIMIT"`
 	RateLimitWindow        int    `mapstructure:"RATE_LIMIT_WINDOW"`
+	KafkaAddr              string `mapstructure:"KAFKA_ADDR"`
 }
 
 func NewEnv() *Env {
