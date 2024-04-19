@@ -18,12 +18,15 @@ func main() {
 	db := app.Orm
 	cache := app.Cache
 
+	producer := app.Producer
+	saramaClient := app.SaramaClient
+
 	timeout := time.Duration(env.ContextTimeout) * time.Second // TODO
 
 	server := gin.Default()
 	server.Use(middleware.CORSMiddleware())
 	server.Use(middleware.RateLimitMiddleware())
-	route.Setup(env, timeout, db, cache, server)
+	route.Setup(env, timeout, db, cache, server, producer, saramaClient)
 
 	_ = server.Run(env.ServerAddress)
 }

@@ -1,6 +1,8 @@
 package route
 
 import (
+	"github.com/IBM/sarama"
+	"github.com/LXJ0000/go-backend/event"
 	"github.com/LXJ0000/go-backend/orm"
 	"github.com/LXJ0000/go-backend/redis"
 	"time"
@@ -10,7 +12,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Setup(env *bootstrap.Env, timeout time.Duration, db orm.Database, cache redis.Cache, gin *gin.Engine) {
+func Setup(env *bootstrap.Env, timeout time.Duration, db orm.Database, cache redis.Cache, gin *gin.Engine,
+	producer event.Producer, saramaClient sarama.Client) {
+
 	publicRouter := gin.Group("/api")
 	// All Public APIs
 	NewSignupRouter(env, timeout, db, publicRouter)
@@ -26,5 +30,5 @@ func Setup(env *bootstrap.Env, timeout time.Duration, db orm.Database, cache red
 	// Task
 	NewTaskRouter(env, timeout, db, protectedRouter)
 	// Post
-	NewPostRouter(env, timeout, db, cache, protectedRouter)
+	NewPostRouter(env, timeout, db, cache, protectedRouter, producer, saramaClient)
 }

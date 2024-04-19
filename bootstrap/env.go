@@ -25,6 +25,7 @@ type Env struct {
 	RateLimitWindow        int    `mapstructure:"RATE_LIMIT_WINDOW"`
 	SnowflakeStartTime     string `mapstructure:"SNOWFLAKE_START_TIME"`
 	SnowflakeMachineID     int64  `mapstructure:"SNOWFLAKE_MACHINE_ID"`
+	KafkaAddr              string `mapstructure:"KAFKA_ADDR"`
 }
 
 func NewEnv() *Env {

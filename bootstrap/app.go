@@ -3,6 +3,8 @@ package bootstrap
 import (
 	"github.com/LXJ0000/go-backend/internal/logutil"
 	"github.com/LXJ0000/go-backend/internal/snowflakeutil"
+	"github.com/IBM/sarama"
+	"github.com/LXJ0000/go-backend/event"
 	"github.com/LXJ0000/go-backend/orm"
 	"github.com/LXJ0000/go-backend/redis"
 )
@@ -12,6 +14,10 @@ type Application struct {
 	//Mongo mongo.Client
 	Orm   orm.Database
 	Cache redis.Cache
+
+	Producer event.Producer
+
+	SaramaClient sarama.Client
 }
 
 func App() Application {
@@ -23,6 +29,9 @@ func App() Application {
 
 	snowflakeutil.Init(app.Env.SnowflakeStartTime, app.Env.SnowflakeMachineID)
 	logutil.Init(app.Env.AppEnv)
+
+	app.Producer = NewProducer(app.Env)
+	app.SaramaClient = NewSaramaClient(app.Env)
 
 	return *app
 }

@@ -4,7 +4,7 @@ go 1.22.1
 
 require (
 	github.com/IBM/sarama v1.43.1
-	github.com/LXJ0000/go-lib v0.0.0-20240418064551-99757ad40584
+	github.com/LXJ0000/go-lib v0.0.0-20240418070459-d3cf48eef6cc
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/gin-contrib/cors v1.7.1
 	github.com/gin-gonic/gin v1.9.1
@@ -23,8 +23,6 @@ require (
 	github.com/bytedance/sonic v1.11.5 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
-	github.com/chenzhuoyu/iasm v0.9.1 // indirect
 	github.com/cloudwego/base64x v0.1.3 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
