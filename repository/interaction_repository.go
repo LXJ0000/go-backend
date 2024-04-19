@@ -43,7 +43,7 @@ func (repo *interactionRepository) BatchIncrReadCount(c context.Context, biz []s
 			if err := repo.dao.Upsert(c, &domain.Interaction{}, update, create); err != nil {
 				slog.Error("IncrReadCount Fail", "Error", err.Error(), "biz", biz[i], "biz_id", id[i])
 			}
-			go func() {
+			go func() { // TODO new lua script or pipeline
 				if err := repo.cacheIncrCnt(context.Background(), biz[i], id[i], "read_cnt"); err != nil {
 					slog.Warn("Redis Op Fail With CacheIncrReadCnt", "Error", err.Error(), "biz", biz[i], "bizID", id[i])
 				}

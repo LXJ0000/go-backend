@@ -68,7 +68,7 @@ func (c Handler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		eg := errgroup.Group{}
 		done := false
-		var last *sarama.ConsumerMessage
+		sendMsg := make([]*sarama.ConsumerMessage, 0, batchSize)
 		for i := 0; i < batchSize && !done; i++ {
 			select {
 			case <-ctx.Done():
@@ -78,12 +78,12 @@ func (c Handler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.
 					cancel()
 					return nil // 消费者被关闭
 				}
-				last = msg
 				eg.Go(func() error {
 					slog.Info("got", "msg", string(msg.Value))
 					time.Sleep(time.Second)
 					return nil
 				})
+				sendMsg = append(sendMsg, msg)
 			}
 		}
 		if err := eg.Wait(); err != nil {
@@ -91,8 +91,8 @@ func (c Handler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.
 			slog.Warn(err.Error())
 			continue
 		}
-		if last != nil {
-			session.MarkMessage(last, "")
+		for _, msg := range sendMsg {
+			session.MarkMessage(msg, "")
 		}
 		cancel()
 	}
