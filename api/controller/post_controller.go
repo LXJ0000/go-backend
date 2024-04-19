@@ -113,11 +113,11 @@ func (col *PostController) Info(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
 		return
 	}
-	go func() {
-		if err := col.InteractionUseCase.IncrReadCount(c, domain.BizPost, post.PostID); err != nil {
-			slog.Warn("Add post read count fail", "post_id", post.PostID)
-		}
-	}() // 添加文件阅读数
+	//go func() {
+	//	if err := col.InteractionUseCase.IncrReadCount(c, domain.BizPost, post.PostID); err != nil {
+	//		slog.Warn("Add post read count fail", "post_id", post.PostID)
+	//	}
+	//}() // 添加文件阅读数
 	c.JSON(http.StatusOK, domain.PostV0{
 		Post:       post,
 		ReadCnt:    interaction.ReadCnt,

@@ -1,7 +1,8 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
+	"github.com/LXJ0000/go-backend/event"
 	"log/slog"
 
 	"github.com/IBM/sarama"
@@ -26,18 +27,29 @@ func main() {
 	defer client.Close()
 
 	// 构造一个消息
-	msg := &sarama.ProducerMessage{}
-	msg.Topic = "web_log"
-	msg.Value = sarama.StringEncoder("this is a test log")
-	for range 1 {
-		_, _, err = client.SendMessage(msg)
+	//msg := &sarama.ProducerMessage{}
+	//msg.Topic = "post_read"
+	//msg.Value = sarama.StringEncoder("this is a test log")
+	e := event.ReadEvent{
+		UserID: 0,
+		PostID: 169724846903660544,
+	}
+	data, _ := json.Marshal(e)
+	msg := sarama.ProducerMessage{
+		Topic: "post_read",
+		Value: sarama.ByteEncoder(data),
+	}
+	slog.Info("消息组装完毕... 准备发送噜~")
+	for range 100 {
+		slog.Info("", e)
+		_, _, err = client.SendMessage(&msg)
 	}
 
 	// 发送消息
-	pid, offset, err := client.SendMessage(msg)
-	if err != nil {
-		fmt.Println("send msg failed, err:", err)
-		return
-	}
-	fmt.Printf("pid:%v offset:%v\n", pid, offset)
+	//pid, offset, err := client.SendMessage(msg)
+	//if err != nil {
+	//	fmt.Println("send msg failed, err:", err)
+	//	return
+	//}
+	//fmt.Printf("pid:%v offset:%v\n", pid, offset)
 }

@@ -37,6 +37,7 @@ type InteractionUseCase interface {
 
 type InteractionRepository interface {
 	IncrReadCount(c context.Context, biz string, id int64) error
+	BatchIncrReadCount(c context.Context, biz []string, id []int64) error
 	Like(c context.Context, biz string, bizID, userID int64) error
 	CancelLike(c context.Context, biz string, bizID, userID int64) error
 	Info(c context.Context, biz string, bizID, userID int64) (Interaction, UserInteractionInfo, error)

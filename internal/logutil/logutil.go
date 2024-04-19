@@ -17,7 +17,7 @@ func Init(appEnv string) {
 	var handler slog.Handler = slog.NewTextHandler(os.Stdout, opts)
 
 	if appEnv == "production" {
-		opts.Level = slog.LevelWarn
+		opts.Level = slog.LevelDebug
 		if err := os.MkdirAll(LogDir, 0744); err != nil {
 			log.Fatal(err)
 		}

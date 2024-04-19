@@ -11,6 +11,7 @@ import (
 	"github.com/LXJ0000/go-backend/usecase"
 	"github.com/gin-gonic/gin"
 	"log"
+	"log/slog"
 	"time"
 )
 
@@ -23,8 +24,9 @@ func NewPostRouter(env *bootstrap.Env, timeout time.Duration, orm orm.Database, 
 		PostUsecase:        usecase.NewPostUsecase(repoPost, timeout, producer),
 		InteractionUseCase: usecase.NewInteractionUsecase(repoInteraction, timeout),
 	}
-	consumer := event.NewSyncReadEventConsumer(saramaClient, repoInteraction)
+	consumer := event.NewBatchSyncReadEventConsumer(saramaClient, repoInteraction)
 	if err := consumer.Start(); err != nil {
+		slog.Error("OMG！消费者启动失败")
 		log.Fatal(err)
 	}
 	group.POST("/post", col.CreateOrPublish)

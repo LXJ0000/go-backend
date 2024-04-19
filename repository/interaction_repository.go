@@ -27,6 +27,34 @@ func NewInteractionRepository(dao orm.Database, cache redis.Cache) domain.Intera
 	}
 }
 
+// BatchIncrReadCount 批量增加read_cnt 需保证 len(biz) == len(id)
+func (repo *interactionRepository) BatchIncrReadCount(c context.Context, biz []string, id []int64) error {
+	fn := func(tx *gorm.DB) error {
+		update := map[string]interface{}{
+			"read_cnt": gorm.Expr("`read_cnt` + 1"),
+		}
+
+		for i := 0; i < len(biz); i++ {
+			create := &domain.Interaction{
+				BizID:   id[i],
+				Biz:     biz[i],
+				ReadCnt: 1,
+			}
+			if err := repo.dao.Upsert(c, &domain.Interaction{}, update, create); err != nil {
+				slog.Error("IncrReadCount Fail", "Error", err.Error(), "biz", biz[i], "biz_id", id[i])
+			}
+			go func() {
+				if err := repo.cacheIncrCnt(context.Background(), biz[i], id[i], "read_cnt"); err != nil {
+					slog.Warn("Redis Op Fail With CacheIncrReadCnt", "Error", err.Error(), "biz", biz[i], "bizID", id[i])
+				}
+			}()
+		}
+		return nil
+	}
+	_ = repo.dao.Transaction(c, fn)
+	return nil
+}
+
 func (repo *interactionRepository) IncrReadCount(c context.Context, biz string, id int64) error {
 	update := map[string]interface{}{
 		"read_cnt": gorm.Expr("`read_cnt` + 1"),
@@ -41,7 +69,7 @@ func (repo *interactionRepository) IncrReadCount(c context.Context, biz string, 
 	}
 	go func() {
 		if err := repo.cacheIncrCnt(context.Background(), biz, id, "read_cnt"); err != nil {
-			slog.Warn("Redis操作失败 CacheIncrReadCnt", "biz", biz, "bizID", id, "error", err.Error())
+			slog.Warn("Redis Op Fail With CacheIncrReadCnt", "Error", err.Error(), "biz", biz, "bizID", id)
 		}
 	}()
 	// 数据库操作成功即认为业务处理成功
@@ -79,7 +107,7 @@ func (repo *interactionRepository) Like(c context.Context, biz string, bizID, us
 	}
 	go func() {
 		if err := repo.cacheIncrCnt(context.Background(), biz, bizID, "like_cnt"); err != nil {
-			slog.Warn("Redis操作失败 CacheIncrLikeCnt", "biz", biz, "bizID", bizID, "error", err.Error())
+			slog.Warn("Redis Op Fail With CacheIncrLikeCnt", "Error", err.Error(), "biz", biz, "bizID", bizID)
 		}
 	}()
 	return nil
@@ -123,7 +151,7 @@ func (repo *interactionRepository) CancelLike(c context.Context, biz string, biz
 	}
 	go func() {
 		if err := repo.cacheDecrCnt(context.Background(), biz, bizID, "like_cnt"); err != nil {
-			slog.Warn("Redis操作失败 CacheDecrLikeCnt", "biz", biz, "bizID", bizID, "error", err.Error())
+			slog.Warn("Redis Op Fail With CacheDecrLikeCnt", "Error", err.Error(), "biz", biz, "bizID", bizID)
 		}
 	}()
 	return nil
@@ -171,7 +199,7 @@ func (repo *interactionRepository) Info(c context.Context, biz string, bizID, us
 				"collect_cnt", interaction.CollectCnt,
 				"like_cnt", interaction.LikeCnt,
 			); err != nil {
-				slog.Warn("Redis 操作失败, HSet", "biz", biz, "bizID", bizID, "Key", key(biz, bizID), "error", err.Error())
+				slog.Warn("Redis Op Fail With HSet", "Error", err.Error(), "biz", biz, "bizID", bizID, "Key", key(biz, bizID))
 			}
 		}()
 		return nil
@@ -218,7 +246,7 @@ func (repo *interactionRepository) Collect(c context.Context, biz string, bizID,
 	}
 	go func() {
 		if err := repo.cacheIncrCnt(context.Background(), biz, bizID, "collect_cnt"); err != nil {
-			slog.Warn("Redis操作失败 CacheIncrCollectCnt", "biz", biz, "bizID", bizID, "error", err.Error())
+			slog.Warn("Redis Op Fail With CacheIncrCollectCnt", "Error", err.Error(), "biz", biz, "bizID", bizID)
 		}
 	}()
 	return nil
@@ -263,7 +291,7 @@ func (repo *interactionRepository) CancelCollect(c context.Context, biz string, 
 	}
 	go func() {
 		if err := repo.cacheDecrCnt(context.Background(), biz, bizID, "collect_cnt"); err != nil {
-			slog.Warn("Redis操作失败 CacheDecrCollectCnt", "biz", biz, "bizID", bizID, "error", err.Error())
+			slog.Warn("Redis Op Fail With CacheDecrCollectCnt", "Error", err.Error(), "biz", biz, "bizID", bizID)
 		}
 	}()
 	return nil
