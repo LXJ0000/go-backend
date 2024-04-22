@@ -13,9 +13,9 @@ type Interaction struct {
 	gorm.Model
 	// idx_biz select * from . where biz ==
 	// idx_bizID_biz 联合索引 (bizID区分度高)
-	BizID int64  `gorm:"uniqueIndex:idx_interaction_bizID_biz"`
-	Biz   string `gorm:"uniqueIndex:idx_interaction_bizID_biz"`
-	//Biz     string `gorm:"type:varchar(255);uniqueIndex:idx_bizID_biz"` // MYSQL 写法
+	BizID int64 `gorm:"uniqueIndex:idx_interaction_bizID_biz"`
+	//Biz   string `gorm:"uniqueIndex:idx_interaction_bizID_biz"`
+	Biz        string `gorm:"type:varchar(255);uniqueIndex:idx_bizID_biz"` // MYSQL 写法
 	ReadCnt    int
 	LikeCnt    int
 	CollectCnt int // 3个cnt 相比较 type+cnt 在读性能友好, 每次只需要读一行
@@ -49,7 +49,7 @@ type UserLike struct {
 	gorm.Model
 	UserID int64  `gorm:"uniqueIndex:idx_userLike_userID_bizID_biz"`
 	BizID  int64  `gorm:"uniqueIndex:idx_userLike_userID_bizID_biz"`
-	Biz    string `gorm:"uniqueIndex:idx_userLike_userID_bizID_biz"`
+	Biz    string `gorm:"type:varchar(255);uniqueIndex:idx_userLike_userID_bizID_biz"`
 	Status bool   // true 点赞 false 取消点赞
 	// `gorm:"uniqueIndex:idx_userID_bizID_biz"`
 	//	具体索引顺序，需要根据业务需求规定，此外还需根据字段区分度
@@ -65,7 +65,7 @@ type UserCollect struct {
 	gorm.Model
 	UserID       int64  `gorm:"uniqueIndex:idx_userCollect_userID_bizID_biz"`
 	BizID        int64  `gorm:"uniqueIndex:idx_userCollect_userID_bizID_biz"`
-	Biz          string `gorm:"uniqueIndex:idx_userCollect_userID_bizID_biz"`
+	Biz          string `gorm:"type:varchar(255);uniqueIndex:idx_userCollect_userID_bizID_biz"`
 	CollectionID int64  `gorm:"index"`
 	Status       bool
 }

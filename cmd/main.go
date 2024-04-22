@@ -26,6 +26,7 @@ func main() {
 	server := gin.Default()
 	server.Use(middleware.CORSMiddleware())
 	server.Use(middleware.RateLimitMiddleware())
+	server.Use(middleware.PrometheusMiddleware())
 	route.Setup(env, timeout, db, cache, server, producer, saramaClient)
 
 	_ = server.Run(env.ServerAddress)

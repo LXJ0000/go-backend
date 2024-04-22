@@ -26,6 +26,8 @@ type Env struct {
 	SnowflakeStartTime     string `mapstructure:"SNOWFLAKE_START_TIME"`
 	SnowflakeMachineID     int64  `mapstructure:"SNOWFLAKE_MACHINE_ID"`
 	KafkaAddr              string `mapstructure:"KAFKA_ADDR"`
+	PrometheusAddress      string `mapstructure:"PROMETHEUS_ADDRESS"`
+	MySQLAddress           string `mapstructure:"MYSQL_ADDRESS"`
 }
 
 func NewEnv() *Env {
