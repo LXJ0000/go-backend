@@ -7,19 +7,19 @@ import (
 	"github.com/LXJ0000/go-backend/domain"
 )
 
-type profileUsecase struct {
+type userUsecase struct {
 	repo           domain.UserRepository
 	contextTimeout time.Duration
 }
 
-func NewProfileUsecase(userRepository domain.UserRepository, timeout time.Duration) domain.ProfileUsecase {
-	return &profileUsecase{
+func NewProfileUsecase(userRepository domain.UserRepository, timeout time.Duration) domain.UserUsecase {
+	return &userUsecase{
 		repo:           userRepository,
 		contextTimeout: timeout,
 	}
 }
 
-func (uc *profileUsecase) GetProfileByID(c context.Context, userID int64) (*domain.Profile, error) {
+func (uc *userUsecase) GetProfileByID(c context.Context, userID int64) (*domain.Profile, error) {
 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
 

@@ -6,13 +6,13 @@ import (
 	"net/http"
 )
 
-type ProfileController struct {
-	ProfileUsecase domain.ProfileUsecase
+type UserController struct {
+	UserUsecase domain.UserUsecase
 }
 
-func (pc *ProfileController) Fetch(c *gin.Context) {
+func (pc *UserController) Fetch(c *gin.Context) {
 	userID := c.MustGet("x-user-id")
-	profile, err := pc.ProfileUsecase.GetProfileByID(c, userID.(int64))
+	profile, err := pc.UserUsecase.GetProfileByID(c, userID.(int64))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
 		return

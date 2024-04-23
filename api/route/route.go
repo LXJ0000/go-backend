@@ -26,7 +26,7 @@ func Setup(env *bootstrap.Env, timeout time.Duration, db orm.Database, cache red
 	protectedRouter.Use(middleware.JwtAuthMiddleware(env.AccessTokenSecret))
 	// All Private APIs
 	// User
-	NewProfileRouter(env, timeout, db, protectedRouter)
+	NewUserRouter(env, timeout, db, protectedRouter)
 	// Task
 	NewTaskRouter(env, timeout, db, protectedRouter)
 	// Post

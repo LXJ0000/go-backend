@@ -4,7 +4,7 @@ go 1.22.1
 
 require (
 	github.com/IBM/sarama v1.43.1
-	github.com/LXJ0000/go-lib v0.0.0-20240418070459-d3cf48eef6cc
+	github.com/LXJ0000/go-lib v0.0.0-20240423061734-da0439cc2321
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/gin-contrib/cors v1.7.1
 	github.com/gin-gonic/gin v1.9.1
@@ -41,6 +41,7 @@ require (
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
