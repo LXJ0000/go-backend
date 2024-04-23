@@ -35,6 +35,7 @@ func (repo *interactionRepository) BatchIncrReadCount(c context.Context, biz []s
 		}
 
 		for i := 0; i < len(biz); i++ {
+			i := i // 1.22 可不写
 			create := &domain.Interaction{
 				BizID:   id[i],
 				Biz:     biz[i],

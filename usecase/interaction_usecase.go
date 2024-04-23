@@ -1,9 +1,10 @@
 package usecase
 
 import (
+	"time"
+
 	"github.com/LXJ0000/go-backend/domain"
 	"golang.org/x/net/context"
-	"time"
 )
 
 type interactionUsecase struct {
@@ -49,4 +50,8 @@ func (uc *interactionUsecase) CancelCollect(c context.Context, biz string, bizID
 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
 	return uc.repo.CancelCollect(ctx, biz, bizID, userID, collectionID)
+}
+
+func (uc *interactionUsecase) GetByIDs(c context.Context, biz string, bizIDs []int64) (map[int64]domain.Interaction, error) {
+	return nil, nil
 }

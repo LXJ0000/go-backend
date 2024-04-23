@@ -29,7 +29,7 @@ func (repo *postRepository) GetByID(c context.Context, id int64) (domain.Post, e
 	return *post.(*domain.Post), err
 }
 
-func (repo *postRepository) FindMany(c context.Context, filter *domain.Post, page, size int) ([]domain.Post, error) {
+func (repo *postRepository) FindMany(c context.Context, filter interface{}, page, size int) ([]domain.Post, error) {
 	var items []domain.Post
 	err := repo.dao.FindMany(c, &domain.Post{}, filter, page, size, &items)
 	if err != nil {

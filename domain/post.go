@@ -30,15 +30,16 @@ func (Post) TableName() string {
 	return `post`
 }
 
+//go:generate mockgen -source=./post.go -destination=./mock/post.go -package=domain_mock
 type PostRepository interface {
 	Create(c context.Context, post *Post) error
 	GetByID(c context.Context, id int64) (Post, error)
-	FindMany(c context.Context, filter *Post, page, size int) ([]Post, error)
+	FindMany(c context.Context, filter interface{}, page, size int) ([]Post, error) // Modify
 }
 
 type PostUsecase interface {
 	Create(c context.Context, post *Post) error
-	List(c context.Context, filter *Post, page, size int) ([]Post, error)
+	List(c context.Context, filter interface{}, page, size int) ([]Post, error)
 	Info(c context.Context, postID int64) (Post, error)
 }
 
