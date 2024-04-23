@@ -20,6 +20,7 @@ require (
 )
 
 require (
+	github.com/adeven/go-wrk v0.0.0-20200418124433-63e11dd31fef // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bytedance/sonic v1.11.5 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
