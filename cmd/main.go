@@ -21,7 +21,15 @@ func main() {
 	producer := app.Producer
 	saramaClient := app.SaramaClient
 
-	timeout := time.Duration(env.ContextTimeout) * time.Second // TODO
+	cron := app.Cron
+	cron.Start()
+	defer func() {
+		// 优雅退出
+		ctx := cron.Stop() // TODO 防止有的任务执行时间超时
+		<-ctx.Done()
+	}()
+
+	timeout := time.Duration(env.ContextTimeout) * time.Second // 接口超时时间
 
 	server := gin.Default()
 	server.Use(middleware.CORSMiddleware())
@@ -30,4 +38,5 @@ func main() {
 	route.Setup(env, timeout, db, cache, server, producer, saramaClient)
 
 	_ = server.Run(env.ServerAddress)
+
 }

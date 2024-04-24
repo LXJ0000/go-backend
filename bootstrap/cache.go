@@ -1,7 +1,7 @@
 package bootstrap
 
 import (
-	_redis "github.com/LXJ0000/go-backend/redis"
+	_redis "github.com/LXJ0000/go-backend/cache"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/net/context"
 	"log"

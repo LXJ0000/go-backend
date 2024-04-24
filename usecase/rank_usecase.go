@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"gorm.io/gorm"
 	"log/slog"
 	"math"
 	"time"
@@ -27,7 +28,8 @@ func NewPostRankUsecase(interactionUsecase domain.InteractionUseCase, postUsecas
 		getScore: func(likeCnt int, updateTime time.Time) float64 {
 			var g float64 = 1.5
 			cnt := float64(likeCnt)
-			return (cnt - 1) / math.Pow(float64(updateTime.UnixMilli())+2, g)
+			t := time.Since(updateTime).Seconds()
+			return (cnt - 1) / math.Pow(t+2, g)
 		},
 	}
 }
@@ -40,13 +42,18 @@ func (ru *PostRankUsecase) TopN(c context.Context) error {
 	slog.Info("topN", "posts", posts)
 	go func() {
 		// cache posts
+		if err := ru.postUsecase.ReplaceTopN(c, posts, time.Minute); err != nil {
+			slog.Error("Cache ReplaceTopN Failed", "Error", err.Error())
+		} // TODO 配置expiration
 	}()
 	return nil
 }
 
 func (ru *PostRankUsecase) topN(c context.Context) ([]domain.Post, error) {
+	now := time.Now()
 	filter := map[string]interface{}{
-		"status": domain.PostStatusPublish,
+		"status":    domain.PostStatusPublish,
+		"create_at": gorm.Expr("create < ?", now), // 防止新数据打乱
 	}
 	offset := 0
 	type pair struct {
@@ -86,7 +93,8 @@ func (ru *PostRankUsecase) topN(c context.Context) ([]domain.Post, error) {
 				minScore = heap.Front().score
 			}
 		}
-		if len(posts) < ru.batchSize {
+		// 不够一批 或者 时间跨度为7天，直接中断
+		if len(posts) < ru.batchSize || now.Sub(posts[len(posts)-1].UpdatedAt).Hours() > 7*24 {
 			break // 完啦
 		}
 		offset += ru.batchSize

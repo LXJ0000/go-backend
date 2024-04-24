@@ -47,17 +47,17 @@ kubectl get services
 ## 8. k8s 部署 MySQL
 ## 9. k8s 部署 Redis
 ```bash
-redis-cli -h localhost -p 16379
+cache-cli -h localhost -p 16379
 ```
 ## 10.
 ```bash
 kubectl delete deployment webook
 kubectl delete deployment webook-mysql
-kubectl delete deployment webook-redis
+kubectl delete deployment webook-cache
 
 kubectl delete service webook
 kubectl delete service webook-mysql
-kubectl delete service webook-redis
+kubectl delete service webook-cache
 
 kubectl delete pv mysql-pv
 kubectl delete pvc mysql-claim
@@ -72,8 +72,8 @@ kubectl get pvc
 
 kubectl apply -f k8s-webook-deployment.yaml
 kubectl apply -f k8s-webook-service.yaml
-kubectl apply -f k8s-redis-service.yaml
-kubectl apply -f k8s-redis-deployment.yaml
+kubectl apply -f k8s-cache-service.yaml
+kubectl apply -f k8s-cache-deployment.yaml
 kubectl apply -f k8s-mysql-service.yaml
 kubectl apply -f k8s-mysql-pv.yaml
 kubectl apply -f k8s-mysql-pvc.yaml

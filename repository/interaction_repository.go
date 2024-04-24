@@ -5,9 +5,9 @@ import (
 
 	"errors"
 	"fmt"
+	"github.com/LXJ0000/go-backend/cache"
 	"github.com/LXJ0000/go-backend/domain"
 	"github.com/LXJ0000/go-backend/orm"
-	"github.com/LXJ0000/go-backend/redis"
 	"golang.org/x/net/context"
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm"
@@ -17,10 +17,10 @@ import (
 
 type interactionRepository struct {
 	dao   orm.Database
-	cache redis.Cache
+	cache cache.Cache
 }
 
-func NewInteractionRepository(dao orm.Database, cache redis.Cache) domain.InteractionRepository {
+func NewInteractionRepository(dao orm.Database, cache cache.Cache) domain.InteractionRepository {
 	return &interactionRepository{
 		dao:   dao,
 		cache: cache,

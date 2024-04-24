@@ -2,23 +2,26 @@ package bootstrap
 
 import (
 	"github.com/IBM/sarama"
+	"github.com/LXJ0000/go-backend/cache"
 	"github.com/LXJ0000/go-backend/event"
 	"github.com/LXJ0000/go-backend/internal/logutil"
 	"github.com/LXJ0000/go-backend/internal/prometheusutil"
 	"github.com/LXJ0000/go-backend/internal/snowflakeutil"
 	"github.com/LXJ0000/go-backend/orm"
-	"github.com/LXJ0000/go-backend/redis"
+	"github.com/robfig/cron/v3"
 )
 
 type Application struct {
 	Env *Env
 	//Mongo mongo.Client
 	Orm   orm.Database
-	Cache redis.Cache
+	Cache cache.Cache
 
 	Producer event.Producer
 
 	SaramaClient sarama.Client
+
+	Cron *cron.Cron
 }
 
 func App() Application {
