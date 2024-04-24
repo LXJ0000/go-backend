@@ -46,15 +46,16 @@ func (ru *PostRankUsecase) TopN(c context.Context) error {
 
 func (ru *PostRankUsecase) topN(c context.Context) ([]domain.Post, error) {
 	filter := map[string]interface{}{
-	    "status": domain.PostStatusPublish,
-		
+		"status": domain.PostStatusPublish,
 	}
 	offset := 0
 	type pair struct {
 		post  domain.Post
 		score float64
 	}
-	heap := queue.NewPriorityQueue[pair]() // 可以使用非并发安全 // TODO
+	heap := queue.NewPriorityQueue[pair](func(first, second pair) bool {
+		return first.score < second.score
+	}) // 可以使用非并发安全 // TODO
 	var minScore float64
 	for {
 		posts, err := ru.postUsecase.List(c, filter, offset, ru.batchSize)
@@ -90,9 +91,10 @@ func (ru *PostRankUsecase) topN(c context.Context) ([]domain.Post, error) {
 		}
 		offset += ru.batchSize
 	}
-	res := make([]domain.Post, 0, heap.Size())
+	res := make([]domain.Post, heap.Size())
 	for i := heap.Size() - 1; heap.Size() > 0; i-- {
-		res[i] = heap.Pop().post
+		post := heap.Pop().post
+		res[i] = post
 	}
 	return res, nil
 }

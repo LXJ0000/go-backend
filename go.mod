@@ -4,7 +4,7 @@ go 1.22.1
 
 require (
 	github.com/IBM/sarama v1.43.1
-	github.com/LXJ0000/go-lib v0.0.0-20240423061734-da0439cc2321
+	github.com/LXJ0000/go-lib v0.0.0-20240424022249-4f999f874eda
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/gin-contrib/cors v1.7.1
 	github.com/gin-gonic/gin v1.9.1

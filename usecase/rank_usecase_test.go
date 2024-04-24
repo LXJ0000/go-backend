@@ -35,13 +35,13 @@ func TestRankTopN(t *testing.T) {
 					3: {BizID: 3, LikeCnt: 1},
 				}, nil)
 				post.EXPECT().List(gomock.Any(), gomock.Any(), 3, 3).Return([]domain.Post{}, nil)
-				interaction.EXPECT().GetByIDs(gomock.Any(), domain.BizPost, []int64{}).Return(map[int64]domain.Interaction{}, nil)
+				interaction.EXPECT().GetByIDs(gomock.Any(), domain.BizPost, nil).Return(map[int64]domain.Interaction{}, nil)
 				return interaction, post
 			},
 			gotPosts: []domain.Post{
-				{PostID: 3},
-				{PostID: 2},
 				{PostID: 1},
+				{PostID: 2},
+				{PostID: 3},
 			},
 		},
 	}
