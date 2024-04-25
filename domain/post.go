@@ -37,16 +37,16 @@ func (Post) TableName() string {
 type PostRepository interface {
 	Create(c context.Context, post *Post) error
 	GetByID(c context.Context, id int64) (Post, error)
-	FindMany(c context.Context, filter interface{}, page, size int) ([]Post, error) // Modify
-	ReplaceTopN(c context.Context, items []Post, expiration time.Duration) error
-	GetTopN(c context.Context) ([]Post, error)
+	FindMany(c context.Context, filter interface{}) ([]Post, error) // Modify
+	FindPage(c context.Context, filter interface{}, page, size int) ([]Post, error)
+	FindTopNPage(c context.Context, page, size int, begin time.Time) ([]Post, error)
 }
 
 type PostUsecase interface {
 	Create(c context.Context, post *Post) error
 	List(c context.Context, filter interface{}, page, size int) ([]Post, error)
 	Info(c context.Context, postID int64) (Post, error)
-	ReplaceTopN(c context.Context, items []Post, expiration time.Duration) error
+	//ReplaceTopN(c context.Context, items []Post, expiration time.Duration) error
 }
 
 type PostListRequest struct {

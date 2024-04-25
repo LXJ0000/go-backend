@@ -24,6 +24,7 @@ type Interaction struct {
 func (Interaction) TableName() string {
 	return `interaction`
 }
+
 //go:generate mockgen -source=./interaction.go -destination=./mock/interaction.go -package=domain_mock
 type InteractionUseCase interface {
 	IncrReadCount(c context.Context, biz string, id int64) error
@@ -33,7 +34,7 @@ type InteractionUseCase interface {
 	Collect(c context.Context, biz string, bizID, userID, collectionID int64) error
 	CancelCollect(c context.Context, biz string, bizID, userID, collectionID int64) error
 	//	TODO 展示用户收藏、点赞列表 select bizID from 。。。 where biz and userID
-	GetByIDs(c context.Context, biz string, bizIDs []int64) (map[int64]Interaction, error)
+	//GetByIDs(c context.Context, biz string, bizIDs []int64) (map[int64]Interaction, error)
 }
 
 type InteractionRepository interface {
@@ -44,6 +45,7 @@ type InteractionRepository interface {
 	Info(c context.Context, biz string, bizID, userID int64) (Interaction, UserInteractionInfo, error)
 	Collect(c context.Context, biz string, bizID, userID, collectionID int64) error
 	CancelCollect(c context.Context, biz string, bizID, userID, collectionID int64) error
+	GetByIDs(c context.Context, biz string, id []int64) (map[int64]Interaction, error)
 }
 
 type UserLike struct {

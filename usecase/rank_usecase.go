@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"gorm.io/gorm"
 	"log/slog"
 	"math"
 	"time"
@@ -12,25 +11,34 @@ import (
 )
 
 type PostRankUsecase struct {
-	interactionUsecase domain.InteractionUseCase
-	postUsecase        domain.PostUsecase
-	batchSize          int
-	n                  int
-	getScore           func(likeCnt int, updateTime time.Time) float64
+	interactionRepository domain.InteractionRepository
+	postRepository        domain.PostRepository
+	rankRepository        domain.RankRepository
+	batchSize             int
+	n                     int
+	getScore              func(likeCnt int, updateTime time.Time) float64
+	contextTimeout        time.Duration
 }
 
-func NewPostRankUsecase(interactionUsecase domain.InteractionUseCase, postUsecase domain.PostUsecase) *PostRankUsecase {
+func NewPostRankUsecase(
+	interactionRepository domain.InteractionRepository,
+	postRepository domain.PostRepository,
+	rankRepository domain.RankRepository,
+	contextTimeout time.Duration,
+) *PostRankUsecase {
 	return &PostRankUsecase{
-		interactionUsecase: interactionUsecase,
-		postUsecase:        postUsecase,
-		batchSize:          100,
-		n:                  100,
+		interactionRepository: interactionRepository,
+		postRepository:        postRepository,
+		rankRepository:        rankRepository,
+		batchSize:             100,
+		n:                     100,
 		getScore: func(likeCnt int, updateTime time.Time) float64 {
 			var g float64 = 1.5
 			cnt := float64(likeCnt)
 			t := time.Since(updateTime).Seconds()
 			return (cnt - 1) / math.Pow(t+2, g)
 		},
+		contextTimeout: contextTimeout,
 	}
 }
 
@@ -42,7 +50,7 @@ func (ru *PostRankUsecase) TopN(c context.Context) error {
 	slog.Info("topN", "posts", posts)
 	go func() {
 		// cache posts
-		if err := ru.postUsecase.ReplaceTopN(c, posts, time.Minute); err != nil {
+		if err := ru.rankRepository.ReplaceTopN(c, posts, time.Minute); err != nil {
 			slog.Error("Cache ReplaceTopN Failed", "Error", err.Error())
 		} // TODO 配置expiration
 	}()
@@ -51,10 +59,7 @@ func (ru *PostRankUsecase) TopN(c context.Context) error {
 
 func (ru *PostRankUsecase) topN(c context.Context) ([]domain.Post, error) {
 	now := time.Now()
-	filter := map[string]interface{}{
-		"status":    domain.PostStatusPublish,
-		"create_at": gorm.Expr("create < ?", now), // 防止新数据打乱
-	}
+
 	offset := 0
 	type pair struct {
 		post  domain.Post
@@ -65,7 +70,7 @@ func (ru *PostRankUsecase) topN(c context.Context) ([]domain.Post, error) {
 	}) // 可以使用非并发安全 // TODO
 	var minScore float64
 	for {
-		posts, err := ru.postUsecase.List(c, filter, offset, ru.batchSize)
+		posts, err := ru.postRepository.FindTopNPage(c, offset, ru.batchSize, now)
 		if err != nil {
 			return nil, err
 		}
@@ -73,7 +78,7 @@ func (ru *PostRankUsecase) topN(c context.Context) ([]domain.Post, error) {
 		for _, post := range posts {
 			postIDs = append(postIDs, post.PostID)
 		}
-		interactions, err := ru.interactionUsecase.GetByIDs(c, domain.BizPost, postIDs)
+		interactions, err := ru.interactionRepository.GetByIDs(c, domain.BizPost, postIDs)
 		if err != nil {
 			return nil, err
 		}
@@ -105,4 +110,10 @@ func (ru *PostRankUsecase) topN(c context.Context) ([]domain.Post, error) {
 		res[i] = post
 	}
 	return res, nil
+}
+
+func (ru *PostRankUsecase) GetTopN(c context.Context) ([]domain.Post, error) {
+	ctx, cancel := context.WithTimeout(c, ru.contextTimeout)
+	defer cancel()
+	return ru.rankRepository.GetTopN(ctx)
 }

@@ -14,8 +14,9 @@ import (
 type Application struct {
 	Env *Env
 	//Mongo mongo.Client
-	Orm   orm.Database
-	Cache cache.Cache
+	Orm        orm.Database
+	Cache      cache.Cache
+	LocalCache cache.LocalCache
 
 	Producer event.Producer
 
@@ -30,13 +31,15 @@ func App() Application {
 	//app.Mongo = NewMongoDatabase(app.Env)
 	app.Orm = NewOrmDatabase(app.Env)
 	app.Cache = NewRedisCache(app.Env)
-
+	app.LocalCache = NewLocalCache(app.Env)
 	logutil.Init(app.Env.AppEnv)
 	snowflakeutil.Init(app.Env.SnowflakeStartTime, app.Env.SnowflakeMachineID)
 	prometheusutil.Init(app.Env.PrometheusAddress)
 
 	app.Producer = NewProducer(app.Env)
 	app.SaramaClient = NewSaramaClient(app.Env)
+
+	app.Cron = NewCron(app.LocalCache, app.Cache, app.Orm)
 
 	return *app
 }

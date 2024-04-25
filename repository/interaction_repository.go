@@ -1,13 +1,12 @@
 package repository
 
 import (
-	"github.com/LXJ0000/go-backend/script"
-
 	"errors"
 	"fmt"
 	"github.com/LXJ0000/go-backend/cache"
 	"github.com/LXJ0000/go-backend/domain"
 	"github.com/LXJ0000/go-backend/orm"
+	"github.com/LXJ0000/go-backend/script"
 	"golang.org/x/net/context"
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm"
@@ -25,6 +24,25 @@ func NewInteractionRepository(dao orm.Database, cache cache.Cache) domain.Intera
 		dao:   dao,
 		cache: cache,
 	}
+}
+
+func (repo *interactionRepository) GetByIDs(c context.Context, biz string, id []int64) (map[int64]domain.Interaction, error) {
+	mp := map[int64]domain.Interaction{}
+	var interactions []domain.Interaction
+	//filter := map[string]interface{}{
+	//	"biz":    biz,
+	//	"biz_id": gorm.Expr("biz_id IN (?)", ids),
+	//}
+	if err := repo.dao.Raw(c).Model(&domain.Interaction{}).Where("biz = ? and biz_id in (?)", biz, id).Find(&interactions).Error; err != nil {
+		return nil, err
+	}
+	//if err := repo.dao.FindMany(c, &domain.Interaction{}, nil, &interactions); err != nil { // TODO
+	//	return nil, err
+	//}
+	for _, interaction := range interactions {
+		mp[interaction.BizID] = interaction
+	}
+	return mp, nil
 }
 
 // BatchIncrReadCount 批量增加read_cnt 需保证 len(biz) == len(id)

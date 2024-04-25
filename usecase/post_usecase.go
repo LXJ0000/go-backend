@@ -30,7 +30,7 @@ func (uc *postUsecase) Create(c context.Context, post *domain.Post) error {
 func (uc *postUsecase) List(c context.Context, filter interface{}, page, size int) ([]domain.Post, error) {
 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
-	return uc.repo.FindMany(ctx, filter, page, size)
+	return uc.repo.FindPage(ctx, filter, page, size)
 }
 
 func (uc *postUsecase) Info(c context.Context, postID int64) (domain.Post, error) {
@@ -51,8 +51,8 @@ func (uc *postUsecase) Info(c context.Context, postID int64) (domain.Post, error
 	return post, err
 }
 
-func (uc *postUsecase) ReplaceTopN(c context.Context, items []domain.Post, expiration time.Duration) error {
-	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
-	defer cancel()
-	return uc.repo.ReplaceTopN(ctx, items, expiration)
-}
+//func (uc *postUsecase) ReplaceTopN(c context.Context, items []domain.Post, expiration time.Duration) error {
+//	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
+//	defer cancel()
+//	return uc.repo.ReplaceTopN(ctx, items, expiration)
+//}
