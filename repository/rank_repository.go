@@ -21,7 +21,7 @@ func NewPostRankRepository(localCache cache.LocalCache, redisCache cache.Cache) 
 }
 func (repo *postRankRepository) ReplaceTopN(c context.Context, items []domain.Post, expiration time.Duration) error {
 	// ----------------------------------------------------------- local
-	_ = repo.localCache.Set(c, items) //必然不会出错
+	//_ = repo.localCache.Set(c, items) //必然不会出错
 	// ----------------------------------------------------------- redis
 	data, err := json.Marshal(items)
 	if err != nil {
@@ -31,10 +31,10 @@ func (repo *postRankRepository) ReplaceTopN(c context.Context, items []domain.Po
 }
 func (repo *postRankRepository) GetTopN(c context.Context) ([]domain.Post, error) {
 	// ----------------------------------------------------------- local
-	posts, err := repo.localCache.Get(c)
-	if err == nil {
-		return posts, nil
-	}
+	//posts, err := repo.localCache.Get(c)
+	//if err == nil {
+	//	return posts, nil
+	//}
 	// ----------------------------------------------------------- redis
 	data, err := repo.redisCache.Get(c, domain.PostTopNKey)
 	if err != nil {
@@ -44,7 +44,7 @@ func (repo *postRankRepository) GetTopN(c context.Context) ([]domain.Post, error
 	if err = json.Unmarshal([]byte(data), &items); err != nil {
 		return nil, err
 	}
-	_ = repo.localCache.Set(c, items) // restore local cache
+	//_ = repo.localCache.Set(c, items) // restore local cache
 	return items, nil
 }
 

@@ -40,7 +40,7 @@ func (uc *postUsecase) Info(c context.Context, postID int64) (domain.Post, error
 	if err == nil {
 		go func() {
 			// TODO context
-			if err := uc.producer.ProduceReadEvent(c, event.ReadEvent{
+			if err := uc.producer.ProduceReadEvent(context.Background(), event.ReadEvent{
 				PostID: post.PostID,
 				UserID: post.AuthorID,
 			}); err != nil {

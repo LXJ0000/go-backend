@@ -52,7 +52,7 @@ func NewCronRankJob(job *RankJob) *CronRankJob {
 			"name": job.Name(),
 		}})
 	prometheus.MustRegister(p)
-	return &CronRankJob{job: job}
+	return &CronRankJob{job: job, prometheus: p}
 }
 
 func (c *CronRankJob) Run() {
@@ -72,7 +72,7 @@ func (c *CronRankJob) Run() {
 func InitCronRankJob(rankJob *RankJob) *cron.Cron {
 	expr := cron.New(cron.WithSeconds())
 	cronRankJob := NewCronRankJob(rankJob)
-	if _, err := expr.AddJob("@every 10s", cronRankJob); err != nil {
+	if _, err := expr.AddJob("@every 5s", cronRankJob); err != nil {
 		panic(err)
 	}
 	return expr

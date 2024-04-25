@@ -50,7 +50,7 @@ func (ru *PostRankUsecase) TopN(c context.Context) error {
 	slog.Info("topN", "posts", posts)
 	go func() {
 		// cache posts
-		if err := ru.rankRepository.ReplaceTopN(c, posts, time.Minute); err != nil {
+		if err := ru.rankRepository.ReplaceTopN(context.Background(), posts, time.Minute); err != nil {
 			slog.Error("Cache ReplaceTopN Failed", "Error", err.Error())
 		} // TODO 配置expiration
 	}()
