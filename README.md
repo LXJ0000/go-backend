@@ -202,3 +202,38 @@ etcdctl --endpoints=127.0.0.1:23790 put /webook "$(<dev.yaml)"
 
 模块化和微服务化  实例才是最基本的单位，微服务化的管理力度更细  
 模块化无法独立部署
+
+## 27. grpc
+高性能（基于QUIC协议 利用HTTP2双向流特性，支持流控和压缩）、跨语言、开源的 RPC 框架
+
+使用 IDL（接口描述语言） 定义客户端和服务端之间的通信格式，是用来描述软件组件接口的一种计算机语言，跨平台开发的基础
+
+## 28. protobuf
+数据序列化协议，用于高效序列化和反序列化结构化数据，grpc使用其作为自己的 IDL 语言
+1. grpc先规定了IDL
+2. 而后 grpc 需要一门编程语言来作为 IDL 落地的形式，因而选择了protobuf
+
+高效、跨平台和语言无关性、强大的扩展性、丰富的API支持
+
+其使用二进制格式进行序列化和反序列化，与之对应的就是JSON这种文本格式  
+它定义了一种标准的消息格式，即消息类型，用于表示结构化数据  
+消息类型由字段组成，每个字段都有唯一的标签和类型
+
+**protoc 前几个字段 性能优化**
+
+```bash
+apt install protobuf-compiler
+go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative user.protoc
+```
+
+## 29. 分布式事务
+### 2PC
+两阶段提交协议
+1. 阶段一：事务协调者向所有参与者发送事务请求，询问是否可以执行事务
+2. 阶段二：事务协调者根据参与者对事务请求的响应情况决定事务是提交还是回滚
+
+缺点：
+```
