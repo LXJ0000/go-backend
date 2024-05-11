@@ -45,8 +45,8 @@ func (col *RefreshTokenController) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	domain.SuccessResp(map[string]interface{}{
+	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
 		"access_token":  accessToken,
 		"refresh_token": refreshToken,
-	})
+	}))
 }

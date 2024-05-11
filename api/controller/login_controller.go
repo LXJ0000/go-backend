@@ -20,30 +20,30 @@ func (col *LoginController) Login(c *gin.Context) {
 
 	err := c.ShouldBind(&request)
 	if err != nil {
-		domain.ErrorResp("Bad params", err)
+		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
 		return
 	}
 
 	user, err := col.LoginUsecase.GetUserByEmail(c, request.Email)
 	if err != nil {
-		domain.ErrorResp("User not found with the given email", err)
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("User not found with the given email", err))
 		return
 	}
 
 	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)) != nil {
-		domain.ErrorResp("Invalid credentials", err)
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Invalid credentials", err))
 		return
 	}
 
 	accessToken, err := col.LoginUsecase.CreateAccessToken(user, col.Env.AccessTokenSecret, col.Env.AccessTokenExpiryHour)
 	if err != nil {
-		domain.ErrorResp("Create access token fail", err)
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create access token fail", err))
 		return
 	}
 
 	refreshToken, err := col.LoginUsecase.CreateRefreshToken(user, col.Env.RefreshTokenSecret, col.Env.RefreshTokenExpiryHour)
 	if err != nil {
-		domain.ErrorResp("Create refresh token fail", err)
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create refresh token fail", err))
 		return
 	}
 

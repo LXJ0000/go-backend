@@ -156,20 +156,17 @@ func (col *PostController) Collect(c *gin.Context) {
 	collectionIDRaw := c.Request.FormValue("collection_id")
 	postID, err := strconv.ParseInt(postIDRaw, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest,
-			domain.ErrorResp("Bad params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
 		return
 	}
 	isLike, err := strconv.ParseBool(isLikeRaw)
 	if err != nil {
-		c.JSON(http.StatusBadRequest,
-			domain.ErrorResp("Bad params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
 		return
 	}
 	collectID, err := strconv.ParseInt(collectionIDRaw, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest,
-			domain.ErrorResp("Bad params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
 		return
 	}
 	userID := c.MustGet("x-user-id").(int64)
@@ -180,9 +177,8 @@ func (col *PostController) Collect(c *gin.Context) {
 		err = col.InteractionUseCase.CancelCollect(c, domain.BizPost, postID, userID, collectID)
 	}
 	if err != nil {
-		c.JSON(http.StatusBadRequest,
-			domain.ErrorResp(err.Error(), err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(err.Error(), err))
 		return
 	}
-	domain.SuccessResp(nil)
+	c.JSON(http.StatusOK, domain.SuccessResp(nil))
 }
