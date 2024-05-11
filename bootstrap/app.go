@@ -2,12 +2,12 @@ package bootstrap
 
 import (
 	"github.com/IBM/sarama"
-	"github.com/LXJ0000/go-backend/cache"
-	"github.com/LXJ0000/go-backend/event"
-	"github.com/LXJ0000/go-backend/internal/logutil"
-	"github.com/LXJ0000/go-backend/internal/prometheusutil"
-	"github.com/LXJ0000/go-backend/internal/snowflakeutil"
-	"github.com/LXJ0000/go-backend/orm"
+	"github.com/LXJ0000/go-backend/internal/event"
+	cache "github.com/LXJ0000/go-backend/pkg/cache"
+	"github.com/LXJ0000/go-backend/pkg/orm"
+	"github.com/LXJ0000/go-backend/utils/logutil"
+	"github.com/LXJ0000/go-backend/utils/prometheusutil"
+	"github.com/LXJ0000/go-backend/utils/snowflakeutil"
 	"github.com/robfig/cron/v3"
 )
 
@@ -15,7 +15,7 @@ type Application struct {
 	Env *Env
 	//Mongo mongo.Client
 	Orm        orm.Database
-	Cache      cache.Cache
+	Cache      cache.RedisCache
 	LocalCache cache.LocalCache
 
 	Producer event.Producer

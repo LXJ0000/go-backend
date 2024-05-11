@@ -1,11 +1,11 @@
 package controller
 
 import (
-	snowflake "github.com/LXJ0000/go-backend/internal/snowflakeutil"
+	"github.com/LXJ0000/go-backend/internal/domain"
+	snowflake "github.com/LXJ0000/go-backend/utils/snowflakeutil"
 	"net/http"
 
 	"github.com/LXJ0000/go-backend/bootstrap"
-	"github.com/LXJ0000/go-backend/domain"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -20,13 +20,13 @@ func (sc *SignupController) Signup(c *gin.Context) {
 
 	err := c.ShouldBind(&request)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResponse{Message: err.Error()})
+		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
 		return
 	}
 
 	_, err = sc.SignupUsecase.GetUserByEmail(c, request.Email)
 	if err == nil {
-		c.JSON(http.StatusConflict, domain.ErrorResponse{Message: "User already exists with the given email"})
+		c.JSON(http.StatusConflict, domain.ErrorResp("User already exists with the given email", err))
 		return
 	}
 
@@ -35,7 +35,7 @@ func (sc *SignupController) Signup(c *gin.Context) {
 		bcrypt.DefaultCost,
 	)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Encrypted password fail", err))
 		return
 	}
 
@@ -48,28 +48,26 @@ func (sc *SignupController) Signup(c *gin.Context) {
 		Password: request.Password,
 	}
 
-	err = sc.SignupUsecase.Create(c, &user)
+	err = sc.SignupUsecase.Create(c, user)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create user fail with db error", err))
 		return
 	}
 
-	accessToken, err := sc.SignupUsecase.CreateAccessToken(&user, sc.Env.AccessTokenSecret, sc.Env.AccessTokenExpiryHour)
+	accessToken, err := sc.SignupUsecase.CreateAccessToken(user, sc.Env.AccessTokenSecret, sc.Env.AccessTokenExpiryHour)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create access token fail", err))
 		return
 	}
 
-	refreshToken, err := sc.SignupUsecase.CreateRefreshToken(&user, sc.Env.RefreshTokenSecret, sc.Env.RefreshTokenExpiryHour)
+	refreshToken, err := sc.SignupUsecase.CreateRefreshToken(user, sc.Env.RefreshTokenSecret, sc.Env.RefreshTokenExpiryHour)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create refresh token fail", err))
 		return
 	}
 
-	signupResponse := domain.SignupResponse{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-	}
-
-	c.JSON(http.StatusOK, signupResponse)
+	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
+	}))
 }

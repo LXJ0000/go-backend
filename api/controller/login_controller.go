@@ -1,12 +1,12 @@
 package controller
 
 import (
+	"github.com/LXJ0000/go-backend/internal/domain"
 	"net/http"
 
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/LXJ0000/go-backend/bootstrap"
-	"github.com/LXJ0000/go-backend/domain"
 	"github.com/gin-gonic/gin"
 )
 
@@ -20,37 +20,37 @@ func (col *LoginController) Login(c *gin.Context) {
 
 	err := c.ShouldBind(&request)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResponse{Message: err.Error()})
+		domain.ErrorResp("Bad params", err)
 		return
 	}
 
 	user, err := col.LoginUsecase.GetUserByEmail(c, request.Email)
 	if err != nil {
-		c.JSON(http.StatusNotFound, domain.ErrorResponse{Message: "User not found with the given email"})
+		domain.ErrorResp("User not found with the given email", err)
 		return
 	}
 
 	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)) != nil {
-		c.JSON(http.StatusUnauthorized, domain.ErrorResponse{Message: "Invalid credentials"})
+		domain.ErrorResp("Invalid credentials", err)
 		return
 	}
 
-	accessToken, err := col.LoginUsecase.CreateAccessToken(&user, col.Env.AccessTokenSecret, col.Env.AccessTokenExpiryHour)
+	accessToken, err := col.LoginUsecase.CreateAccessToken(user, col.Env.AccessTokenSecret, col.Env.AccessTokenExpiryHour)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
+		domain.ErrorResp("Create access token fail", err)
 		return
 	}
 
-	refreshToken, err := col.LoginUsecase.CreateRefreshToken(&user, col.Env.RefreshTokenSecret, col.Env.RefreshTokenExpiryHour)
+	refreshToken, err := col.LoginUsecase.CreateRefreshToken(user, col.Env.RefreshTokenSecret, col.Env.RefreshTokenExpiryHour)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
+		domain.ErrorResp("Create refresh token fail", err)
 		return
 	}
 
-	loginResponse := domain.LoginResponse{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-	}
+	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
+		"user_detail":   user,
+	}))
 
-	c.JSON(http.StatusOK, loginResponse)
 }

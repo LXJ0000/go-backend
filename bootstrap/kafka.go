@@ -2,7 +2,7 @@ package bootstrap
 
 import (
 	"github.com/IBM/sarama"
-	"github.com/LXJ0000/go-backend/event"
+	"github.com/LXJ0000/go-backend/internal/event"
 	"log"
 )
 

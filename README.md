@@ -153,7 +153,7 @@ A 依赖于 B，也就是 A 要调用 B 上面的方法，那么 A 在初始化�
 ```bash
 go install go.uber.org/mock/mockgen@latest
 
-mockgen -source=./internal/service/user.go -package=svcmock -destination=./internal/service/mocks/user_gen.go
+mockgen -source=./utils/service/user.go -package=svcmock -destination=./utils/service/mocks/user_gen.go
 ```
 
 ## 21. 技术选型

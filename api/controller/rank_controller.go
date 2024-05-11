@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"github.com/LXJ0000/go-backend/domain"
-	"github.com/LXJ0000/go-backend/usecase"
+	domain "github.com/LXJ0000/go-backend/internal/domain"
+	"github.com/LXJ0000/go-backend/internal/usecase"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -14,10 +14,11 @@ type RankController struct {
 func (col *RankController) GetTopN(c *gin.Context) {
 	posts, err := col.postRankUsecase.GetTopN(c)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: "GetTopN Fail"})
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("GetTopN Fail", err))
+		return
 	}
-	c.JSON(http.StatusOK, domain.PostListResponse{
-		Count: len(posts),
-		Data:  posts,
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"count": len(posts),
+		"posts": posts,
 	})
 }

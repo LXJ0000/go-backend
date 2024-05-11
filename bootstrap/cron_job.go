@@ -2,14 +2,15 @@ package bootstrap
 
 import (
 	"context"
-	"github.com/LXJ0000/go-backend/cache"
-	"github.com/LXJ0000/go-backend/domain"
-	"github.com/LXJ0000/go-backend/orm"
-	"github.com/LXJ0000/go-backend/repository"
-	"github.com/LXJ0000/go-backend/usecase"
+	"github.com/LXJ0000/go-backend/internal/domain"
+	repository "github.com/LXJ0000/go-backend/internal/repository"
+	"github.com/LXJ0000/go-backend/internal/usecase"
+	"github.com/LXJ0000/go-backend/pkg/cache"
+	"github.com/LXJ0000/go-backend/pkg/orm"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/robfig/cron/v3"
 	"log/slog"
+	"sync"
 	"time"
 )
 
@@ -55,7 +56,11 @@ func NewCronRankJob(job *RankJob) *CronRankJob {
 	return &CronRankJob{job: job, prometheus: p}
 }
 
+var rankJobMutex = sync.Mutex{}
+
 func (c *CronRankJob) Run() {
+	rankJobMutex.Lock() // 避免第一个任务还未计算完毕就开始第二个任务的计算
+	defer rankJobMutex.Unlock()
 	slog.Debug("定时任务 启动！", "job", c.job.Name())
 	begin := time.Now()
 	defer func() {
@@ -71,15 +76,18 @@ func (c *CronRankJob) Run() {
 
 func InitCronRankJob(rankJob *RankJob) *cron.Cron {
 	expr := cron.New(cron.WithSeconds())
+
 	cronRankJob := NewCronRankJob(rankJob)
-	if _, err := expr.AddJob("@every 5s", cronRankJob); err != nil {
+	go cronRankJob.Run()
+	if _, err := expr.AddJob("@every 5m", cronRankJob); err != nil {
 		panic(err)
 	}
+
 	return expr
 }
 
 // NewCron TODO localCache
-func NewCron(localCache cache.LocalCache, redisCache cache.Cache, dao orm.Database) *cron.Cron {
+func NewCron(localCache cache.LocalCache, redisCache cache.RedisCache, dao orm.Database) *cron.Cron {
 	timeout := time.Minute
 	interactionRepository := repository.NewInteractionRepository(dao, redisCache)
 	postRepository := repository.NewPostRepository(dao, redisCache)

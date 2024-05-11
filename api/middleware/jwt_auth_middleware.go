@@ -1,11 +1,10 @@
 package middleware
 
 import (
-	"net/http"
+	"github.com/LXJ0000/go-backend/internal/domain"
 	"strings"
 
-	"github.com/LXJ0000/go-backend/domain"
-	"github.com/LXJ0000/go-backend/internal/tokenutil"
+	"github.com/LXJ0000/go-backend/utils/tokenutil"
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,7 +18,7 @@ func JwtAuthMiddleware(secret string) gin.HandlerFunc {
 			if authorized {
 				userID, err := tokenutil.ExtractIDFromToken(authToken, secret)
 				if err != nil {
-					c.JSON(http.StatusUnauthorized, domain.ErrorResponse{Message: err.Error()})
+					domain.ErrorResp("Not authorized", err)
 					c.Abort()
 					return
 				}
@@ -27,11 +26,11 @@ func JwtAuthMiddleware(secret string) gin.HandlerFunc {
 				c.Next()
 				return
 			}
-			c.JSON(http.StatusUnauthorized, domain.ErrorResponse{Message: err.Error()})
+			domain.ErrorResp("Not authorized", err)
 			c.Abort()
 			return
 		}
-		c.JSON(http.StatusUnauthorized, domain.ErrorResponse{Message: "Not authorized"})
+		domain.ErrorResp("Not authorized", nil)
 		c.Abort()
 	}
 }
