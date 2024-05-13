@@ -30,7 +30,10 @@ func (col *TaskController) Create(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, domain.SuccessResp(nil))
+	c.JSON(http.StatusOK, domain.SuccessResp(
+		map[string]interface{}{
+			"task_detail": task,
+		}))
 }
 
 func (col *TaskController) Delete(c *gin.Context) {
