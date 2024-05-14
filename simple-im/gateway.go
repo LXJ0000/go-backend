@@ -46,15 +46,16 @@ func (g *GateWay) Start(addr string) error {
 }
 
 func (g *GateWay) wsHandler(w http.ResponseWriter, r *http.Request) {
-	upgrader := websocket.Upgrader{}
+	upGrade := websocket.Upgrader{}
 	uid := g.Uid(r)
-	conn, err := upgrader.Upgrade(w, r, nil)
+	conn, err := upGrade.Upgrade(w, r, nil)
 	if err != nil {
 		w.Write([]byte(fmt.Sprintf("init websocket fail with %v", err)))
 		return
 	}
 	c := &Conn{conn}
 	g.conn.Store(uid, c)
+	slog.Info("new user connected", "uid", uid)
 	go func() {
 		_, message, err := c.ReadMessage()
 		if err != nil {
@@ -67,13 +68,13 @@ func (g *GateWay) wsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		go func() {
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 			defer cancel()
 			if err := g.service.Receiver(ctx, uid, msg); err != nil {
 				slog.Error("Receiver fail", "err", err)
 				if err := c.Send(Message{
 					Seq:     msg.Seq,
-					Content: "FAILD",
+					Content: "FAILED",
 					Type:    "RESULT",
 				}); err != nil {
 					slog.Error("Send fail msg fail", "err", err)
@@ -84,6 +85,7 @@ func (g *GateWay) wsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (g *GateWay) subscribeMsg() error {
+	slog.Info("subscribeMsg")
 	group, err := sarama.NewConsumerGroupFromClient(g.instanceID, g.client)
 	if err != nil {
 		return err
@@ -97,6 +99,7 @@ func (g *GateWay) subscribeMsg() error {
 }
 
 func (g *GateWay) consume(msg *sarama.ConsumerMessage, event Event) error {
+	slog.Info("Consume msg", "msg", msg, "event", event)
 	conn, ok := g.conn.Load(event.Receiver)
 	if !ok {
 		slog.Warn("not user exists")
@@ -113,8 +116,8 @@ func (g *GateWay) Uid(req *http.Request) int64 {
 }
 
 type Message struct {
-	Seq     string
-	Type    string
-	Content string
-	Cid     int64
+	Seq     string `string:"seq"`
+	Type    string `string:"type"`
+	Content string `string:"content"`
+	Cid     int64  `string:"cid"`
 }

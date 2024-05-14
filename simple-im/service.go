@@ -4,10 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/IBM/sarama"
 	"log/slog"
 	"strconv"
-
-	"github.com/IBM/sarama"
 )
 
 type Service struct {
@@ -33,6 +32,7 @@ func (s *Service) Receiver(ctx context.Context, sender int64, msg Message) error
 			slog.Warn(fmt.Sprintf("Send message to %d fail", member), "err", err)
 			continue
 		}
+		slog.Info("Produce message to ", "member", member, "msg", msg.Content)
 	}
 	return nil
 }
