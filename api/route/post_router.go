@@ -31,8 +31,8 @@ func NewPostRouter(env *bootstrap.Env, timeout time.Duration, orm orm.Database, 
 	}
 	group.POST("/post", col.CreateOrPublish)
 	group.GET("/post", col.Info)
-	group.GET("/post/publish", col.ReaderList)
-	group.GET("/post/private", col.WriterList)
+	group.GET("/post/reader", col.ReaderList)
+	group.GET("/post/writer", col.WriterList)
 	group.POST("/post/like", col.Like)
 	group.POST("/post/collect", col.Collect)
 }

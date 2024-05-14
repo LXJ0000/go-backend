@@ -1,13 +1,14 @@
 package controller
 
 import (
+	"log/slog"
+	"net/http"
+	"strconv"
+
 	"github.com/LXJ0000/go-backend/internal/domain"
 	snowflake "github.com/LXJ0000/go-backend/utils/snowflakeutil"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/sync/errgroup"
-	"log/slog"
-	"net/http"
-	"strconv"
 )
 
 type PostController struct {
@@ -19,23 +20,23 @@ func (col *PostController) CreateOrPublish(c *gin.Context) {
 	userID := c.MustGet("x-user-id").(int64)
 	var post domain.Post
 	if err := c.ShouldBind(&post); err != nil {
-		domain.ErrorResp("Bad params", err)
+		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
 		return
 	}
 	post.AuthorID = userID
 	post.PostID = snowflake.GenID()
 	if err := col.PostUsecase.Create(c, post); err != nil {
-		domain.ErrorResp("Failed to create post", err)
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Failed to create post", err))
 		return
 	}
-	domain.SuccessResp(nil)
+	c.JSON(http.StatusOK, domain.SuccessResp(post))
 }
 
 func (col *PostController) ReaderList(c *gin.Context) {
 	//读者查看列表 只能查看已发布的文章
 	var req domain.PostListRequest
 	if err := c.ShouldBind(&req); err != nil {
-		domain.ErrorResp("Bad params", err)
+		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
 		return
 	}
 	//if req.Page == 0 || req.Size == 0 {
@@ -51,20 +52,20 @@ func (col *PostController) ReaderList(c *gin.Context) {
 	}
 	posts, count, err := col.PostUsecase.List(c, filter, req.Page, req.Size)
 	if err != nil {
-		domain.ErrorResp("Failed to list posts", err)
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Failed to list posts", err))
 		return
 	}
-	domain.SuccessResp(map[string]interface{}{
-		"count": count,
-		"data":  posts,
-	})
+	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
+		"count":     count,
+		"post_list": posts,
+	}))
 }
 
 func (col *PostController) WriterList(c *gin.Context) {
 	//创作者查看列表 可以查看所有自己的帖子
 	var req domain.PostListRequest
 	if err := c.ShouldBind(&req); err != nil {
-		domain.ErrorResp("Bad params", err)
+		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
 		return
 	}
 	//if req.Page == 0 || req.Size == 0 { // TODO 不处理 放在 orm 中处理
@@ -74,14 +75,14 @@ func (col *PostController) WriterList(c *gin.Context) {
 	userID := c.MustGet("x-user-id").(int64)
 	posts, count, err := col.PostUsecase.List(c, &domain.Post{AuthorID: userID}, req.Page, req.Size) // TODO
 	if err != nil {
-		domain.ErrorResp("Failed to list posts", err)
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Failed to list posts", err))
 		return
 	}
 
-	c.JSON(http.StatusOK, map[string]interface{}{
+	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
 		"count":     count,
 		"post_list": posts,
-	})
+	}))
 }
 
 func (col *PostController) Info(c *gin.Context) {
@@ -89,7 +90,7 @@ func (col *PostController) Info(c *gin.Context) {
 	postID, err := strconv.ParseInt(postIDRaw, 10, 64)
 	userID := c.MustGet("x-user-id").(int64)
 	if err != nil {
-		domain.ErrorResp("Bad params", err)
+		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
 		return
 	}
 	var post domain.Post
@@ -108,7 +109,7 @@ func (col *PostController) Info(c *gin.Context) {
 		return nil
 	})
 	if err = eg.Wait(); err != nil {
-		domain.ErrorResp(err.Error(), err)
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp(err.Error(), err))
 		return
 	}
 	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
@@ -124,14 +125,12 @@ func (col *PostController) Like(c *gin.Context) {
 	postIDRaw := c.Request.FormValue("post_id")
 	postID, err := strconv.ParseInt(postIDRaw, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest,
-			domain.ErrorResp("Bad params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
 		return
 	}
 	isLike, err := strconv.ParseBool(isLikeRaw)
 	if err != nil {
-		c.JSON(http.StatusBadRequest,
-			domain.ErrorResp("Bad params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
 		return
 	}
 	userID := c.MustGet("x-user-id").(int64)
@@ -142,12 +141,10 @@ func (col *PostController) Like(c *gin.Context) {
 		err = col.InteractionUseCase.CancelLike(c, domain.BizPost, postID, userID)
 	}
 	if err != nil {
-		c.JSON(http.StatusInternalServerError,
-			domain.ErrorResp(err.Error(), err))
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp(err.Error(), err))
 		return
 	}
-	c.JSON(http.StatusOK,
-		domain.SuccessResp(nil))
+	c.JSON(http.StatusOK, domain.SuccessResp(nil))
 }
 
 func (col *PostController) Collect(c *gin.Context) {

@@ -47,7 +47,7 @@ func NewOrmDatabase(env *Env) orm.Database {
 func initPrometheus(db *gorm.DB) {
 	if err := db.Use(prometheus.New(prometheus.Config{
 		DBName:          "go_backend",
-		RefreshInterval: 15,
+		RefreshInterval: 60,
 		StartServer:     false,
 		MetricsCollector: []prometheus.MetricsCollector{
 			&prometheus.MySQL{
