@@ -10,9 +10,9 @@
 package domain_mock
 
 import (
-	"github.com/LXJ0000/go-backend/internal/domain"
 	reflect "reflect"
 
+	domain "github.com/LXJ0000/go-backend/internal/domain"
 	gomock "go.uber.org/mock/gomock"
 	context "golang.org/x/net/context"
 )
@@ -82,21 +82,6 @@ func (mr *MockInteractionUseCaseMockRecorder) Collect(c, biz, bizID, userID, col
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Collect", reflect.TypeOf((*MockInteractionUseCase)(nil).Collect), c, biz, bizID, userID, collectionID)
 }
 
-// GetByIDs mocks base method.
-func (m *MockInteractionUseCase) GetByIDs(c context.Context, biz string, bizIDs []int64) (map[int64]domain.Interaction, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByIDs", c, biz, bizIDs)
-	ret0, _ := ret[0].(map[int64]domain.Interaction)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetByIDs indicates an expected call of GetByIDs.
-func (mr *MockInteractionUseCaseMockRecorder) GetByIDs(c, biz, bizIDs any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByIDs", reflect.TypeOf((*MockInteractionUseCase)(nil).GetByIDs), c, biz, bizIDs)
-}
-
 // IncrReadCount mocks base method.
 func (m *MockInteractionUseCase) IncrReadCount(c context.Context, biz string, id int64) error {
 	m.ctrl.T.Helper()
@@ -112,11 +97,11 @@ func (mr *MockInteractionUseCaseMockRecorder) IncrReadCount(c, biz, id any) *gom
 }
 
 // Info mocks base method.
-func (m *MockInteractionUseCase) Info(c context.Context, biz string, bizID, userID int64) (domain.Interaction, domain.UserInteractionInfo, error) {
+func (m *MockInteractionUseCase) Info(c context.Context, biz string, bizID, userID int64) (domain.Interaction, domain.UserInteractionStat, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Info", c, biz, bizID, userID)
 	ret0, _ := ret[0].(domain.Interaction)
-	ret1, _ := ret[1].(domain.UserInteractionInfo)
+	ret1, _ := ret[1].(domain.UserInteractionStat)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }
@@ -220,6 +205,21 @@ func (mr *MockInteractionRepositoryMockRecorder) Collect(c, biz, bizID, userID, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Collect", reflect.TypeOf((*MockInteractionRepository)(nil).Collect), c, biz, bizID, userID, collectionID)
 }
 
+// GetByIDs mocks base method.
+func (m *MockInteractionRepository) GetByIDs(c context.Context, biz string, id []int64) (map[int64]domain.Interaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByIDs", c, biz, id)
+	ret0, _ := ret[0].(map[int64]domain.Interaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByIDs indicates an expected call of GetByIDs.
+func (mr *MockInteractionRepositoryMockRecorder) GetByIDs(c, biz, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByIDs", reflect.TypeOf((*MockInteractionRepository)(nil).GetByIDs), c, biz, id)
+}
+
 // IncrReadCount mocks base method.
 func (m *MockInteractionRepository) IncrReadCount(c context.Context, biz string, id int64) error {
 	m.ctrl.T.Helper()
@@ -234,22 +234,6 @@ func (mr *MockInteractionRepositoryMockRecorder) IncrReadCount(c, biz, id any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IncrReadCount", reflect.TypeOf((*MockInteractionRepository)(nil).IncrReadCount), c, biz, id)
 }
 
-// Info mocks base method.
-func (m *MockInteractionRepository) Info(c context.Context, biz string, bizID, userID int64) (domain.Interaction, domain.UserInteractionInfo, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Info", c, biz, bizID, userID)
-	ret0, _ := ret[0].(domain.Interaction)
-	ret1, _ := ret[1].(domain.UserInteractionInfo)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// Info indicates an expected call of Info.
-func (mr *MockInteractionRepositoryMockRecorder) Info(c, biz, bizID, userID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Info", reflect.TypeOf((*MockInteractionRepository)(nil).Info), c, biz, bizID, userID)
-}
-
 // Like mocks base method.
 func (m *MockInteractionRepository) Like(c context.Context, biz string, bizID, userID int64) error {
 	m.ctrl.T.Helper()
@@ -262,4 +246,20 @@ func (m *MockInteractionRepository) Like(c context.Context, biz string, bizID, u
 func (mr *MockInteractionRepositoryMockRecorder) Like(c, biz, bizID, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Like", reflect.TypeOf((*MockInteractionRepository)(nil).Like), c, biz, bizID, userID)
+}
+
+// Stat mocks base method.
+func (m *MockInteractionRepository) Stat(c context.Context, biz string, bizID, userID int64) (domain.Interaction, domain.UserInteractionStat, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Stat", c, biz, bizID, userID)
+	ret0, _ := ret[0].(domain.Interaction)
+	ret1, _ := ret[1].(domain.UserInteractionStat)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// Stat indicates an expected call of Stat.
+func (mr *MockInteractionRepositoryMockRecorder) Stat(c, biz, bizID, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stat", reflect.TypeOf((*MockInteractionRepository)(nil).Stat), c, biz, bizID, userID)
 }

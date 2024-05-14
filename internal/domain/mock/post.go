@@ -11,9 +11,10 @@ package domain_mock
 
 import (
 	context "context"
-	"github.com/LXJ0000/go-backend/internal/domain"
 	reflect "reflect"
+	time "time"
 
+	domain "github.com/LXJ0000/go-backend/internal/domain"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -40,8 +41,23 @@ func (m *MockPostRepository) EXPECT() *MockPostRepositoryMockRecorder {
 	return m.recorder
 }
 
+// Count mocks base method.
+func (m *MockPostRepository) Count(c context.Context, filter any) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Count", c, filter)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Count indicates an expected call of Count.
+func (mr *MockPostRepositoryMockRecorder) Count(c, filter any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Count", reflect.TypeOf((*MockPostRepository)(nil).Count), c, filter)
+}
+
 // Create mocks base method.
-func (m *MockPostRepository) Create(c context.Context, post *domain.Post) error {
+func (m *MockPostRepository) Create(c context.Context, post domain.Post) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", c, post)
 	ret0, _ := ret[0].(error)
@@ -55,18 +71,33 @@ func (mr *MockPostRepositoryMockRecorder) Create(c, post any) *gomock.Call {
 }
 
 // FindMany mocks base method.
-func (m *MockPostRepository) FindMany(c context.Context, filter any, page, size int) ([]domain.Post, error) {
+func (m *MockPostRepository) FindMany(c context.Context, filter any) ([]domain.Post, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindMany", c, filter, page, size)
+	ret := m.ctrl.Call(m, "FindMany", c, filter)
 	ret0, _ := ret[0].([]domain.Post)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FindMany indicates an expected call of FindMany.
-func (mr *MockPostRepositoryMockRecorder) FindMany(c, filter, page, size any) *gomock.Call {
+func (mr *MockPostRepositoryMockRecorder) FindMany(c, filter any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindMany", reflect.TypeOf((*MockPostRepository)(nil).FindMany), c, filter, page, size)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindMany", reflect.TypeOf((*MockPostRepository)(nil).FindMany), c, filter)
+}
+
+// FindTopNPage mocks base method.
+func (m *MockPostRepository) FindTopNPage(c context.Context, page, size int, begin time.Time) ([]domain.Post, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindTopNPage", c, page, size, begin)
+	ret0, _ := ret[0].([]domain.Post)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindTopNPage indicates an expected call of FindTopNPage.
+func (mr *MockPostRepositoryMockRecorder) FindTopNPage(c, page, size, begin any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindTopNPage", reflect.TypeOf((*MockPostRepository)(nil).FindTopNPage), c, page, size, begin)
 }
 
 // GetByID mocks base method.
@@ -82,6 +113,21 @@ func (m *MockPostRepository) GetByID(c context.Context, id int64) (domain.Post, 
 func (mr *MockPostRepositoryMockRecorder) GetByID(c, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockPostRepository)(nil).GetByID), c, id)
+}
+
+// List mocks base method.
+func (m *MockPostRepository) List(c context.Context, filter any, page, size int) ([]domain.Post, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "List", c, filter, page, size)
+	ret0, _ := ret[0].([]domain.Post)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List.
+func (mr *MockPostRepositoryMockRecorder) List(c, filter, page, size any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockPostRepository)(nil).List), c, filter, page, size)
 }
 
 // MockPostUsecase is a mock of PostUsecase interface.
@@ -108,7 +154,7 @@ func (m *MockPostUsecase) EXPECT() *MockPostUsecaseMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockPostUsecase) Create(c context.Context, post *domain.Post) error {
+func (m *MockPostUsecase) Create(c context.Context, post domain.Post) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", c, post)
 	ret0, _ := ret[0].(error)
@@ -137,12 +183,13 @@ func (mr *MockPostUsecaseMockRecorder) Info(c, postID any) *gomock.Call {
 }
 
 // List mocks base method.
-func (m *MockPostUsecase) List(c context.Context, filter any, page, size int) ([]domain.Post, error) {
+func (m *MockPostUsecase) List(c context.Context, filter any, page, size int) ([]domain.Post, int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List", c, filter, page, size)
 	ret0, _ := ret[0].([]domain.Post)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // List indicates an expected call of List.
