@@ -1,28 +1,33 @@
 package route
 
 import (
+	"log"
+	"log/slog"
+	"time"
+
 	"github.com/IBM/sarama"
 	"github.com/LXJ0000/go-backend/api/controller"
 	"github.com/LXJ0000/go-backend/bootstrap"
 	"github.com/LXJ0000/go-backend/internal/event"
-	repository2 "github.com/LXJ0000/go-backend/internal/repository"
-	usecase2 "github.com/LXJ0000/go-backend/internal/usecase"
+	"github.com/LXJ0000/go-backend/internal/repository"
+	"github.com/LXJ0000/go-backend/internal/usecase"
 	"github.com/LXJ0000/go-backend/pkg/cache"
 	"github.com/LXJ0000/go-backend/pkg/orm"
 	"github.com/gin-gonic/gin"
-	"log"
-	"log/slog"
-	"time"
 )
 
-func NewPostRouter(env *bootstrap.Env, timeout time.Duration, orm orm.Database, cache cache.RedisCache, group *gin.RouterGroup,
+func NewPostRouter(env *bootstrap.Env, timeout time.Duration,
+	orm orm.Database, cache cache.RedisCache, localCache cache.LocalCache,
+	group *gin.RouterGroup,
 	producer event.Producer, saramaClient sarama.Client) {
 
-	repoPost := repository2.NewPostRepository(orm, cache)
-	repoInteraction := repository2.NewInteractionRepository(orm, cache)
+	repoPost := repository.NewPostRepository(orm, cache)
+	repoInteraction := repository.NewInteractionRepository(orm, cache)
+	repoPostRank := repository.NewPostRankRepository(localCache, cache) // TODO localcache
+	postRankUsecase := usecase.NewPostRankUsecase(repoInteraction, repoPost, repoPostRank, timeout)
 	col := &controller.PostController{
-		PostUsecase:        usecase2.NewPostUsecase(repoPost, timeout, producer),
-		InteractionUseCase: usecase2.NewInteractionUsecase(repoInteraction, timeout),
+		PostUsecase:        usecase.NewPostUsecase(repoPost, timeout, producer, postRankUsecase),
+		InteractionUseCase: usecase.NewInteractionUsecase(repoInteraction, timeout),
 	}
 	consumer := event.NewBatchSyncReadEventConsumer(saramaClient, repoInteraction)
 	if err := consumer.Start(); err != nil {
@@ -35,4 +40,5 @@ func NewPostRouter(env *bootstrap.Env, timeout time.Duration, orm orm.Database, 
 	group.GET("/post/writer", col.WriterList)
 	group.POST("/post/like", col.Like)
 	group.POST("/post/collect", col.Collect)
+	group.GET("/post/rank", col.Rank)
 }

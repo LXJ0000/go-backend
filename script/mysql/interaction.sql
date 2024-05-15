@@ -1,0 +1,1 @@
+INSERT INTO `interaction` (`id`, `created_at`, `updated_at`, `deleted_at`, `biz_id`, `biz`, `read_cnt`, `like_cnt`, `collect_cnt`) VALUES (1, '2024-05-15 23:22:42.485', '2024-05-15 23:22:42.485', NULL, 181425015638462464, 'post', 50, 1, 1);

@@ -41,6 +41,7 @@ type PostUsecase interface {
 	Create(c context.Context, post Post) error
 	List(c context.Context, filter interface{}, page, size int) ([]Post, int64, error)
 	Info(c context.Context, postID int64) (Post, error)
+	TopN(c context.Context) ([]Post, error)
 	//ReplaceTopN(c context.Context, items []Post, expiration time.Duration) error
 }
 

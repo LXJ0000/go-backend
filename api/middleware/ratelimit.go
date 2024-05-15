@@ -13,7 +13,7 @@ func RateLimitMiddleware() gin.HandlerFunc {
 		ratelimit.Config{
 			RedisAddr: "127.0.0.1:6379",
 			Window:    time.Second,
-			Limit:     1000,
+			Limit:     100,
 		},
 	)
 }

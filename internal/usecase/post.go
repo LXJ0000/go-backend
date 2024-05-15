@@ -1,27 +1,32 @@
 package usecase
 
 import (
+	"log/slog"
+	"time"
+
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/LXJ0000/go-backend/internal/event"
 	"golang.org/x/net/context"
 	"golang.org/x/sync/errgroup"
-	"log/slog"
-	"time"
 )
 
 type postUsecase struct {
 	repo           domain.PostRepository
 	contextTimeout time.Duration
 	producer       event.Producer
+
+	postRankUsecase *PostRankUsecase
 }
 
-func NewPostUsecase(repo domain.PostRepository, timeout time.Duration, producer event.Producer) domain.PostUsecase {
+func NewPostUsecase(repo domain.PostRepository, timeout time.Duration, producer event.Producer, postRankUsecase *PostRankUsecase) domain.PostUsecase {
 	return &postUsecase{
-		repo:           repo,
-		contextTimeout: timeout,
-		producer:       producer,
+		repo:            repo,
+		contextTimeout:  timeout,
+		producer:        producer,
+		postRankUsecase: postRankUsecase,
 	}
 }
+
 func (uc *postUsecase) Create(c context.Context, post domain.Post) error {
 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
@@ -70,8 +75,14 @@ func (uc *postUsecase) Info(c context.Context, postID int64) (domain.Post, error
 	return post, err
 }
 
-//func (uc *postUsecase) ReplaceTopN(c context.Context, items []domain.Post, expiration time.Duration) error {
-//	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
-//	defer cancel()
-//	return uc.repo.ReplaceTopN(ctx, items, expiration)
-//}
+// func (uc *postUsecase) ReplaceTopN(c context.Context, items []domain.Post, expiration time.Duration) error {
+// 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
+// 	defer cancel()
+// 	return uc.repo.ReplaceTopN(ctx, items, expiration)
+// }
+
+func (uc *postUsecase) TopN(c context.Context) ([]domain.Post, error) {
+	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
+	defer cancel()
+	return uc.postRankUsecase.GetTopN(ctx)
+}

@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/LXJ0000/go-backend/api/middleware"
 	"time"
+
+	"github.com/LXJ0000/go-backend/api/middleware"
 
 	route "github.com/LXJ0000/go-backend/api/route"
 	"github.com/LXJ0000/go-backend/bootstrap"
@@ -17,6 +18,7 @@ func main() {
 
 	db := app.Orm
 	cache := app.Cache
+	localCache := app.LocalCache
 
 	producer := app.Producer
 	saramaClient := app.SaramaClient
@@ -35,7 +37,7 @@ func main() {
 	server.Use(middleware.CORSMiddleware())
 	server.Use(middleware.RateLimitMiddleware())
 	server.Use(middleware.PrometheusMiddleware())
-	route.Setup(env, timeout, db, cache, server, producer, saramaClient)
+	route.Setup(env, timeout, db, cache, localCache, server, producer, saramaClient)
 
 	_ = server.Run(env.ServerAddress)
 

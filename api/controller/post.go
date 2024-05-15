@@ -39,10 +39,6 @@ func (col *PostController) ReaderList(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
 		return
 	}
-	//if req.Page == 0 || req.Size == 0 {
-	//	req.Page = domain.DefaultPage
-	//	req.Size = domain.DefaultSize
-	//}
 
 	filter := &domain.Post{
 		Status: domain.PostStatusPublish,
@@ -68,12 +64,9 @@ func (col *PostController) WriterList(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
 		return
 	}
-	//if req.Page == 0 || req.Size == 0 { // TODO 不处理 放在 orm 中处理
-	//	req.Page = domain.DefaultPage
-	//	req.Size = domain.DefaultSize
-	//}
 	userID := c.MustGet("x-user-id").(int64)
-	posts, count, err := col.PostUsecase.List(c, &domain.Post{AuthorID: userID}, req.Page, req.Size) // TODO
+	filter := &domain.Post{AuthorID: userID}
+	posts, count, err := col.PostUsecase.List(c, filter, req.Page, req.Size) // TODO
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Failed to list posts", err))
 		return
@@ -148,7 +141,7 @@ func (col *PostController) Like(c *gin.Context) {
 }
 
 func (col *PostController) Collect(c *gin.Context) {
-	isLikeRaw := c.Request.FormValue("is_collect")
+	isCollectRaw := c.Request.FormValue("is_collect")
 	postIDRaw := c.Request.FormValue("post_id")
 	collectionIDRaw := c.Request.FormValue("collection_id")
 	postID, err := strconv.ParseInt(postIDRaw, 10, 64)
@@ -156,7 +149,7 @@ func (col *PostController) Collect(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
 		return
 	}
-	isLike, err := strconv.ParseBool(isLikeRaw)
+	isCollect, err := strconv.ParseBool(isCollectRaw)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
 		return
@@ -168,7 +161,7 @@ func (col *PostController) Collect(c *gin.Context) {
 	}
 	userID := c.MustGet("x-user-id").(int64)
 
-	if isLike {
+	if isCollect {
 		err = col.InteractionUseCase.Collect(c, domain.BizPost, postID, userID, collectID)
 	} else {
 		err = col.InteractionUseCase.CancelCollect(c, domain.BizPost, postID, userID, collectID)
@@ -178,4 +171,16 @@ func (col *PostController) Collect(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, domain.SuccessResp(nil))
+}
+
+func (col *PostController) Rank(c *gin.Context) {
+	posts, err := col.PostUsecase.TopN(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("GetTopN Fail", err))
+		return
+	}
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"count": len(posts),
+		"posts": posts,
+	})
 }

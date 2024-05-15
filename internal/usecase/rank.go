@@ -50,7 +50,7 @@ func (ru *PostRankUsecase) TopN(c context.Context) error {
 	slog.Info("topN", "posts", posts)
 	go func() {
 		// cache posts
-		if err := ru.rankRepository.ReplaceTopN(context.Background(), posts, time.Minute); err != nil {
+		if err := ru.rankRepository.ReplaceTopN(context.Background(), posts, time.Minute * 5); err != nil {
 			slog.Error("Cache ReplaceTopN Failed", "Error", err.Error())
 		} // TODO 配置expiration
 	}()
@@ -65,7 +65,7 @@ func (ru *PostRankUsecase) topN(c context.Context) ([]domain.Post, error) {
 		post  domain.Post
 		score float64
 	}
-	heap := queue.NewPriorityQueue[pair](func(first, second pair) bool {
+	heap := queue.NewPriorityQueue(func(first, second pair) bool {
 		return first.score < second.score
 	}) // 可以使用非并发安全 // TODO
 	var minScore float64
