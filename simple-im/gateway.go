@@ -91,7 +91,11 @@ func (g *GateWay) subscribeMsg() error {
 		return err
 	}
 	go func() {
-		if err := group.Consume(context.Background(), []string{eventName}, kafka.NewConsumerHandler[Event](g.consume)); err != nil {
+		if err := group.Consume(
+			context.Background(),
+			[]string{eventName},
+			kafka.NewConsumerHandler(g.consume),
+		); err != nil {
 			slog.Info("退出监听消息循环", "err", err)
 		}
 	}()
@@ -99,7 +103,7 @@ func (g *GateWay) subscribeMsg() error {
 }
 
 func (g *GateWay) consume(msg *sarama.ConsumerMessage, event Event) error {
-	slog.Info("Consume msg", "msg", msg, "event", event)
+	slog.Info("Consume msg", "msg", string(msg.Value), "event", event)
 	conn, ok := g.conn.Load(event.Receiver)
 	if !ok {
 		slog.Warn("not user exists")
