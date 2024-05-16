@@ -18,8 +18,8 @@ import (
 )
 
 type GateWay struct {
-	conn       sync.Map
-	service    Service
+	conn       *sync.Map
+	service    *Service
 	client     sarama.Client
 	instanceID string
 }
@@ -57,6 +57,9 @@ func (g *GateWay) wsHandler(w http.ResponseWriter, r *http.Request) {
 	g.conn.Store(uid, c)
 	slog.Info("new user connected", "uid", uid)
 	go func() {
+		defer func() {
+			g.conn.Delete(uid)
+		}()
 		_, message, err := c.ReadMessage()
 		if err != nil {
 			slog.Warn("ReadMessage fail", "err", err)

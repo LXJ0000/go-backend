@@ -44,8 +44,8 @@ func (g *GatewayTestSuite) startGateway(instance, addr string) error {
 	producer, err := sarama.NewSyncProducerFromClient(g.client)
 	require.NoError(g.T(), err)
 	gateway := &GateWay{
-		conn: sync.Map{},
-		service: Service{
+		conn: &sync.Map{},
+		service: &Service{
 			producer: producer,
 		},
 		client:     g.client,
