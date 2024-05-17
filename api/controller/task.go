@@ -1,11 +1,12 @@
 package controller
 
 import (
+	"net/http"
+
 	"github.com/LXJ0000/go-backend/internal/domain"
+	"github.com/LXJ0000/go-backend/utils/lib"
 	snowflake "github.com/LXJ0000/go-backend/utils/snowflakeutil"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"strconv"
 )
 
 type TaskController struct {
@@ -22,7 +23,7 @@ func (col *TaskController) Create(c *gin.Context) {
 	}
 
 	task.TaskID = snowflake.GenID()
-	task.UserID = c.MustGet("x-user-id").(int64)
+	task.UserID = c.MustGet(domain.UserCtxID).(int64)
 
 	err = col.TaskUsecase.Create(c, task)
 	if err != nil {
@@ -37,8 +38,7 @@ func (col *TaskController) Create(c *gin.Context) {
 }
 
 func (col *TaskController) Delete(c *gin.Context) {
-	taskIDRaw := c.Query("task_id")
-	taskID, err := strconv.ParseInt(taskIDRaw, 10, 64)
+	taskID, err := lib.Str2Int64(c.Query("task_id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
 		return

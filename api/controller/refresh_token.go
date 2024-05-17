@@ -1,10 +1,11 @@
 package controller
 
 import (
-	"github.com/LXJ0000/go-backend/bootstrap"
-	domain "github.com/LXJ0000/go-backend/internal/domain"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/LXJ0000/go-backend/bootstrap"
+	"github.com/LXJ0000/go-backend/internal/domain"
+	"github.com/gin-gonic/gin"
 )
 
 type RefreshTokenController struct {

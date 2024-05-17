@@ -1,9 +1,10 @@
 package middleware
 
 import (
-	"github.com/LXJ0000/go-backend/internal/domain"
 	"net/http"
 	"strings"
+
+	"github.com/LXJ0000/go-backend/internal/domain"
 
 	"github.com/LXJ0000/go-backend/utils/tokenutil"
 	"github.com/gin-gonic/gin"
@@ -23,7 +24,7 @@ func JwtAuthMiddleware(secret string) gin.HandlerFunc {
 					c.Abort()
 					return
 				}
-				c.Set("x-user-id", userID)
+				c.Set(domain.UserCtxID, userID)
 				c.Next()
 				return
 			}

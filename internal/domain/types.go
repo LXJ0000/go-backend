@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"gorm.io/gorm"
 	"time"
 )
 
@@ -9,7 +8,7 @@ type Model struct {
 	ID        uint `gorm:"primarykey" json:"-"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	// DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
 const (

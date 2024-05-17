@@ -4,6 +4,10 @@ import (
 	"context"
 )
 
+const (
+	UserCtxID   = "x-user-id"
+)
+
 type User struct {
 	Model
 	UserID   int64  `json:"user_id" gorm:"primaryKey"`

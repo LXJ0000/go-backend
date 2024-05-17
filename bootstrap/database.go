@@ -1,15 +1,16 @@
 package bootstrap
 
 import (
-	domain2 "github.com/LXJ0000/go-backend/internal/domain"
+	"log"
+	"time"
+
+	domain "github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/LXJ0000/go-backend/pkg/orm"
 	_prometheus "github.com/prometheus/client_golang/prometheus"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/plugin/prometheus"
-	"log"
-	"time"
 )
 
 func NewOrmDatabase(env *Env) orm.Database {
@@ -30,12 +31,13 @@ func NewOrmDatabase(env *Env) orm.Database {
 	initPrometheus(db)
 
 	if err = db.AutoMigrate(
-		&domain2.Post{},
-		&domain2.User{},
-		&domain2.Task{},
-		&domain2.Interaction{},
-		&domain2.UserLike{},
-		&domain2.UserCollect{},
+		&domain.Post{},
+		&domain.User{},
+		&domain.Task{},
+		&domain.Interaction{},
+		&domain.UserLike{},
+		&domain.UserCollect{},
+		&domain.Comment{},
 	); err != nil {
 		log.Fatal(err)
 	}

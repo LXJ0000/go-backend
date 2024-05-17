@@ -34,4 +34,6 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	NewTaskRouter(env, timeout, db, protectedRouter)
 	// Post
 	NewPostRouter(env, timeout, db, redisCache, localCache, protectedRouter, producer, saramaClient)
+	// Comment
+	NewCommentRouter(env, timeout, db, protectedRouter)
 }
