@@ -18,8 +18,8 @@ import (
 )
 
 type GateWay struct {
-	conn       *sync.Map
-	service    *Service
+	conn       sync.Map
+	service    Service
 	client     sarama.Client
 	instanceID string
 }
@@ -99,17 +99,16 @@ func (g *GateWay) subscribeMsg() error {
 			[]string{eventName},
 			kafka.NewConsumerHandler(g.consume),
 		); err != nil {
-			slog.Info("退出监听消息循环", "err", err)
+			slog.Info("exit listen for msg", "err", err)
 		}
 	}()
 	return nil
 }
 
 func (g *GateWay) consume(msg *sarama.ConsumerMessage, event Event) error {
-	slog.Info("Consume msg", "msg", string(msg.Value), "event", event)
 	conn, ok := g.conn.Load(event.Receiver)
 	if !ok {
-		slog.Warn("not user exists")
+		// slog.Warn("user not exists", "user", event.Receiver)
 		return nil
 	}
 	c := conn.(*Conn)

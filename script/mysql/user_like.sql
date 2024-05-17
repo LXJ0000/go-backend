@@ -1,1 +1,0 @@
-INSERT INTO `user_like` (`id`, `created_at`, `updated_at`, `deleted_at`, `user_id`, `biz_id`, `biz`, `status`) VALUES (1, '2024-05-15 23:22:42.486', '2024-05-15 23:22:42.486', NULL, 181424931144208384, 181425015638462464, 'post', 1);

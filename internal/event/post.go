@@ -2,12 +2,13 @@ package event
 
 import (
 	"encoding/json"
+	"log/slog"
+	"time"
+
 	"github.com/IBM/sarama"
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/LXJ0000/go-backend/pkg/kafka"
 	"golang.org/x/net/context"
-	"log/slog"
-	"time"
 )
 
 type ReadEvent struct {
@@ -89,7 +90,7 @@ func (c *BatchSyncReadEventConsumer) Start() error {
 		return err
 	}
 	go func() {
-		if err := config.Consume(context.Background(), []string{"post_read"}, kafka.NewBatchConsumerHandler[ReadEvent](c.Consumer)); err != nil {
+		if err := config.Consume(context.Background(), []string{"post_read"}, kafka.NewConsumerHandler(c.ConsumerV1)); err != nil {
 			slog.Error("Consumer Start Fail", "topic", []string{"post_read"})
 		}
 	}()
@@ -111,4 +112,10 @@ func (c *BatchSyncReadEventConsumer) Consumer(msg []*sarama.ConsumerMessage, eve
 		//}()
 	}
 	return c.repo.BatchIncrReadCount(ctx, biz, id)
+}
+
+func (c *BatchSyncReadEventConsumer) ConsumerV1(msg *sarama.ConsumerMessage, event ReadEvent) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	return c.repo.IncrReadCount(ctx, domain.BizPost, event.PostID)
 }

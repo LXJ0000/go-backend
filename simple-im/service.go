@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/IBM/sarama"
 	"log/slog"
 	"strconv"
+
+	"github.com/IBM/sarama"
 )
 
 type Service struct {
@@ -19,7 +20,7 @@ func (s *Service) Receiver(ctx context.Context, sender int64, msg Message) error
 		if member == sender {
 			continue
 		}
-		msgJSON, err := json.Marshal(msg)
+		msgJSON, err := json.Marshal(Event{Msg: msg, Receiver: member})
 		if err != nil {
 			slog.Warn(fmt.Sprintf("Send message to %d fail", member), "err", err)
 			continue
