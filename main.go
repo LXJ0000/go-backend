@@ -34,11 +34,13 @@ func main() {
 	timeout := time.Duration(env.ContextTimeout) * time.Second // 接口超时时间
 
 	server := gin.Default()
+	server.GET("/ping", func(ctx *gin.Context) {
+		ctx.String(200, "success")
+	})
 	server.Use(middleware.CORSMiddleware())
 	server.Use(middleware.RateLimitMiddleware())
 	server.Use(middleware.PrometheusMiddleware())
 	route.Setup(env, timeout, db, cache, localCache, server, producer, saramaClient)
 
 	_ = server.Run(env.ServerAddress)
-
 }

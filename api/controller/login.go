@@ -1,8 +1,9 @@
 package controller
 
 import (
-	"github.com/LXJ0000/go-backend/internal/domain"
 	"net/http"
+
+	"github.com/LXJ0000/go-backend/internal/domain"
 
 	"golang.org/x/crypto/bcrypt"
 

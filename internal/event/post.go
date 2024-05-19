@@ -90,7 +90,10 @@ func (c *BatchSyncReadEventConsumer) Start() error {
 		return err
 	}
 	go func() {
-		if err := config.Consume(context.Background(), []string{"post_read"}, kafka.NewConsumerHandler(c.ConsumerV1)); err != nil {
+		// if err := config.Consume(context.Background(), []string{"post_read"}, kafka.NewConsumerHandler(c.ConsumerV1)); err != nil {
+		// 	slog.Error("Consumer Start Fail", "topic", []string{"post_read"})
+		// }
+		if err := config.Consume(context.Background(), []string{"post_read"}, kafka.NewBatchConsumerHandler(c.Consumer)); err != nil {
 			slog.Error("Consumer Start Fail", "topic", []string{"post_read"})
 		}
 	}()
