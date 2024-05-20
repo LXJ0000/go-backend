@@ -30,34 +30,36 @@ func (uc *relationUsecase) CancelFollow(c context.Context, follower, followee in
 	return uc.repo.CancelFollow(ctx, follower, followee)
 }
 
-func (uc *relationUsecase) GetFollower(c context.Context, userID int64, page, size int) ([]domain.User, error) {
+func (uc *relationUsecase) GetFollower(c context.Context, userID int64, page, size int) ([]domain.User, int, error) {
 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
 	relations, err := uc.repo.GetFollower(ctx, userID, page, size)
 	if err != nil {
 		//  TODO log
-		return nil, err
+		return nil, 0, err
 	}
 	userIDs := make([]int64, 0, len(relations))
 	for _, relation := range relations {
 		userIDs = append(userIDs, relation.Follower)
 	}
-	return uc.userRepo.FindByUserIDs(ctx, userIDs, page, size)
+	items, err := uc.userRepo.FindByUserIDs(ctx, userIDs, page, size)
+	return items, len(userIDs), err
 }
 
-func (uc *relationUsecase) GetFollowee(c context.Context, userID int64, page, size int) ([]domain.User, error) {
+func (uc *relationUsecase) GetFollowee(c context.Context, userID int64, page, size int) ([]domain.User, int, error) {
 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
 	relations, err := uc.repo.GetFollowee(ctx, userID, page, size)
 	if err != nil {
 		//  TODO log
-		return nil, err
+		return nil, 0, err
 	}
 	userIDs := make([]int64, 0, len(relations))
 	for _, relation := range relations {
 		userIDs = append(userIDs, relation.Followee)
 	}
-	return uc.userRepo.FindByUserIDs(ctx, userIDs, page, size)
+	items, err := uc.userRepo.FindByUserIDs(ctx, userIDs, page, size)
+	return items, len(userIDs), err
 }
 
 func (uc *relationUsecase) Detail(c context.Context, follower, followee int64) (domain.Relation, error) {

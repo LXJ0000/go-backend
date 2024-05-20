@@ -31,7 +31,8 @@ func (uc *relationRepository) GetFollower(c context.Context, userID int64, page,
 		"status":   domain.Follow,
 	}
 	var items []domain.Relation
-	err := uc.dao.FindPage(c, &domain.Relation{}, filter, page, size, &items)
+	db := uc.dao.WithPage(page, size)
+	err := db.WithContext(c).Model(&domain.Relation{}).Where(filter).Order("updated_at desc").Find(&items).Error
 	return items, err
 }
 
@@ -41,7 +42,8 @@ func (uc *relationRepository) GetFollowee(c context.Context, userID int64, page,
 		"status":   domain.Follow,
 	}
 	var items []domain.Relation
-	err := uc.dao.FindPage(c, &domain.Relation{}, filter, page, size, &items)
+	db := uc.dao.WithPage(page, size)
+	err := db.WithContext(c).Model(&domain.Relation{}).Where(filter).Order("updated_at desc").Find(&items).Error
 	return items, err
 }
 
