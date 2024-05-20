@@ -38,6 +38,7 @@ func NewOrmDatabase(env *Env) orm.Database {
 		&domain.UserLike{},
 		&domain.UserCollect{},
 		&domain.Comment{},
+		&domain.Relation{},
 	); err != nil {
 		log.Fatal(err)
 	}
