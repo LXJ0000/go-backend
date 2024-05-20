@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/LXJ0000/go-backend/pkg/orm"
 )
@@ -32,4 +33,11 @@ func (u *userRepository) GetByID(c context.Context, id int64) (domain.User, erro
 	var user domain.User
 	err := u.dao.FindOne(c, &domain.User{}, map[string]interface{}{"user_id": id}, &user)
 	return user, err
+}
+
+func (u *userRepository) FindByUserIDs(c context.Context, userIDs []int64, page, size int) ([]domain.User, error) {
+	var items []domain.User
+	db := u.dao.WithPage(page, size)
+	err := db.WithContext(c).Model(&domain.User{}).Where("user_id IN (?)", userIDs).Find(&items).Error
+	return items, err
 }

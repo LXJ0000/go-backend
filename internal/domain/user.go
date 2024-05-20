@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	UserCtxID   = "x-user-id"
+	UserCtxID = "x-user-id"
 )
 
 type User struct {
@@ -30,6 +30,7 @@ type UserRepository interface {
 	GetByEmail(c context.Context, email string) (User, error)
 	GetByID(c context.Context, id int64) (User, error)
 	//UpsertAvatar(c context.Context, avatar string) error
+	FindByUserIDs(c context.Context, userIDs []int64, page, size int) ([]User, error)
 }
 
 type UserUsecase interface {

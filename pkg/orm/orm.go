@@ -18,6 +18,7 @@ type Database interface {
 	Transaction(c context.Context, fn func(tx *gorm.DB) error) error
 	Count(c context.Context, model interface{}, filter interface{}) (int64, error)
 	Raw(c context.Context) *gorm.DB
+	WithPage(page, size int) *gorm.DB
 }
 
 type database struct {
@@ -77,4 +78,8 @@ func (dao *database) Count(c context.Context, model interface{}, filter interfac
 	var cnt int64
 	err := dao.db.WithContext(c).Model(model).Where(filter).Count(&cnt).Error
 	return cnt, err
+}
+
+func (dao *database) WithPage(page, size int) *gorm.DB {
+	return dao.db.Offset((page - 1) * size).Limit(size)
 }
