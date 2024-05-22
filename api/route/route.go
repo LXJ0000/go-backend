@@ -18,6 +18,8 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	gin *gin.Engine,
 	producer event.Producer, saramaClient sarama.Client) {
 
+	gin.Static("/assets", "./assets")
+
 	publicRouter := gin.Group("/api")
 	// All Public APIs
 	NewSignupRouter(env, timeout, db, publicRouter)
