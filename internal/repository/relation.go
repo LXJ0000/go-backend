@@ -18,11 +18,11 @@ func NewRelationRepository(dao orm.Database) domain.RelationRepository {
 }
 
 func (uc *relationRepository) Follow(c context.Context, follower, followee int64) error {
-	return uc.doFollow(c, followee, follower, domain.Follow)
+	return uc.doFollow(c, follower, followee, domain.Follow)
 }
 
 func (uc *relationRepository) CancelFollow(c context.Context, follower, followee int64) error {
-	return uc.doFollow(c, followee, follower, domain.UnFollow)
+	return uc.doFollow(c, follower, followee, domain.UnFollow)
 }
 
 func (uc *relationRepository) GetFollower(c context.Context, userID int64, page, size int) ([]domain.Relation, error) {

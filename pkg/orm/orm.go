@@ -81,5 +81,9 @@ func (dao *database) Count(c context.Context, model interface{}, filter interfac
 }
 
 func (dao *database) WithPage(page, size int) *gorm.DB {
+	if page == 0 || size == 0 {
+		page = defaultPage
+		size = defaultSize
+	}
 	return dao.db.Offset((page - 1) * size).Limit(size)
 }

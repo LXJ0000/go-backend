@@ -31,7 +31,7 @@ func main() {
 		<-ctx.Done()
 	}()
 
-	timeout := time.Duration(env.ContextTimeout) * time.Second // 接口超时时间
+	timeout := time.Duration(env.ContextTimeout) * time.Minute // 接口超时时间
 
 	server := gin.Default()
 	server.Use(middleware.CORSMiddleware())
