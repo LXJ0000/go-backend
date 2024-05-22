@@ -28,6 +28,8 @@ type Env struct {
 	KafkaAddr              string `mapstructure:"KAFKA_ADDR"`
 	PrometheusAddress      string `mapstructure:"PROMETHEUS_ADDRESS"`
 	MySQLAddress           string `mapstructure:"MYSQL_ADDRESS"`
+	LocalStaticPath        string `mapstructure:"LOCAL_STATIC_PATH"`
+	UrlStaticPath          string `mapstructure:"URL_STATIC_PATH"`
 }
 
 func NewEnv() *Env {

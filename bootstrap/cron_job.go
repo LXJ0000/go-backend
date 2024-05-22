@@ -2,6 +2,10 @@ package bootstrap
 
 import (
 	"context"
+	"log/slog"
+	"sync"
+	"time"
+
 	"github.com/LXJ0000/go-backend/internal/domain"
 	repository "github.com/LXJ0000/go-backend/internal/repository"
 	"github.com/LXJ0000/go-backend/internal/usecase"
@@ -9,9 +13,6 @@ import (
 	"github.com/LXJ0000/go-backend/pkg/orm"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/robfig/cron/v3"
-	"log/slog"
-	"sync"
-	"time"
 )
 
 type Job interface {
