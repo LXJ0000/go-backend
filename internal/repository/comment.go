@@ -17,7 +17,7 @@ func NewCommentRepository(dao orm.Database) domain.CommentRepository {
 }
 
 func (repo *commentRepository) Create(c context.Context, comment domain.Comment) error {
-	return repo.dao.InsertOne(c, &domain.Comment{}, &comment)
+	return repo.dao.Insert(c, &domain.Comment{}, &comment)
 }
 
 func (repo *commentRepository) Delete(c context.Context, id int64) error {

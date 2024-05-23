@@ -1,9 +1,10 @@
 package controller
 
 import (
+	"net/http"
+
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 type FileController struct {
@@ -21,7 +22,23 @@ func (col *FileController) Upload(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Upload File Fail", err))
 		return
 	}
-	c.JSON(http.StatusOK, resp)
+	c.JSON(http.StatusOK, domain.SuccessResp(resp))
+}
+
+func (col *FileController) Uploads(c *gin.Context) {
+	form, err := c.MultipartForm()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
+		return
+	}
+	files := form.File["file"]
+
+	resp, err := col.FileUsecase.Uploads(c, files)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Upload File Fail", err))
+		return
+	}
+	c.JSON(http.StatusOK, domain.SuccessResp(resp))
 }
 
 func (col *FileController) FileList(c *gin.Context) {
@@ -35,8 +52,8 @@ func (col *FileController) FileList(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Upload File Fail", err))
 		return
 	}
-	c.JSON(http.StatusOK, map[string]interface{}{
+	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
 		"count":     cnt,
 		"file_list": resp,
-	})
+	}))
 }

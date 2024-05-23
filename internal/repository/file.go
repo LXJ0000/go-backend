@@ -16,7 +16,11 @@ func NewFileRepository(dao orm.Database) domain.FileRepository {
 }
 
 func (f *fileRepository) Upload(c context.Context, file domain.File) error {
-	return f.dao.InsertOne(c, &domain.File{}, &file)
+	return f.dao.Insert(c, &domain.File{}, &file)
+}
+
+func (f *fileRepository) Uploads(c context.Context, files []domain.File) error {
+	return f.dao.Insert(c, &domain.File{}, &files)
 }
 
 func (f *fileRepository) FileList(c context.Context, fileType, fileSource string, page, size int) ([]domain.File, int, error) {

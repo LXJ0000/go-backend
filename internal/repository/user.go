@@ -26,7 +26,7 @@ func (u *userRepository) GetByEmail(c context.Context, email string) (domain.Use
 }
 
 func (u *userRepository) Create(c context.Context, user domain.User) error {
-	return u.dao.InsertOne(c, &domain.User{}, &user)
+	return u.dao.Insert(c, &domain.User{}, &user)
 }
 
 func (u *userRepository) GetByID(c context.Context, id int64) (domain.User, error) {

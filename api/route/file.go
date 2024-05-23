@@ -15,6 +15,7 @@ func NewFileRouter(env *bootstrap.Env, timeout time.Duration,
 	repo := repository.NewFileRepository(orm)
 	useCase := usecase.NewFileUsecase(repo, timeout, env.LocalStaticPath, env.UrlStaticPath)
 	col := &controller.FileController{FileUsecase: useCase}
-	group.POST("/file/upload", col.Upload)
+	group.PUT("/file/upload", col.Upload)
+	group.PUT("/file/uploads", col.Uploads)
 	group.GET("/file/list", col.FileList)
 }

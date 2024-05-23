@@ -2,10 +2,11 @@ package repository
 
 import (
 	"context"
+	"time"
+
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/LXJ0000/go-backend/pkg/cache"
 	"github.com/LXJ0000/go-backend/pkg/orm"
-	"time"
 )
 
 type postRepository struct {
@@ -18,7 +19,7 @@ func NewPostRepository(dao orm.Database, redisCache cache.RedisCache) domain.Pos
 }
 
 func (repo *postRepository) Create(c context.Context, post domain.Post) error {
-	return repo.dao.InsertOne(c, &domain.Post{}, &post)
+	return repo.dao.Insert(c, &domain.Post{}, &post)
 }
 
 func (repo *postRepository) GetByID(c context.Context, id int64) (domain.Post, error) {
