@@ -45,4 +45,6 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	NewRelationRouter(env, timeout, db, redisCache, protectedRouter)
 	// File
 	NewFileRouter(env, timeout, db, protectedRouter)
+	// Tag
+	NewTagRouter(env, timeout, db, redisCache, protectedRouter)
 }

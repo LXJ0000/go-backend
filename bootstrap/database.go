@@ -40,6 +40,8 @@ func NewOrmDatabase(env *Env) orm.Database {
 		&domain.Comment{},
 		&domain.Relation{},
 		&domain.File{},
+		&domain.TagBiz{},
+		&domain.Tag{},
 	); err != nil {
 		log.Fatal(err)
 	}

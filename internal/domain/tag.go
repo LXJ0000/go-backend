@@ -4,9 +4,9 @@ import "context"
 
 type Tag struct {
 	Model
-	TagID   int64  `gorm:"primaryKey"`
-	UserID  int64  `gorm:"uniqueIndex:idx_tag_userId_tagName"`
-	TagName string `gorm:"uniqueIndex:idx_tag_userId_tagName"`
+	TagID   int64 `gorm:"primaryKey"`
+	UserID  int64 `gorm:"index"`
+	TagName string
 }
 
 func (Tag) TableName() string {
@@ -16,11 +16,10 @@ func (Tag) TableName() string {
 // SELECT * FROM tag_biz WHERE biz = ? and biz_id = ?
 type TagBiz struct {
 	Model
-	Biz    string `gorm:"uniqueIndex:idx_tagBiz_biz_bizId"`
-	BizID  int64  `gorm:"uniqueIndex:idx_tagBiz_biz_bizId"`
+	Biz    string `gorm:"index:idx_tagBiz_biz_bizId"`
+	BizID  int64  `gorm:"index:idx_tagBiz_biz_bizId"`
 	UserID int64  `gorm:"index"`
-	TagID  int64
-	Tag    *Tag `gorm:"ForeignKey:TagID;AssociationForeignKey:TagID;constraint:OnDelete:CASCADE"`
+	TagID  int64  `gorm:"index"`
 }
 
 func (TagBiz) TableName() string {
