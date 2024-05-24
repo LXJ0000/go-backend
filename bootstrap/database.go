@@ -78,7 +78,7 @@ func initPrometheus(db *gorm.DB) {
 	if err := db.Callback().Update().Before("*").Register("prometheus_update_before", before); err != nil {
 		log.Fatal(err)
 	}
-	if err := db.Callback().Raw().Before("*").Register("prometheus_raw_before", before); err != nil {
+	if err := db.Callback().Row().Before("*").Register("prometheus_raw_before", before); err != nil {
 		log.Fatal(err)
 	}
 	if err := db.Callback().Raw().Before("*").Register("prometheus_row_before", before); err != nil {
@@ -109,7 +109,7 @@ func initPrometheus(db *gorm.DB) {
 			}
 		}
 	}
-	if err := db.Callback().Update().After("*").Register("prometheus_update_after", after("Create")); err != nil {
+	if err := db.Callback().Create().After("*").Register("prometheus_create_after", after("Create")); err != nil {
 		log.Fatal(err)
 	}
 	if err := db.Callback().Query().After("*").Register("prometheus_query_after", after("Query")); err != nil {
@@ -121,10 +121,10 @@ func initPrometheus(db *gorm.DB) {
 	if err := db.Callback().Update().After("*").Register("prometheus_update_after", after("Update")); err != nil {
 		log.Fatal(err)
 	}
-	if err := db.Callback().Raw().After("*").Register("prometheus_raw_after", after("Update")); err != nil {
+	if err := db.Callback().Raw().After("*").Register("prometheus_raw_after", after("Raw")); err != nil {
 		log.Fatal(err)
 	}
-	if err := db.Callback().Row().After("*").Register("prometheus_row_after", after("Update")); err != nil {
+	if err := db.Callback().Row().After("*").Register("prometheus_row_after", after("Row")); err != nil {
 		log.Fatal(err)
 	}
 	_prometheus.MustRegister(vector)
