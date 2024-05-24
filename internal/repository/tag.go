@@ -28,7 +28,7 @@ func (t *tagRepository) CreateTagBiz(c context.Context, userID int64, biz string
 			BizID:  bizID,
 		})
 	}
-	return t.dao.Insert(c, &domain.Tag{}, &items)
+	return t.dao.Insert(c, &domain.TagBiz{}, &items)
 }
 
 func (t *tagRepository) GetTagsByUserID(c context.Context, userID int64) ([]domain.Tag, error) {
@@ -46,7 +46,19 @@ func (t *tagRepository) GetTagsByBiz(c context.Context, userID int64, biz string
 		"biz":     biz,
 		"biz_id":  bizID,
 	}
-	var items []domain.Tag
-	err := t.dao.FindMany(c, &domain.Tag{}, filter, &items)
-	return items, err
+	var items []domain.TagBiz
+	if err := t.dao.FindMany(c, &domain.TagBiz{}, filter, &items); err != nil {
+		return nil, err
+	}
+
+	db := t.dao.Raw(c)
+	tagIDs := make([]int64, 0, len(items))
+	for _, item := range items {
+		tagIDs = append(tagIDs, item.TagID)
+	}
+	var tags []domain.Tag
+	if err := db.WithContext(c).Model(&domain.Tag{}).Where("tag_id in (?)", tagIDs).Find(&tags).Error; err != nil {
+		return nil, err
+	}
+	return tags, nil
 }

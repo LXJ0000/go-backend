@@ -4,15 +4,18 @@ type Response struct {
 	Code    int         `json:"code"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
-	Error   error       `json:"error"`
+	Error   string       `json:"error"`
 }
 
 func ErrorResp(msg string, err error) Response {
-	return Response{
+	resp := Response{
 		Code:    1,
 		Message: msg,
-		Error:   err,
 	}
+	if err != nil {
+		resp.Error = err.Error()
+	}
+	return resp
 }
 
 func SuccessResp(data interface{}) Response {
