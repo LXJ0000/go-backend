@@ -23,7 +23,7 @@ func NewPostRouter(env *bootstrap.Env, timeout time.Duration,
 
 	repoPost := repository.NewPostRepository(orm, cache)
 	repoInteraction := repository.NewInteractionRepository(orm, cache)
-	repoPostRank := repository.NewPostRankRepository(localCache, cache) // TODO localcache
+	repoPostRank := repository.NewPostRankRepository(localCache, cache)
 	postRankUsecase := usecase.NewPostRankUsecase(repoInteraction, repoPost, repoPostRank, timeout)
 	col := &controller.PostController{
 		PostUsecase:        usecase.NewPostUsecase(repoPost, timeout, producer, postRankUsecase),

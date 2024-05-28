@@ -1,9 +1,10 @@
 package controller
 
 import (
+	"net/http"
+
 	"github.com/LXJ0000/go-backend/internal/domain"
 	snowflake "github.com/LXJ0000/go-backend/utils/snowflakeutil"
-	"net/http"
 
 	"github.com/LXJ0000/go-backend/bootstrap"
 	"github.com/gin-gonic/gin"
@@ -54,20 +55,22 @@ func (sc *SignupController) Signup(c *gin.Context) {
 		return
 	}
 
-	accessToken, err := sc.SignupUsecase.CreateAccessToken(user, sc.Env.AccessTokenSecret, sc.Env.AccessTokenExpiryHour)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create access token fail", err))
-		return
-	}
+	c.JSON(http.StatusOK, domain.SuccessResp(nil))
 
-	refreshToken, err := sc.SignupUsecase.CreateRefreshToken(user, sc.Env.RefreshTokenSecret, sc.Env.RefreshTokenExpiryHour)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create refresh token fail", err))
-		return
-	}
+	// accessToken, err := sc.SignupUsecase.CreateAccessToken(user, sc.Env.AccessTokenSecret, sc.Env.AccessTokenExpiryHour)
+	// if err != nil {
+	// 	c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create access token fail", err))
+	// 	return
+	// }
 
-	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
-		"access_token":  accessToken,
-		"refresh_token": refreshToken,
-	}))
+	// refreshToken, err := sc.SignupUsecase.CreateRefreshToken(user, sc.Env.RefreshTokenSecret, sc.Env.RefreshTokenExpiryHour)
+	// if err != nil {
+	// 	c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create refresh token fail", err))
+	// 	return
+	// }
+
+	// c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
+	// 	"access_token":  accessToken,
+	// 	"refresh_token": refreshToken,
+	// }))
 }

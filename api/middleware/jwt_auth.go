@@ -1,16 +1,18 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
 	"github.com/LXJ0000/go-backend/internal/domain"
+	"github.com/LXJ0000/go-backend/pkg/cache"
 
 	"github.com/LXJ0000/go-backend/utils/tokenutil"
 	"github.com/gin-gonic/gin"
 )
 
-func JwtAuthMiddleware(secret string) gin.HandlerFunc {
+func JwtAuthMiddleware(secret string, cache cache.RedisCache) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.Request.Header.Get("Authorization")
 		t := strings.Split(authHeader, " ")
@@ -18,13 +20,26 @@ func JwtAuthMiddleware(secret string) gin.HandlerFunc {
 			authToken := t[1]
 			authorized, err := tokenutil.IsAuthorized(authToken, secret)
 			if authorized {
-				userID, err := tokenutil.ExtractIDFromToken(authToken, secret)
+				userID, ssid, err := tokenutil.ExtractIDFromToken(authToken, secret)
 				if err != nil {
 					c.JSON(http.StatusUnauthorized, domain.ErrorResp("Not authorized", err))
 					c.Abort()
 					return
 				}
-				c.Set(domain.UserCtxID, userID)
+				exist, err := cache.Exist(context.Background(), domain.UserLogoutKey(ssid))
+				if err != nil {
+					// TODO 降级策略
+					c.JSON(http.StatusUnauthorized, domain.ErrorResp("Not authorized", err))
+					c.Abort()
+					return
+				}
+				if exist != 0 {
+					c.JSON(http.StatusUnauthorized, domain.ErrorResp("Not authorized", err))
+					c.Abort()
+					return
+				}
+				c.Set(domain.USERCTXID, userID)
+				c.Set(domain.USERSESSIONID, ssid)
 				c.Next()
 				return
 			}

@@ -2,19 +2,23 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/LXJ0000/go-backend/internal/domain"
+	"github.com/LXJ0000/go-backend/pkg/cache"
 	"github.com/LXJ0000/go-backend/pkg/orm"
 )
 
 type userRepository struct {
-	dao orm.Database
+	dao   orm.Database
+	cache cache.RedisCache
 	//collection string
 }
 
-func NewUserRepository(dao orm.Database) domain.UserRepository {
+func NewUserRepository(dao orm.Database, cache cache.RedisCache) domain.UserRepository {
 	return &userRepository{
-		dao: dao,
+		dao:   dao,
+		cache: cache,
 		//collection: collection,
 	}
 }
@@ -40,4 +44,8 @@ func (u *userRepository) FindByUserIDs(c context.Context, userIDs []int64, page,
 	db := u.dao.WithPage(page, size)
 	err := db.WithContext(c).Model(&domain.User{}).Where("user_id IN (?)", userIDs).Find(&items).Error
 	return items, err
+}
+
+func (u *userRepository) InvalidToken(c context.Context, ssid string, exp time.Duration) error {
+	return u.cache.Set(c, domain.UserLogoutKey(ssid), "", exp)
 }

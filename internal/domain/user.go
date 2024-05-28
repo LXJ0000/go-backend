@@ -2,11 +2,18 @@ package domain
 
 import (
 	"context"
+	"strings"
+	"time"
 )
 
 const (
-	UserCtxID = "x-user-id"
+	USERCTXID     = "x-user-id"
+	USERSESSIONID = "user-session-id"
 )
+
+func UserLogoutKey(ssid string) string {
+	return strings.Join([]string{"user", "logout", ssid}, "_")
+}
 
 type User struct {
 	Model
@@ -31,10 +38,12 @@ type UserRepository interface {
 	GetByID(c context.Context, id int64) (User, error)
 	//UpsertAvatar(c context.Context, avatar string) error
 	FindByUserIDs(c context.Context, userIDs []int64, page, size int) ([]User, error)
+	InvalidToken(c context.Context, ssid string, exp time.Duration) error
 }
 
 type UserUsecase interface {
 	GetProfileByID(c context.Context, userID int64) (*Profile, error)
+	Logout(c context.Context, SSID string, tokenExpiry time.Duration) error
 }
 
 type Profile struct {

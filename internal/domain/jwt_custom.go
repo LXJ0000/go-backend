@@ -7,10 +7,12 @@ import (
 type JwtCustomClaims struct {
 	Name string `json:"name"`
 	ID   int64  `json:"id"`
+	SSID string `json:"ssid"`
 	jwt.RegisteredClaims
 }
 
 type JwtCustomRefreshClaims struct {
-	ID int64 `json:"id"`
+	ID   int64  `json:"id"`
+	SSID string `json:"ssid"`
 	jwt.RegisteredClaims
 }

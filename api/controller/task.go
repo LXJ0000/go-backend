@@ -23,7 +23,7 @@ func (col *TaskController) Create(c *gin.Context) {
 	}
 
 	task.TaskID = snowflake.GenID()
-	task.UserID = c.MustGet(domain.UserCtxID).(int64)
+	task.UserID = c.MustGet(domain.USERCTXID).(int64)
 
 	err = col.TaskUsecase.Create(c, task)
 	if err != nil {

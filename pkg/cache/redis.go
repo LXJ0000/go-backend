@@ -9,7 +9,7 @@ import (
 
 type RedisCache struct {
 	cmd        redis.Cmdable
-	expiration time.Duration
+	expiration time.Duration // 默认过期时间
 }
 
 func NewRedisCache(cmd redis.Cmdable, expiration time.Duration) RedisCache {
@@ -42,4 +42,8 @@ func (c *RedisCache) HSet(ctx context.Context, key string, values ...interface{}
 
 func (c *RedisCache) HGetAll(ctx context.Context, key string) (map[string]string, error) {
 	return c.cmd.HGetAll(ctx, key).Result()
+}
+
+func (c *RedisCache) Exist(ctx context.Context, key string) (int64, error) {
+	return c.cmd.Exists(ctx, key).Result()
 }

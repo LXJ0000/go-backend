@@ -25,16 +25,16 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 
 	publicRouter := server.Group("/api")
 	// All Public APIs
-	NewSignupRouter(env, timeout, db, publicRouter)
-	NewLoginRouter(env, timeout, db, publicRouter)
-	NewRefreshTokenRouter(env, timeout, db, publicRouter)
+	NewSignupRouter(env, timeout, db, redisCache, publicRouter)
+	NewLoginRouter(env, timeout, db, redisCache, publicRouter)
+	NewRefreshTokenRouter(env, timeout, db, redisCache, publicRouter)
 
 	protectedRouter := server.Group("/api")
 	// Middleware to verify AccessToken
-	protectedRouter.Use(middleware.JwtAuthMiddleware(env.AccessTokenSecret))
+	protectedRouter.Use(middleware.JwtAuthMiddleware(env.AccessTokenSecret, redisCache))
 	// All Private APIs
 	// User
-	NewUserRouter(env, timeout, db, protectedRouter)
+	NewUserRouter(env, timeout, db, redisCache, protectedRouter)
 	// Task
 	NewTaskRouter(env, timeout, db, protectedRouter)
 	// Post

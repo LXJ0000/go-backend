@@ -17,7 +17,7 @@ func NewRelationRouter(env *bootstrap.Env, timeout time.Duration,
 	group *gin.RouterGroup,
 ) {
 	repo := repository.NewRelationRepository(orm)
-	userRepo := repository.NewUserRepository(orm)
+	userRepo := repository.NewUserRepository(orm, cache)
 	col := &controller.RelationController{
 		RelationUsecase: usecase.NewRelationUsecase(repo, userRepo, timeout),
 	}

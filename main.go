@@ -27,7 +27,7 @@ func main() {
 	cron.Start()
 	defer func() {
 		// 优雅退出
-		ctx := cron.Stop() // TODO 防止有的任务执行时间超时
+		ctx := cron.Stop()
 		<-ctx.Done()
 	}()
 

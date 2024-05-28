@@ -87,7 +87,7 @@ func InitCronRankJob(rankJob *RankJob) *cron.Cron {
 	return expr
 }
 
-// NewCron TODO localCache
+// NewCron 
 func NewCron(localCache cache.LocalCache, redisCache cache.RedisCache, dao orm.Database) *cron.Cron {
 	timeout := time.Minute
 	interactionRepository := repository.NewInteractionRepository(dao, redisCache)

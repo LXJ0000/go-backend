@@ -24,7 +24,7 @@ func (col *CommentController) Create(c *gin.Context) {
 	var comment domain.Comment
 
 	comment.CommentID = snowflakeutil.GenID()
-	comment.UserID = c.MustGet(domain.UserCtxID).(int64)
+	comment.UserID = c.MustGet(domain.USERCTXID).(int64)
 	comment.Biz = req.Biz
 	comment.BizID = req.BizID
 	comment.Content = req.Content

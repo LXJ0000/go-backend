@@ -2,8 +2,9 @@ package usecase
 
 import (
 	"context"
-	"github.com/LXJ0000/go-backend/internal/domain"
 	"time"
+
+	"github.com/LXJ0000/go-backend/internal/domain"
 
 	"github.com/LXJ0000/go-backend/utils/tokenutil"
 )
@@ -26,14 +27,14 @@ func (uc *refreshTokenUsecase) GetUserByID(c context.Context, id int64) (domain.
 	return uc.repo.GetByID(ctx, id)
 }
 
-func (uc *refreshTokenUsecase) CreateAccessToken(user domain.User, secret string, expiry int) (accessToken string, err error) {
-	return tokenutil.CreateAccessToken(user, secret, expiry)
+func (uc *refreshTokenUsecase) CreateAccessToken(user domain.User, ssid string, secret string, expiry int) (accessToken string, err error) {
+	return tokenutil.CreateAccessToken(user, secret, ssid, expiry)
 }
 
-func (uc *refreshTokenUsecase) CreateRefreshToken(user domain.User, secret string, expiry int) (refreshToken string, err error) {
-	return tokenutil.CreateRefreshToken(user, secret, expiry)
+func (uc *refreshTokenUsecase) CreateRefreshToken(user domain.User, ssid string, secret string, expiry int) (refreshToken string, err error) {
+	return tokenutil.CreateRefreshToken(user, secret, ssid, expiry)
 }
 
-func (uc *refreshTokenUsecase) ExtractIDFromToken(requestToken string, secret string) (int64, error) {
+func (uc *refreshTokenUsecase) ExtractIDAndSSIDFromToken(requestToken string, secret string) (int64, string, error) {
 	return tokenutil.ExtractIDFromToken(requestToken, secret)
 }

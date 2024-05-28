@@ -2,8 +2,9 @@ package usecase
 
 import (
 	"context"
-	"github.com/LXJ0000/go-backend/internal/domain"
 	"time"
+
+	"github.com/LXJ0000/go-backend/internal/domain"
 
 	"github.com/LXJ0000/go-backend/utils/tokenutil"
 )
@@ -26,10 +27,10 @@ func (uc *loginUsecase) GetUserByEmail(c context.Context, email string) (domain.
 	return uc.userRepository.GetByEmail(ctx, email)
 }
 
-func (uc *loginUsecase) CreateAccessToken(user domain.User, secret string, expiry int) (accessToken string, err error) {
-	return tokenutil.CreateAccessToken(user, secret, expiry)
+func (uc *loginUsecase) CreateAccessToken(user domain.User, ssid string, secret string, expiry int) (accessToken string, err error) {
+	return tokenutil.CreateAccessToken(user, ssid, secret, expiry)
 }
 
-func (uc *loginUsecase) CreateRefreshToken(user domain.User, secret string, expiry int) (refreshToken string, err error) {
-	return tokenutil.CreateRefreshToken(user, secret, expiry)
+func (uc *loginUsecase) CreateRefreshToken(user domain.User, ssid string, secret string, expiry int) (refreshToken string, err error) {
+	return tokenutil.CreateRefreshToken(user, ssid, secret, expiry)
 }

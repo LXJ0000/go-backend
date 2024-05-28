@@ -2,14 +2,17 @@ package controller
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/LXJ0000/go-backend/bootstrap"
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type RefreshTokenController struct {
 	RefreshTokenUsecase domain.RefreshTokenUsecase
+	UserUsecase         domain.UserUsecase
 	Env                 *bootstrap.Env
 }
 
@@ -22,11 +25,14 @@ func (col *RefreshTokenController) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	userID, err := col.RefreshTokenUsecase.ExtractIDFromToken(request.RefreshToken, col.Env.RefreshTokenSecret)
+	userID, oldSsid, err := col.RefreshTokenUsecase.ExtractIDAndSSIDFromToken(request.RefreshToken, col.Env.RefreshTokenSecret)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, domain.ErrorResp("User not found", err))
 		return
 	}
+
+	tokenExpiry := time.Duration(col.Env.RefreshTokenExpiryHour) * time.Hour
+	col.UserUsecase.Logout(c, oldSsid, tokenExpiry)
 
 	user, err := col.RefreshTokenUsecase.GetUserByID(c, userID)
 	if err != nil {
@@ -34,13 +40,14 @@ func (col *RefreshTokenController) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	accessToken, err := col.RefreshTokenUsecase.CreateAccessToken(user, col.Env.AccessTokenSecret, col.Env.AccessTokenExpiryHour)
+	ssid := uuid.New().String()
+	accessToken, err := col.RefreshTokenUsecase.CreateAccessToken(user, ssid, col.Env.AccessTokenSecret, col.Env.AccessTokenExpiryHour)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("create access token", err))
 		return
 	}
 
-	refreshToken, err := col.RefreshTokenUsecase.CreateRefreshToken(user, col.Env.RefreshTokenSecret, col.Env.RefreshTokenExpiryHour)
+	refreshToken, err := col.RefreshTokenUsecase.CreateRefreshToken(user, ssid, col.Env.RefreshTokenSecret, col.Env.RefreshTokenExpiryHour)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("create refresh token", err))
 		return

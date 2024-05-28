@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/LXJ0000/go-backend/internal/domain"
+	"github.com/google/uuid"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -35,14 +36,14 @@ func (col *LoginController) Login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Invalid credentials", err))
 		return
 	}
-
-	accessToken, err := col.LoginUsecase.CreateAccessToken(user, col.Env.AccessTokenSecret, col.Env.AccessTokenExpiryHour)
+	ssid := uuid.New().String()
+	accessToken, err := col.LoginUsecase.CreateAccessToken(user, ssid, col.Env.AccessTokenSecret, col.Env.AccessTokenExpiryHour)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create access token fail", err))
 		return
 	}
 
-	refreshToken, err := col.LoginUsecase.CreateRefreshToken(user, col.Env.RefreshTokenSecret, col.Env.RefreshTokenExpiryHour)
+	refreshToken, err := col.LoginUsecase.CreateRefreshToken(user, ssid, col.Env.RefreshTokenSecret, col.Env.RefreshTokenExpiryHour)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create refresh token fail", err))
 		return
