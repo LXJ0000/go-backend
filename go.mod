@@ -4,7 +4,7 @@ go 1.22.1
 
 require (
 	github.com/IBM/sarama v1.43.1
-	github.com/LXJ0000/go-lib v0.0.0-20240424022249-4f999f874eda
+	github.com/LXJ0000/go-lib v0.0.0-20240530054513-5c85904138cf
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/gin-contrib/cors v1.7.1
 	github.com/gin-gonic/gin v1.9.1
@@ -21,7 +21,7 @@ require (
 	golang.org/x/net v0.24.0
 	golang.org/x/sync v0.7.0
 	gorm.io/driver/mysql v1.5.6
-	gorm.io/gorm v1.25.9
+	gorm.io/gorm v1.25.10
 	gorm.io/plugin/prometheus v0.1.0
 )
 
