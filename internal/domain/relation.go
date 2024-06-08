@@ -17,22 +17,22 @@ type Relation struct {
 }
 
 func (Relation) TableName() string {
-    return `relation`
+	return `relation`
 }
 
 type RelationStat struct {
 	Model
 	UserID   int64 `gorm:"unique"`
-	Follower int   // fans
-	Followee int
+	Follower int   // 粉丝数
+	Followee int   // 关注数
 }
 
 type RelationUsecase interface {
 	Follow(c context.Context, follower, followee int64) error
 	CancelFollow(c context.Context, follower, followee int64) error
 	GetFollower(c context.Context, userID int64, page, size int) ([]User, int, error) // 粉丝列表
-	GetFollowee(c context.Context, userID int64, page, size int) ([]User, int, error) // 工作者列表
-	Detail(c context.Context, follower, followee int64) (Relation, error)               // 关注状态
+	GetFollowee(c context.Context, userID int64, page, size int) ([]User, int, error) // 关注者列表
+	Detail(c context.Context, follower, followee int64) (Relation, error)             // 关注状态
 	Stat(c context.Context, userID int64) (RelationStat, error)
 }
 
