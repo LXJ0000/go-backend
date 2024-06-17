@@ -58,6 +58,6 @@ type FeedHandler interface {
 type FeedRepository interface {
 	CreatePush(c context.Context, feed ...Feed) error
 	CreatePull(c context.Context, feed ...Feed) error
-	FindPush(c context.Context)
-	FindPull(c context.Context)
+	FindPush(c context.Context, userIDs []int64, timestamp, limit int64) ([]Feed, error)
+	FindPull(c context.Context, userID, timestamp, limit int64) ([]Feed, error)
 }
