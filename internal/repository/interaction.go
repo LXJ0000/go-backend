@@ -104,8 +104,8 @@ func (repo *interactionRepository) IncrReadCount(c context.Context, biz string, 
 func (repo *interactionRepository) Like(c context.Context, biz string, bizID, userID int64) error {
 	now := time.Now().UnixMicro()
 	updateInteraction := map[string]interface{}{
-		"like_cnt":  gorm.Expr("`like_cnt` + 1"),
-		"update_at": now,
+		"like_cnt":   gorm.Expr("`like_cnt` + 1"),
+		"updated_at": now,
 	}
 	createInteraction := &domain.Interaction{
 		BizID:   bizID,
