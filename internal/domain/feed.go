@@ -26,6 +26,10 @@ type FeedPush struct {
 	// 可归档
 }
 
+func (FeedPush) TableName() string {
+	return `feed_push`
+}
+
 // FeedPull 拉模型 - 读扩散
 type FeedPull struct {
 	Model
@@ -33,6 +37,10 @@ type FeedPull struct {
 	Type      string
 	Content   string
 	CreatedAt time.Time `gorm:"index"`
+}
+
+func (FeedPull) TableName() string {
+	return `feed_pull`
 }
 
 type Feed struct {

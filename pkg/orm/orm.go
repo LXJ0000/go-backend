@@ -30,7 +30,7 @@ func NewDatabase(db *gorm.DB) Database {
 }
 
 func (dao *database) Raw(c context.Context) *gorm.DB {
-	return dao.db
+	return dao.db.WithContext(c)
 }
 
 func (dao *database) FindOne(c context.Context, model interface{}, filter interface{}, item interface{}) error {

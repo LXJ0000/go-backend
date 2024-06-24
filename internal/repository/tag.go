@@ -57,7 +57,7 @@ func (t *tagRepository) GetTagsByBiz(c context.Context, userID int64, biz string
 		tagIDs = append(tagIDs, item.TagID)
 	}
 	var tags []domain.Tag
-	if err := db.WithContext(c).Model(&domain.Tag{}).Where("tag_id in (?)", tagIDs).Find(&tags).Error; err != nil {
+	if err := db.Model(&domain.Tag{}).Where("tag_id in (?)", tagIDs).Find(&tags).Error; err != nil {
 		return nil, err
 	}
 	return tags, nil

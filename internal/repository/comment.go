@@ -36,7 +36,7 @@ func (repo *commentRepository) FindTop(c context.Context, biz string, bizID, min
 	}
 	db := repo.dao.Raw(c)
 	var res []domain.Comment
-	err := db.WithContext(c).
+	err := db.
 		Where("biz = ? AND biz_id = ? AND id < ? AND parent_id IS NULL", biz, bizID, minID). // 一级评论 则 parent_id is null
 		Limit(limit).
 		// Order("id asc").
