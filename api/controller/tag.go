@@ -14,7 +14,7 @@ type TagController struct {
 }
 
 func (col *TagController) CreateTag(c *gin.Context) {
-	userID := c.MustGet(domain.USERCTXID).(int64)
+	userID := c.MustGet(domain.XUserID).(int64)
 	tagName := c.Request.FormValue("name")
 	if tagName == "" {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params: name must not be empty", nil))
@@ -36,7 +36,7 @@ func (col *TagController) CreateTag(c *gin.Context) {
 }
 
 func (col *TagController) CreateTagBiz(c *gin.Context) {
-	userID := c.MustGet(domain.USERCTXID).(int64)
+	userID := c.MustGet(domain.XUserID).(int64)
 	var req domain.CreateTagBizRequest
 	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
@@ -50,7 +50,7 @@ func (col *TagController) CreateTagBiz(c *gin.Context) {
 }
 
 func (col *TagController) GetTagsByBiz(c *gin.Context) {
-	userID := c.MustGet(domain.USERCTXID).(int64)
+	userID := c.MustGet(domain.XUserID).(int64)
 	var req domain.GetTagsByBizRequest
 	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
@@ -65,7 +65,7 @@ func (col *TagController) GetTagsByBiz(c *gin.Context) {
 }
 
 func (col *TagController) GetTagsByUserID(c *gin.Context) {
-	userID := c.MustGet(domain.USERCTXID).(int64)
+	userID := c.MustGet(domain.XUserID).(int64)
 	tags, err := col.TagUsecase.GetTagsByUserID(c, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Get Tags By UserID Failed", err))

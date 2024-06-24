@@ -19,6 +19,7 @@ func NewPostRankRepository(localCache cache.LocalCache, redisCache cache.RedisCa
 		redisCache: redisCache,
 	}
 }
+
 func (repo *postRankRepository) ReplaceTopN(c context.Context, items []domain2.Post, expiration time.Duration) error {
 	// ----------------------------------------------------------- local
 	//_ = repo.localCache.Set(c, items) //必然不会出错
@@ -29,6 +30,7 @@ func (repo *postRankRepository) ReplaceTopN(c context.Context, items []domain2.P
 	}
 	return repo.redisCache.Set(c, domain2.PostTopNKey, data, expiration)
 }
+
 func (repo *postRankRepository) GetTopN(c context.Context) ([]domain2.Post, error) {
 	// ----------------------------------------------------------- local
 	//posts, err := repo.localCache.Get(c)

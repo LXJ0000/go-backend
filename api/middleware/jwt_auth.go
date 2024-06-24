@@ -38,8 +38,8 @@ func JwtAuthMiddleware(secret string, cache cache.RedisCache) gin.HandlerFunc {
 					c.Abort()
 					return
 				}
-				c.Set(domain.USERCTXID, userID)
-				c.Set(domain.USERSESSIONID, ssid)
+				c.Set(domain.XUserID, userID)
+				c.Set(domain.UserSessionID, ssid)
 				c.Next()
 				return
 			}

@@ -15,7 +15,7 @@ type UserController struct {
 }
 
 func (col *UserController) Fetch(c *gin.Context) {
-	userID := c.MustGet(domain.USERCTXID).(int64)
+	userID := c.MustGet(domain.XUserID).(int64)
 	profile, err := col.UserUsecase.GetProfileByID(c, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Get profile by user_id fail with db error", err))
@@ -28,7 +28,7 @@ func (col *UserController) Fetch(c *gin.Context) {
 }
 
 func (col *UserController) Logout(c *gin.Context) {
-	ssid := c.MustGet(domain.USERSESSIONID).(string)
+	ssid := c.MustGet(domain.UserSessionID).(string)
 	tokenExpiry := time.Duration(col.Env.RefreshTokenExpiryHour) * time.Hour
 	if err := col.UserUsecase.Logout(c, ssid, tokenExpiry); err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Logout fail with db error", err))

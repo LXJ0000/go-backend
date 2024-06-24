@@ -24,7 +24,7 @@ func (col *TaskController) Create(c *gin.Context) {
 	}
 	now := time.Now().UnixMicro()
 	task.TaskID = snowflake.GenID()
-	task.UserID = c.MustGet(domain.USERCTXID).(int64)
+	task.UserID = c.MustGet(domain.XUserID).(int64)
 	task.CreatedAt = now
 	task.UpdatedAt = now
 

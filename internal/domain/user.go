@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	USERCTXID     = "x-user-id"
-	USERSESSIONID = "user-session-id"
+	XUserID       = "x-user-id"
+	UserSessionID = "user-session-id"
 )
 
 func UserLogoutKey(ssid string) string {
