@@ -3,6 +3,7 @@ package controller
 import (
 	"database/sql"
 	"net/http"
+	"time"
 
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/LXJ0000/go-backend/utils/lib"
@@ -15,14 +16,14 @@ type CommentController struct {
 }
 
 func (col *CommentController) Create(c *gin.Context) {
-	var req domain.CommentCreateRequset
+	var req domain.CommentCreateRequest
 	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
 		return
 	}
 
 	var comment domain.Comment
-
+	now := time.Now().UnixMicro()
 	comment.CommentID = snowflakeutil.GenID()
 	comment.UserID = c.MustGet(domain.USERCTXID).(int64)
 	comment.Biz = req.Biz
@@ -30,6 +31,8 @@ func (col *CommentController) Create(c *gin.Context) {
 	comment.Content = req.Content
 	comment.RootID = sql.NullInt64{Int64: req.RootID, Valid: req.RootID != 0}
 	comment.ParentID = sql.NullInt64{Int64: req.ParentID, Valid: req.ParentID != 0}
+	comment.CreatedAt = now
+	comment.UpdatedAt = now
 
 	if err := col.CommentUsecase.Create(c.Request.Context(), comment); err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create comment fail", err))
@@ -55,7 +58,7 @@ func (col *CommentController) Delete(c *gin.Context) {
 }
 
 func (col *CommentController) FindTop(c *gin.Context) {
-	var req domain.CommentListRequset
+	var req domain.CommentListRequest
 	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
 		return

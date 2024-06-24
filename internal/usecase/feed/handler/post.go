@@ -35,7 +35,7 @@ func (h *FeedPostHandler) CreateFeedEvent(c context.Context, t string, content d
 	switch { // 粉丝数超过阈值，则读扩散，否则写扩散
 	case static.Follower > domain.THRESHOLD:
 		return h.feedRepo.CreatePull(ctx, domain.Feed{
-			Type:   domain.FEEDPOSTEVENT,
+			Type:   domain.FeedPostEvent,
 			UserID: follower,
 		})
 	default:
@@ -46,7 +46,7 @@ func (h *FeedPostHandler) CreateFeedEvent(c context.Context, t string, content d
 		events := slice.Map(followers, func(user domain.User) domain.Feed {
 			return domain.Feed{
 				UserID:  user.UserID,
-				Type:    domain.FEEDPOSTEVENT,
+				Type:    domain.FeedPostEvent,
 				Content: content,
 			}
 		})

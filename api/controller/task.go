@@ -2,6 +2,7 @@ package controller
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/LXJ0000/go-backend/utils/lib"
@@ -21,9 +22,11 @@ func (col *TaskController) Create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
 		return
 	}
-
+	now := time.Now().UnixMicro()
 	task.TaskID = snowflake.GenID()
 	task.UserID = c.MustGet(domain.USERCTXID).(int64)
+	task.CreatedAt = now
+	task.UpdatedAt = now
 
 	err = col.TaskUsecase.Create(c, task)
 	if err != nil {

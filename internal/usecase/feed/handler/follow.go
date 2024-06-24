@@ -26,7 +26,7 @@ func (h *FeedFollowHandler) CreateFeedEvent(c context.Context, t string, content
 	}
 	return h.feedRepo.CreatePush(ctx, domain.Feed{
 		UserID:  followee, // 收件人 被点赞的人
-		Type:    domain.FEEDFOLLOWEVENT,
+		Type:    domain.FeedFollowEvent,
 		Content: content,
 	})
 }

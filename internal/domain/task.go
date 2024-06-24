@@ -2,11 +2,10 @@ package domain
 
 import (
 	"context"
-	"gorm.io/gorm"
 )
 
 type Task struct {
-	gorm.Model
+	Model
 	TaskID int64  `json:"task_id"`
 	Title  string `json:"title" form:"title"`
 	UserID int64  `json:"user_id" form:"user_id"`

@@ -6,9 +6,9 @@ import (
 )
 
 const (
-	FEEDLIKEEVENT   string = "feed-like"
-	FEEDPOSTEVENT   string = "feed-post"
-	FEEDFOLLOWEVENT string = "feed-follow"
+	FeedLikeEvent   string = "feed-like"
+	FeedPostEvent   string = "feed-post"
+	FeedFollowEvent string = "feed-follow"
 
 	THRESHOLD int = 1000 // 读写扩散阈值
 )
@@ -21,7 +21,7 @@ type FeedPush struct {
 	UserID    int64  `gorm:"index;not null"` // 收件人
 	Type      string // 标记事件类型 决定Content解读方式
 	Content   string
-	CreatedAt time.Time `gorm:"index"`
+	CreatedAt int64 `gorm:"index"`
 	// 理论上来说没有 Update 操作，也没有 Delete 操作，但是考虑到文章可能有撤回操作
 	// 可归档
 }
@@ -36,7 +36,7 @@ type FeedPull struct {
 	UserID    int64 `gorm:"index;not null"` // 发件人
 	Type      string
 	Content   string
-	CreatedAt time.Time `gorm:"index"`
+	CreatedAt int64 `gorm:"index"`
 }
 
 func (FeedPull) TableName() string {
@@ -57,7 +57,7 @@ type FeedUsecase interface {
 	GetFeedEventList(c context.Context, userID, timestamp, limit int64) ([]Feed, error)
 }
 
-// Handler 具体业务的处理逻辑 按照 type 类型来分，因为 type 天然的标记业务
+// FeedHandler 具体业务的处理逻辑 按照 type 类型来分，因为 type 天然的标记业务
 type FeedHandler interface {
 	CreateFeedEvent(c context.Context, t string, content FeedContent) error
 	FindFeedEvent(c context.Context, userID, timestamp, limit int64) ([]Feed, error)
@@ -66,6 +66,8 @@ type FeedHandler interface {
 type FeedRepository interface {
 	CreatePush(c context.Context, feed ...Feed) error
 	CreatePull(c context.Context, feed ...Feed) error
-	FindPush(c context.Context, userIDs []int64, timestamp, limit int64) ([]Feed, error)
-	FindPull(c context.Context, userID, timestamp, limit int64) ([]Feed, error)
+	// FindPull Get from other outbox
+	FindPull(c context.Context, userIDs []int64, timestamp, limit int64) ([]Feed, error)
+	// FindPush Get from inbox
+	FindPush(c context.Context, userID, timestamp, limit int64) ([]Feed, error)
 }

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/LXJ0000/go-backend/utils/snowflakeutil"
@@ -19,11 +20,14 @@ func (col *TagController) CreateTag(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params: name must not be empty", nil))
 		return
 	}
+	now := time.Now().UnixMicro()
 	tag := domain.Tag{
 		TagID:   snowflakeutil.GenID(),
 		UserID:  userID,
 		TagName: tagName,
 	}
+	tag.CreatedAt = now
+	tag.UpdatedAt = now
 	if err := col.TagUsecase.CreateTag(c, tag); err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create Tag Failed", err))
 		return

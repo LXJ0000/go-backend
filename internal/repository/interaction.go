@@ -12,6 +12,7 @@ import (
 	"gorm.io/gorm"
 	"log/slog"
 	"strconv"
+	"time"
 )
 
 type interactionRepository struct {
@@ -43,9 +44,11 @@ func (repo *interactionRepository) GetByIDs(c context.Context, biz string, ids [
 // BatchIncrReadCount 批量增加read_cnt 需保证 len(biz) == len(id)
 func (repo *interactionRepository) BatchIncrReadCount(c context.Context, biz []string, id []int64) error {
 	fn := func(tx *gorm.DB) error {
+		now := time.Now().UnixMicro()
 		dao := orm.NewDatabase(tx)
 		update := map[string]interface{}{
-			"read_cnt": gorm.Expr("`read_cnt` + 1"),
+			"read_cnt":   gorm.Expr("`read_cnt` + 1"),
+			"updated_at": now,
 		}
 
 		for i := 0; i < len(biz); i++ {
@@ -55,6 +58,9 @@ func (repo *interactionRepository) BatchIncrReadCount(c context.Context, biz []s
 				Biz:     biz[i],
 				ReadCnt: 1,
 			}
+			create.CreatedAt = now
+			create.UpdatedAt = now
+
 			if err := dao.UpsertOne(c, &domain.Interaction{}, update, create); err != nil {
 				slog.Error("IncrReadCount Fail", "Error", err.Error(), "biz", biz[i], "biz_id", id[i])
 			}
@@ -71,14 +77,18 @@ func (repo *interactionRepository) BatchIncrReadCount(c context.Context, biz []s
 }
 
 func (repo *interactionRepository) IncrReadCount(c context.Context, biz string, id int64) error {
+	now := time.Now().UnixMicro()
 	update := map[string]interface{}{
-		"read_cnt": gorm.Expr("`read_cnt` + 1"),
+		"read_cnt":   gorm.Expr("`read_cnt` + 1"),
+		"updated_at": now,
 	}
 	create := &domain.Interaction{
 		BizID:   id,
 		Biz:     biz,
 		ReadCnt: 1,
 	}
+	create.CreatedAt = now
+	create.UpdatedAt = now
 	if err := repo.dao.UpsertOne(c, &domain.Interaction{}, update, create); err != nil {
 		return err
 	}
@@ -92,16 +102,21 @@ func (repo *interactionRepository) IncrReadCount(c context.Context, biz string, 
 }
 
 func (repo *interactionRepository) Like(c context.Context, biz string, bizID, userID int64) error {
+	now := time.Now().UnixMicro()
 	updateInteraction := map[string]interface{}{
-		"like_cnt": gorm.Expr("`like_cnt` + 1"),
+		"like_cnt":  gorm.Expr("`like_cnt` + 1"),
+		"update_at": now,
 	}
 	createInteraction := &domain.Interaction{
 		BizID:   bizID,
 		Biz:     biz,
 		LikeCnt: 1,
 	}
+	createInteraction.CreatedAt = now
+	createInteraction.UpdatedAt = now
 	updateUserLike := map[string]interface{}{
-		"status": true,
+		"status":     true,
+		"updated_at": now,
 	}
 	createUserLike := &domain.UserLike{
 		BizID:  bizID,
@@ -109,6 +124,8 @@ func (repo *interactionRepository) Like(c context.Context, biz string, bizID, us
 		UserID: userID,
 		Status: true,
 	}
+	createUserLike.CreatedAt = now
+	createUserLike.UpdatedAt = now
 	fn := func(tx *gorm.DB) error {
 		dao := orm.NewDatabase(tx)
 		if err := dao.UpsertOne(c, &domain.Interaction{}, updateInteraction, createInteraction); err != nil {
@@ -130,30 +147,39 @@ func (repo *interactionRepository) Like(c context.Context, biz string, bizID, us
 
 func (repo *interactionRepository) CancelLike(c context.Context, biz string, bizID, userID int64) error {
 	fn := func(tx *gorm.DB) error {
+		now := time.Now().UnixMicro()
 		dao := orm.NewDatabase(tx)
 		//1. 更新 UserLike status = false
+		createUserLike := &domain.UserLike{
+			UserID: userID,
+			BizID:  bizID,
+			Biz:    biz,
+		}
+		createUserLike.CreatedAt = now
+		createUserLike.UpdatedAt = now
 		if err := dao.UpdateOne(c,
 			&domain.UserLike{},
-			&domain.UserLike{
-				UserID: userID,
-				BizID:  bizID,
-				Biz:    biz,
-			},
+			createUserLike,
 			map[string]interface{}{
-				"status": false,
+				"status":     false,
+				"updated_at": now,
 			},
 		); err != nil {
 			return err
 		}
 		//2. 更新 interaction like_cnt - 1
+		createLikeCnt := &domain.Interaction{
+			BizID: bizID,
+			Biz:   biz,
+		}
+		createUserLike.CreatedAt = now
+		createUserLike.UpdatedAt = now
 		if err := dao.UpdateOne(c,
 			&domain.Interaction{},
-			&domain.Interaction{
-				BizID: bizID,
-				Biz:   biz,
-			},
+			createLikeCnt,
 			map[string]interface{}{
-				"like_cnt": gorm.Expr("`like_cnt` - 1"),
+				"like_cnt":   gorm.Expr("`like_cnt` - 1"),
+				"updated_at": now,
 			},
 		); err != nil {
 			return err
@@ -230,16 +256,21 @@ func (repo *interactionRepository) Stat(c context.Context, biz string, bizID, us
 }
 
 func (repo *interactionRepository) Collect(c context.Context, biz string, bizID, userID, collectionID int64) error {
+	now := time.Now().UnixMicro()
 	updateInteraction := map[string]interface{}{
 		"collect_cnt": gorm.Expr("`collect_cnt` + 1"),
+		"updated_at":  now,
 	}
 	createInteraction := &domain.Interaction{
 		BizID:      bizID,
 		Biz:        biz,
 		CollectCnt: 1,
 	}
+	createInteraction.CreatedAt = now
+	createInteraction.UpdatedAt = now
 	updateUserCollect := map[string]interface{}{
-		"status": true,
+		"status":     true,
+		"updated_at": now,
 	}
 	createUserCollect := &domain.UserCollect{
 		BizID:        bizID,
@@ -248,6 +279,8 @@ func (repo *interactionRepository) Collect(c context.Context, biz string, bizID,
 		CollectionID: collectionID,
 		Status:       true,
 	}
+	createUserCollect.CreatedAt = now
+	createUserCollect.UpdatedAt = now
 	fn := func(tx *gorm.DB) error {
 		dao := orm.NewDatabase(tx)
 		if err := dao.UpsertOne(c, &domain.Interaction{}, updateInteraction, createInteraction); err != nil {
@@ -269,31 +302,40 @@ func (repo *interactionRepository) Collect(c context.Context, biz string, bizID,
 
 func (repo *interactionRepository) CancelCollect(c context.Context, biz string, bizID, userID, collectionID int64) error {
 	fn := func(tx *gorm.DB) error {
+		now := time.Now().UnixMicro()
 		dao := orm.NewDatabase(tx)
 		//1. 更新 UserLike status = false
+		createUserCollect := &domain.UserCollect{
+			UserID:       userID,
+			BizID:        bizID,
+			CollectionID: collectionID,
+			Biz:          biz,
+		}
+		createUserCollect.CreatedAt = now
+		createUserCollect.UpdatedAt = now
 		if err := dao.UpdateOne(c,
 			&domain.UserCollect{},
-			&domain.UserCollect{
-				UserID:       userID,
-				BizID:        bizID,
-				CollectionID: collectionID,
-				Biz:          biz,
-			},
+			createUserCollect,
 			map[string]interface{}{
-				"status": false,
+				"status":     false,
+				"updated_at": now,
 			},
 		); err != nil {
 			return err
 		}
 		//2. 更新 interaction like_cnt - 1
+		createCollectCnt := &domain.Interaction{
+			BizID: bizID,
+			Biz:   biz,
+		}
+		createUserCollect.CreatedAt = now
+		createUserCollect.UpdatedAt = now
 		if err := dao.UpdateOne(c,
 			&domain.Interaction{},
-			&domain.Interaction{
-				BizID: bizID,
-				Biz:   biz,
-			},
+			createCollectCnt,
 			map[string]interface{}{
 				"collect_cnt": gorm.Expr("`collect_cnt` - 1"),
+				"updated_at":  now,
 			},
 		); err != nil {
 			return err

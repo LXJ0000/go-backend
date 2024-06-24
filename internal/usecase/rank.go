@@ -2,12 +2,11 @@ package usecase
 
 import (
 	"context"
-	domain "github.com/LXJ0000/go-backend/internal/domain"
+	"github.com/LXJ0000/go-backend/internal/domain"
+	"github.com/LXJ0000/go-lib/queue"
 	"log/slog"
 	"math"
 	"time"
-
-	"github.com/LXJ0000/go-lib/queue"
 )
 
 type PostRankUsecase struct {
@@ -50,7 +49,7 @@ func (ru *PostRankUsecase) TopN(c context.Context) error {
 	slog.Info("topN", "posts", posts)
 	go func() {
 		// cache posts
-		if err := ru.rankRepository.ReplaceTopN(context.Background(), posts, time.Minute * 5); err != nil {
+		if err := ru.rankRepository.ReplaceTopN(context.Background(), posts, time.Minute*5); err != nil {
 			slog.Error("Cache ReplaceTopN Failed", "Error", err.Error())
 		} // TODO 配置expiration
 	}()
@@ -85,7 +84,7 @@ func (ru *PostRankUsecase) topN(c context.Context) ([]domain.Post, error) {
 		// 合并计算 score
 		for _, post := range posts {
 			interaction := interactions[post.PostID]
-			score := ru.getScore(interaction.LikeCnt, interaction.UpdatedAt)
+			score := ru.getScore(interaction.LikeCnt, time.UnixMicro(interaction.UpdatedAt))
 			// solve heap
 			if heap.Size() < ru.n {
 				heap.Push(pair{post: post, score: score})
@@ -99,7 +98,7 @@ func (ru *PostRankUsecase) topN(c context.Context) ([]domain.Post, error) {
 			}
 		}
 		// 不够一批 或者 时间跨度为7天，直接中断
-		if len(posts) < ru.batchSize || now.Sub(posts[len(posts)-1].UpdatedAt).Hours() > 7*24 {
+		if len(posts) < ru.batchSize || now.Sub(time.UnixMicro(posts[len(posts)-1].UpdatedAt)).Hours() > 7*24 {
 			break // 完啦
 		}
 		offset += ru.batchSize

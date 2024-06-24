@@ -1,13 +1,9 @@
 package domain
 
-import (
-	"time"
-)
-
 type Model struct {
 	ID        uint `gorm:"primarykey" json:"-"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt int64
+	UpdatedAt int64
 	// DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 

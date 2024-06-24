@@ -1,4 +1,4 @@
-	package domain
+package domain
 
 import (
 	"database/sql"
@@ -36,7 +36,7 @@ type CommentUsecase interface {
 	FindTop(c context.Context, biz string, bizID, minID int64, limit int) ([]Comment, error)
 }
 
-type CommentCreateRequset struct {
+type CommentCreateRequest struct {
 	Biz      string `json:"biz" binding:"required"`
 	BizID    int64  `json:"biz_id" binding:"required"`
 	RootID   int64  `json:"root_id"`
@@ -44,7 +44,7 @@ type CommentCreateRequset struct {
 	Content  string `json:"content" binding:"required"`
 }
 
-type CommentListRequset struct {
+type CommentListRequest struct {
 	Biz   string `json:"biz" form:"biz"`
 	BizID int64  `json:"biz_id" form:"biz_id"`
 	MinID int64  `json:"min_id" form:"min_id"`

@@ -57,6 +57,7 @@ func (f *fileUsecase) Upload(c context.Context, sourceFile *multipart.FileHeader
 		return domain.File{}, err
 	}
 
+	now := time.Now().UnixMicro()
 	file = domain.File{
 		FileID: snowflake.GenID(),
 		Name:   sourceFile.Filename,
@@ -65,6 +66,8 @@ func (f *fileUsecase) Upload(c context.Context, sourceFile *multipart.FileHeader
 		Source: domain.FileSourceLocal,
 		Hash:   fileHash,
 	}
+	file.CreatedAt = now
+	file.UpdatedAt = now
 	if err := f.repo.Upload(ctx, file); err != nil {
 		go func() { _ = fileutil.RemoveFile(dst) }()
 		return domain.File{}, nil
@@ -109,6 +112,7 @@ func (f *fileUsecase) Uploads(c context.Context, sourceFiles []*multipart.FileHe
 				return
 			}
 
+			now := time.Now().UnixMicro()
 			file = domain.File{
 				FileID: snowflake.GenID(),
 				Name:   sourceFile.Filename,
@@ -117,6 +121,8 @@ func (f *fileUsecase) Uploads(c context.Context, sourceFiles []*multipart.FileHe
 				Source: domain.FileSourceLocal,
 				Hash:   fileHash,
 			}
+			file.CreatedAt = now
+			file.UpdatedAt = now
 			if err := f.repo.Upload(ctx, file); err != nil {
 				resp.Data[sourceFileName] = err.Error()
 				go func() {
