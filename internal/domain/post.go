@@ -8,8 +8,8 @@ import (
 const (
 	PostTopNKey = "post_topN"
 
-	PostStatusHide uint8 = iota
-	PostStatusPublish
+	PostStatusHide    string = "hide"
+	PostStatusPublish string = "publish"
 )
 
 type Post struct {
@@ -20,7 +20,7 @@ type Post struct {
 	Abstract string `json:"abstract" form:"abstract" binding:"required"`
 	Content  string `json:"content" form:"content" binding:"required"`
 	AuthorID int64  `json:"author_id,string" form:"author_id"`
-	Status   uint8  `json:"status" form:"status" binding:"required"`
+	Status   string `json:"status" form:"status" binding:"required"`
 }
 
 func (Post) TableName() string {
@@ -46,10 +46,10 @@ type PostUsecase interface {
 }
 
 type PostListRequest struct {
-	Page     int   `json:"page" form:"page"`
-	Size     int   `json:"size" form:"size"`
-	AuthorID int64 `json:"author_id" form:"author_id"`
-	Status   uint8 `json:"status" form:"status"`
+	Page     int    `json:"page" form:"page"`
+	Size     int    `json:"size" form:"size"`
+	AuthorID int64  `json:"author_id" form:"author_id"`
+	Status   string `json:"status" form:"status"`
 }
 
 //type PostListResponse struct {
