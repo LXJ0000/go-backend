@@ -28,11 +28,21 @@ func (uc *userUsecase) GetProfileByID(c context.Context, userID int64) (*domain.
 		return nil, err
 	}
 
-	return &domain.Profile{Name: user.UserName, Email: user.Email}, nil
+	return &domain.Profile{
+		UserName: user.UserName, Email: user.Email,
+		AboutMe: user.AboutMe, Birthday: user.Birthday,
+		NickName: user.NickName,
+	}, nil
 }
 
 func (uc *userUsecase) Logout(c context.Context, ssid string, tokenExpiry time.Duration) error {
 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
 	return uc.repo.InvalidToken(ctx, ssid, tokenExpiry)
+}
+
+func (uc *userUsecase) UpdateProfile(c context.Context, id int64, user domain.User) error {
+	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
+	defer cancel()
+	return uc.repo.Update(ctx, id, user)
 }

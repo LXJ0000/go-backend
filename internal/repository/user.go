@@ -49,3 +49,7 @@ func (u *userRepository) FindByUserIDs(c context.Context, userIDs []int64, page,
 func (u *userRepository) InvalidToken(c context.Context, ssid string, exp time.Duration) error {
 	return u.cache.Set(c, domain.UserLogoutKey(ssid), "", exp)
 }
+
+func (u *userRepository) Update(c context.Context, id int64, user domain.User) error {
+	return u.dao.UpdateOne(c, &domain.User{}, map[string]interface{}{"user_id": id}, &user)
+}

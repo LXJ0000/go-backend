@@ -21,4 +21,5 @@ func NewUserRouter(env *bootstrap.Env, timeout time.Duration, db orm.Database, r
 	}
 	group.POST("/logout", col.Logout)
 	group.GET("/user/profile", col.Fetch)
+	group.POST("/user/edit", col.Update)
 }

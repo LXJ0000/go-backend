@@ -36,3 +36,32 @@ func (col *UserController) Logout(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, domain.SuccessResp(nil))
 }
+
+func (col *UserController) Update(c *gin.Context) {
+	userID := c.MustGet(domain.XUserID).(int64)
+	req := struct {
+		NickName string `json:"nick_name" form:"nick_name"`
+		Birthday string `json:"birthday" form:"birthday"`
+		AboutMe  string `json:"about_me" form:"about_me"`
+	}{}
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
+		return
+	}
+	user := domain.User{}
+	if req.Birthday != "" {
+		birthday, err := time.Parse(time.DateOnly, req.Birthday)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, domain.ErrorResp("Update fail with invalid birthday", err))
+			return
+		}
+		user.Birthday = birthday
+	}
+	user.AboutMe = req.AboutMe
+	user.NickName = req.NickName
+	if err := col.UserUsecase.UpdateProfile(c, userID, user); err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp(err.Error(), err))
+		return
+	}
+	c.JSON(http.StatusOK, domain.SuccessResp(nil))
+}

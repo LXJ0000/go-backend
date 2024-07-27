@@ -17,12 +17,14 @@ func UserLogoutKey(ssid string) string {
 
 type User struct {
 	Model
-	UserID   int64  `json:"user_id" gorm:"primaryKey"`
-	UserName string `json:"user_name" gorm:"unique"`
-	Email    string `json:"email" gorm:"unique"`
-	Password string `json:"-" gorm:"size:256"`
+	UserID   int64     `json:"user_id" gorm:"primaryKey"`
+	UserName string    `json:"user_name" gorm:"unique"`
+	NickName string    `json:"nick_name"`
+	Email    string    `json:"email" gorm:"unique"`
+	Password string    `json:"-" gorm:"size:256"`
+	AboutMe  string    `json:"about_me"`
+	Birthday time.Time `json:"birthday"`
 	//Avatar   int64  `json:"avatar" gorm:"size:1024"` // file.file_id
-	//Birthday  time.Time `json:"birthday"`
 	//Telephone string `json:"telephone" gorm:"size:20"`
 	//LoginType LoginType `json:"login_type" gorm:"size:20"`
 	//Role      Role      `json:"role" gorm:"default:2"` //
@@ -39,16 +41,21 @@ type UserRepository interface {
 	//UpsertAvatar(c context.Context, avatar string) error
 	FindByUserIDs(c context.Context, userIDs []int64, page, size int) ([]User, error)
 	InvalidToken(c context.Context, ssid string, exp time.Duration) error
+	Update(c context.Context, id int64, user User) error
 }
 
 type UserUsecase interface {
 	GetProfileByID(c context.Context, userID int64) (*Profile, error)
+	UpdateProfile(c context.Context, userID int64, user User) error
 	Logout(c context.Context, SSID string, tokenExpiry time.Duration) error
 }
 
 type Profile struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	UserName string    `json:"user_name"`
+	NickName string    `json:"nick_name"`
+	Email    string    `json:"email"`
+	AboutMe  string    `json:"about_me"`
+	Birthday time.Time `json:"birthday"`
 }
 
 //type Role int
