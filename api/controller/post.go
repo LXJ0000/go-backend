@@ -1,16 +1,14 @@
 package controller
 
 import (
-	"log/slog"
-	"net/http"
-	"strconv"
-	"time"
-
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/LXJ0000/go-backend/utils/lib"
 	snowflake "github.com/LXJ0000/go-backend/utils/snowflakeutil"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/sync/errgroup"
+	"log/slog"
+	"net/http"
+	"strconv"
 )
 
 type PostController struct {
@@ -25,11 +23,11 @@ func (col *PostController) CreateOrPublish(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
 		return
 	}
-	now := time.Now().UnixMicro()
+	//now := time.Now().UnixMicro()
 	post.AuthorID = userID
 	post.PostID = snowflake.GenID()
-	post.CreatedAt = now
-	post.UpdatedAt = now
+	//post.CreatedAt = now
+	//post.UpdatedAt = now
 	if err := col.PostUsecase.Create(c, post); err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Failed to create post", err))
 		return

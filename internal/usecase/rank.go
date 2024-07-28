@@ -85,6 +85,8 @@ func (ru *PostRankUsecase) topN(c context.Context) ([]domain.Post, error) {
 		for _, post := range posts {
 			interaction := interactions[post.PostID]
 			score := ru.getScore(interaction.LikeCnt, time.UnixMicro(interaction.UpdatedAt))
+			//score := ru.getScore(interaction.LikeCnt, time.UnixMicro(interaction.UpdatedAt))
+
 			// solve heap
 			if heap.Size() < ru.n {
 				heap.Push(pair{post: post, score: score})

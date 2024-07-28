@@ -2,13 +2,11 @@ package controller
 
 import (
 	"database/sql"
-	"net/http"
-	"time"
-
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/LXJ0000/go-backend/utils/lib"
 	"github.com/LXJ0000/go-backend/utils/snowflakeutil"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 type CommentController struct {
@@ -23,7 +21,7 @@ func (col *CommentController) Create(c *gin.Context) {
 	}
 
 	var comment domain.Comment
-	now := time.Now().UnixMicro()
+	//now := time.Now().UnixMicro()
 	comment.CommentID = snowflakeutil.GenID()
 	comment.UserID = c.MustGet(domain.XUserID).(int64)
 	comment.Biz = req.Biz
@@ -31,8 +29,8 @@ func (col *CommentController) Create(c *gin.Context) {
 	comment.Content = req.Content
 	comment.RootID = sql.NullInt64{Int64: req.RootID, Valid: req.RootID != 0}
 	comment.ParentID = sql.NullInt64{Int64: req.ParentID, Valid: req.ParentID != 0}
-	comment.CreatedAt = now
-	comment.UpdatedAt = now
+	//comment.CreatedAt = now
+	//comment.UpdatedAt = now
 
 	if err := col.CommentUsecase.Create(c.Request.Context(), comment); err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create comment fail", err))

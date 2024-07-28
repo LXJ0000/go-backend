@@ -19,6 +19,10 @@ func (col *RelationController) Follow(c *gin.Context) {
 		return
 	}
 	userID := c.MustGet(domain.XUserID).(int64)
+	if followee == userID {
+		c.JSON(http.StatusForbidden, domain.ErrorResp("You can't follow yourself", err))
+		return
+	}
 	if err := col.RelationUsecase.Follow(c, userID, followee); err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Follow Failed", err))
 		return
@@ -33,6 +37,10 @@ func (col *RelationController) CancelFollow(c *gin.Context) {
 		return
 	}
 	userID := c.MustGet(domain.XUserID).(int64)
+	if userID == followee {
+		c.JSON(http.StatusForbidden, domain.ErrorResp("You can't cancel follow yourself", err))
+		return
+	}
 	if err := col.RelationUsecase.CancelFollow(c, userID, followee); err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("CancelFollow Failed", err))
 		return

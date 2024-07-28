@@ -4,7 +4,6 @@ import (
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/LXJ0000/go-backend/pkg/orm"
 	"golang.org/x/net/context"
-	"time"
 )
 
 type tagRepository struct {
@@ -21,7 +20,7 @@ func (t *tagRepository) CreateTag(c context.Context, tag domain.Tag) error {
 
 func (t *tagRepository) CreateTagBiz(c context.Context, userID int64, biz string, bizID int64, tagIDs []int64) error {
 	items := make([]domain.TagBiz, 0, len(tagIDs))
-	now := time.Now().UnixMicro()
+	//now := time.Now().UnixMicro()
 	for _, id := range tagIDs {
 		item := domain.TagBiz{
 			TagID:  id,
@@ -29,8 +28,8 @@ func (t *tagRepository) CreateTagBiz(c context.Context, userID int64, biz string
 			Biz:    biz,
 			BizID:  bizID,
 		}
-		item.CreatedAt = now
-		item.UpdatedAt = now
+		//item.CreatedAt = now
+		//item.UpdatedAt = now
 		items = append(items, item)
 
 	}

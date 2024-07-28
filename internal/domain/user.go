@@ -23,7 +23,7 @@ type User struct {
 	Email    string    `json:"email" gorm:"unique"`
 	Password string    `json:"-" gorm:"size:256"`
 	AboutMe  string    `json:"about_me"`
-	Birthday time.Time `json:"birthday"`
+	Birthday time.Time `json:"birthday" gorm:"default:null"`
 	//Avatar   int64  `json:"avatar" gorm:"size:1024"` // file.file_id
 	//Telephone string `json:"telephone" gorm:"size:20"`
 	//LoginType LoginType `json:"login_type" gorm:"size:20"`

@@ -2,8 +2,6 @@ package repository
 
 import (
 	"encoding/json"
-	"time"
-
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/LXJ0000/go-backend/pkg/orm"
 	"golang.org/x/net/context"
@@ -68,20 +66,20 @@ func (r *feedRepository) FindPush(c context.Context, userID, timestamp, limit in
 func convertToPush(feed domain.Feed) domain.FeedPush {
 	content, _ := json.Marshal(feed.Content)
 	return domain.FeedPush{
-		UserID:    feed.UserID,
-		Type:      feed.Type,
-		Content:   string(content),
-		CreatedAt: feed.CreatedAt.UnixMicro(),
+		UserID:  feed.UserID,
+		Type:    feed.Type,
+		Content: string(content),
+		//CreatedAt: feed.CreatedAt.UnixMicro(),
 	}
 }
 
 func convertToPull(feed domain.Feed) domain.FeedPull {
 	content, _ := json.Marshal(feed.Content)
 	return domain.FeedPull{
-		UserID:    feed.UserID,
-		Type:      feed.Type,
-		Content:   string(content),
-		CreatedAt: feed.CreatedAt.UnixMicro(),
+		UserID:  feed.UserID,
+		Type:    feed.Type,
+		Content: string(content),
+		//CreatedAt: feed.CreatedAt.UnixMicro(),
 	}
 }
 
@@ -89,10 +87,10 @@ func convertToFeedFromPull(pull domain.FeedPull) domain.Feed {
 	var content domain.FeedContent
 	_ = json.Unmarshal([]byte(pull.Content), &content)
 	return domain.Feed{
-		UserID:    pull.UserID,
-		Type:      pull.Type,
-		Content:   content,
-		CreatedAt: time.UnixMicro(pull.CreatedAt),
+		UserID:  pull.UserID,
+		Type:    pull.Type,
+		Content: content,
+		//CreatedAt: time.UnixMicro(pull.CreatedAt),
 	}
 }
 
@@ -100,9 +98,9 @@ func convertToFeedFromPush(push domain.FeedPush) domain.Feed {
 	var content domain.FeedContent
 	_ = json.Unmarshal([]byte(push.Content), &content)
 	return domain.Feed{
-		UserID:    push.UserID,
-		Type:      push.Type,
-		Content:   content,
-		CreatedAt: time.UnixMicro(push.CreatedAt),
+		UserID:  push.UserID,
+		Type:    push.Type,
+		Content: content,
+		//CreatedAt: time.UnixMicro(push.CreatedAt),
 	}
 }

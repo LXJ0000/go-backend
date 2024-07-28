@@ -1,11 +1,9 @@
 package controller
 
 import (
-	"net/http"
-	"time"
-
 	"github.com/LXJ0000/go-backend/internal/domain"
 	snowflake "github.com/LXJ0000/go-backend/utils/snowflakeutil"
+	"net/http"
 
 	"github.com/LXJ0000/go-backend/bootstrap"
 	"github.com/gin-gonic/gin"
@@ -43,15 +41,15 @@ func (sc *SignupController) Signup(c *gin.Context) {
 
 	request.Password = string(encryptedPassword)
 
-	now := time.Now().UnixMicro()
+	//now := time.Now().UnixMicro()
 	user := domain.User{
 		UserID:   snowflake.GenID(),
 		UserName: request.UserName,
 		Email:    request.Email,
 		Password: request.Password,
 	}
-	user.CreatedAt = now
-	user.UpdatedAt = now
+	//user.CreatedAt = now
+	//user.UpdatedAt = now
 	err = sc.SignupUsecase.Create(c, user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create user fail with db error", err))

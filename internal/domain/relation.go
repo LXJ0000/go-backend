@@ -21,7 +21,6 @@ func (Relation) TableName() string {
 }
 
 type RelationStat struct {
-	Model
 	UserID   int64 `gorm:"unique"`
 	Follower int   // 粉丝数
 	Followee int   // 关注数
