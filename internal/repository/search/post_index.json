@@ -1,0 +1,16 @@
+{
+  "mapping": {
+    "post_id": {
+        "type": "long"
+    },
+    "title": {
+      "type": "text"
+    },
+    "content": {
+      "type": "text"
+    },
+    "status": {
+      "type": "keyword"
+    }
+  }
+}

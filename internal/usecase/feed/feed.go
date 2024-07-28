@@ -53,12 +53,12 @@ func (uc *feedUsecase) GetFeedEventList(c context.Context, userID, timestamp, li
 		userIDs := slice.Map(followees, func(user domain.User) int64 {
 			return user.UserID
 		})
-		pushEvent, err = uc.repo.FindPush(ctx, userIDs, timestamp, limit)
+		pushEvent, err = uc.repo.FindPull(ctx, userIDs, timestamp, limit)
 		return err
 	})
 	g.Go(func() error {
 		var err error
-		pullEvent, err = uc.repo.FindPull(ctx, userID, timestamp, limit)
+		pullEvent, err = uc.repo.FindPush(ctx, userID, timestamp, limit)
 		return err
 	})
 	if err := g.Wait(); err != nil {

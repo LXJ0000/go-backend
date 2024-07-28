@@ -1,0 +1,16 @@
+{
+  "mapping": {
+    "user_id": {
+      "type": "long"
+    },
+    "nick_name": {
+      "type": "text"
+    },
+    "email": {
+      "type": "text"
+    },
+    "phone": {
+      "type": "keyword"
+    }
+  }
+}
