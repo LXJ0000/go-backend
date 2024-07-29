@@ -20,3 +20,17 @@ type ESSync interface {
 type ESSearch interface {
 	Search()
 }
+
+type SearchUsecase interface {
+	Search(ctx context.Context, userID int64, cmd string) error // 用户画像和表达式
+}
+
+type SearchRepository interface {
+	SearchUser(ctx context.Context, keywords ...string) ([]User, error)
+	SearchPost(ctx context.Context, userID int64, keywords ...string) ([]Post, error)
+}
+
+type SearchResult struct {
+	Users []User
+	Posts []Post
+}
