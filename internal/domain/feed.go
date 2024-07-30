@@ -70,4 +70,7 @@ type FeedRepository interface {
 	FindPull(c context.Context, userIDs []int64, timestamp, limit int64) ([]Feed, error)
 	// FindPush Get from inbox
 	FindPush(c context.Context, userID, timestamp, limit int64) ([]Feed, error)
+
+	FindPullWithType(c context.Context, event string, userIDs []int64, timestamp, limit int64) ([]Feed, error)
+	FindPushWithType(c context.Context, event string, userID, timestamp, limit int64) ([]Feed, error)
 }

@@ -32,5 +32,7 @@ func (h *FeedFollowHandler) CreateFeedEvent(c context.Context, t string, content
 }
 
 func (h *FeedFollowHandler) FindFeedEvent(c context.Context, userID, timestamp, limit int64) ([]domain.Feed, error) {
-	return nil, nil
+	ctx, cancel := context.WithTimeout(c, time.Second)
+	defer cancel()
+	return h.feedRepo.FindPushWithType(ctx, domain.FeedFollowEvent, userID, timestamp, limit)
 }

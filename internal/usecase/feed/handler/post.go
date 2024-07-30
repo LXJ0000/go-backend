@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"context"
+	"golang.org/x/sync/errgroup"
+	"sort"
 	"time"
 
 	"github.com/LXJ0000/go-backend/internal/domain"
@@ -55,5 +57,40 @@ func (h *FeedPostHandler) CreateFeedEvent(c context.Context, t string, content d
 }
 
 func (h *FeedPostHandler) FindFeedEvent(c context.Context, userID, timestamp, limit int64) ([]domain.Feed, error) {
-	return nil, nil
+	ctx, cancel := context.WithTimeout(c, time.Second)
+	defer cancel()
+	// 1. 查收件箱
+	// 2. 查发件箱
+	var (
+		g         = errgroup.Group{}
+		pushEvent []domain.Feed
+		pullEvent []domain.Feed
+	)
+	g.Go(func() error {
+		// TODO 降级策略 跳过
+		var err error
+		followees, _, err := h.relationUsecase.GetFollowee(ctx, userID, -1, -1)
+		if err != nil {
+			return err
+		}
+		userIDs := slice.Map(followees, func(user domain.User) int64 {
+			return user.UserID
+		})
+		pushEvent, err = h.feedRepo.FindPullWithType(ctx, domain.FeedPostEvent, userIDs, timestamp, limit)
+		return err
+	})
+	g.Go(func() error {
+		var err error
+		pullEvent, err = h.feedRepo.FindPushWithType(ctx, domain.FeedPostEvent, userID, timestamp, limit)
+		return err
+	})
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
+	// 3. 合并、排序（按照时间戳倒叙排序）、分页
+	events := append(pushEvent, pullEvent...)
+	sort.Slice(events, func(i, j int) bool {
+		return events[i].CreatedAt.After(events[j].CreatedAt)
+	})
+	return events[:min(len(events), int(limit))], nil
 }

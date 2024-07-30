@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log/slog"
 	"sort"
+	"sync"
 	"time"
 
 	"github.com/LXJ0000/go-backend/internal/domain"
@@ -33,6 +34,7 @@ func (uc *feedUsecase) CreateFeedEvent(c context.Context, feed domain.Feed) erro
 
 }
 
+// GetFeedEventList 不依赖于 handler 直接查询
 func (uc *feedUsecase) GetFeedEventList(c context.Context, userID, timestamp, limit int64) ([]domain.Feed, error) {
 	ctx, cancel := context.WithTimeout(c, time.Second)
 	defer cancel()
@@ -70,4 +72,29 @@ func (uc *feedUsecase) GetFeedEventList(c context.Context, userID, timestamp, li
 		return events[i].CreatedAt.After(events[j].CreatedAt)
 	})
 	return events[:min(len(events), int(limit))], nil
+}
+
+func (uc *feedUsecase) GetFeedEventListThroughHandler(c context.Context, userID, timestamp, limit int64) ([]domain.Feed, error) {
+	eg := errgroup.Group{}
+	appending := sync.Mutex{}
+	allEvents := make([]domain.Feed, 0, int(limit)*len(uc.handlerMap))
+	for _, handler := range uc.handlerMap {
+		eg.Go(func() error {
+			events, err := handler.FindFeedEvent(c, userID, timestamp, limit)
+			if err != nil {
+				return err
+			}
+			appending.Lock()
+			defer appending.Unlock()
+			allEvents = append(allEvents, events...)
+			return nil
+		})
+	}
+	if err := eg.Wait(); err != nil {
+		return nil, err
+	}
+	sort.Slice(allEvents, func(i, j int) bool {
+		return allEvents[i].CreatedAt.After(allEvents[j].CreatedAt)
+	})
+	return allEvents[:min(len(allEvents), int(limit))], nil
 }
