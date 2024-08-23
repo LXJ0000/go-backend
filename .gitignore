@@ -2,8 +2,8 @@
 bin/
 /.idea
 .idea
-.env
+# .env
 .vscode
 *.db
 __debug*
-docker*
+# docker*

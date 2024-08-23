@@ -21,6 +21,8 @@ type Env struct {
 	RefreshTokenSecret     string `mapstructure:"REFRESH_TOKEN_SECRET"`
 	RedisAddr              string `mapstructure:"REDIS_ADDR"`
 	RedisExpiration        int    `mapstructure:"REDIS_EXPIRATION"`
+	RedisPassword          string `mapstructure:"REDIS_PASSWORD"`
+	RedisDB                int    `mapstructure:"REDIS_DB"`
 	RateLimit              int    `mapstructure:"RATE_LIMIT"`
 	RateLimitWindow        int    `mapstructure:"RATE_LIMIT_WINDOW"`
 	SnowflakeStartTime     string `mapstructure:"SNOWFLAKE_START_TIME"`
