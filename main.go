@@ -4,8 +4,7 @@ import (
 	"time"
 
 	"github.com/LXJ0000/go-backend/api/middleware"
-
-	route "github.com/LXJ0000/go-backend/api/route"
+	"github.com/LXJ0000/go-backend/api/route"
 	"github.com/LXJ0000/go-backend/bootstrap"
 	"github.com/gin-gonic/gin"
 )
@@ -35,7 +34,7 @@ func main() {
 
 	server := gin.Default()
 	server.Use(middleware.CORSMiddleware())
-	server.Use(middleware.RateLimitMiddleware())
+	server.Use(middleware.RateLimitMiddleware(env))
 	server.Use(middleware.PrometheusMiddleware())
 	route.Setup(env, timeout, db, cache, localCache, server, producer, saramaClient)
 
