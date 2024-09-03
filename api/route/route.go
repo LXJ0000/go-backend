@@ -77,7 +77,7 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	// Task
 	NewTaskRouter(env, timeout, db, protectedRouter)
 	// Post
-	NewPostRouter(postUc, interactionUc, protectedRouter)
+	NewPostRouter(postUc, interactionUc, feedUc, protectedRouter)
 	// Comment
 	NewCommentRouter(env, timeout, db, protectedRouter)
 	// Ralation
