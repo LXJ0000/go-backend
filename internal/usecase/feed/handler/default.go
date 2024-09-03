@@ -23,8 +23,8 @@ func (h *defaultHandler) CreateFeedEvent(c context.Context, t string, content do
 	return h.feedRepo.CreatePush(ctx, domain.Feed{
 		UserID: userID, Type: t, Content: content,
 	})
-
 }
+
 func (h *defaultHandler) FindFeedEvent(c context.Context, userID, timestamp, limit int64) ([]domain.Feed, error) {
 	return nil, nil
 }

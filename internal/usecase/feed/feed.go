@@ -19,8 +19,8 @@ type feedUsecase struct {
 	repo            domain.FeedRepository
 }
 
-func NewFeedUsecase(handlerMap map[string]domain.FeedHandler, relationUsecase domain.RelationUsecase) domain.FeedUsecase {
-	return &feedUsecase{handlerMap: handlerMap, relationUsecase: relationUsecase}
+func NewFeedUsecase(handlerMap map[string]domain.FeedHandler, relationUsecase domain.RelationUsecase, repo domain.FeedRepository) domain.FeedUsecase {
+	return &feedUsecase{handlerMap: handlerMap, relationUsecase: relationUsecase, repo: repo}
 }
 
 func (uc *feedUsecase) CreateFeedEvent(c context.Context, feed domain.Feed) error {

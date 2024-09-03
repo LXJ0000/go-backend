@@ -1,19 +1,23 @@
 package controller
 
 import (
+	"context"
+	"fmt"
+	"log/slog"
+	"net/http"
+	"strconv"
+
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/LXJ0000/go-backend/utils/lib"
 	snowflake "github.com/LXJ0000/go-backend/utils/snowflakeutil"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/sync/errgroup"
-	"log/slog"
-	"net/http"
-	"strconv"
 )
 
 type PostController struct {
-	PostUsecase        domain.PostUsecase
-	InteractionUseCase domain.InteractionUseCase
+	domain.PostUsecase
+	domain.InteractionUseCase
+	domain.FeedUsecase
 }
 
 func (col *PostController) CreateOrPublish(c *gin.Context) {
@@ -139,6 +143,22 @@ func (col *PostController) Like(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp(err.Error(), err))
 		return
 	}
+	go func() {
+		// TODO 发消息
+		feed := domain.Feed{
+			UserID: userID,
+			Type:   domain.FeedLikeEvent,
+			Content: domain.FeedContent{
+				"biz_id": fmt.Sprintf("%d", postID),
+				"biz":    domain.BizPost,
+				"liker":  fmt.Sprintf("%d", userID),
+				"liked":  fmt.Sprintf("%d", postID),
+			}, // liker liked biz bizID
+		}
+		if err := col.FeedUsecase.CreateFeedEvent(context.Background(), feed); err != nil {
+
+		}
+	}()
 	c.JSON(http.StatusOK, domain.SuccessResp(nil))
 }
 

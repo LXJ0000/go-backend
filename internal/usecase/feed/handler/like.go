@@ -30,6 +30,7 @@ func (h *FeedLikeHandler) CreateFeedEvent(c context.Context, t string, content d
 		Content: content,
 	})
 }
+
 func (h *FeedLikeHandler) FindFeedEvent(c context.Context, userID, timestamp, limit int64) ([]domain.Feed, error) {
 	ctx, cancel := context.WithTimeout(c, time.Second)
 	defer cancel()
