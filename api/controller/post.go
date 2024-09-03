@@ -156,7 +156,7 @@ func (col *PostController) Like(c *gin.Context) {
 			}, // liker liked biz bizID
 		}
 		if err := col.FeedUsecase.CreateFeedEvent(context.Background(), feed); err != nil {
-
+			slog.Warn("FeedUsecase CreateFeedEvent Error", "error", err.Error())
 		}
 	}()
 	c.JSON(http.StatusOK, domain.SuccessResp(nil))

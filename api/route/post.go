@@ -1,44 +1,26 @@
 package route
 
 import (
-	"log"
-	"log/slog"
-	"time"
-
-	"github.com/IBM/sarama"
 	"github.com/LXJ0000/go-backend/api/controller"
-	"github.com/LXJ0000/go-backend/bootstrap"
-	"github.com/LXJ0000/go-backend/internal/event"
-	"github.com/LXJ0000/go-backend/internal/repository"
-	"github.com/LXJ0000/go-backend/internal/usecase"
-	"github.com/LXJ0000/go-backend/pkg/cache"
-	"github.com/LXJ0000/go-backend/pkg/orm"
+	"github.com/LXJ0000/go-backend/internal/domain"
+
 	"github.com/gin-gonic/gin"
 )
 
-func NewPostRouter(env *bootstrap.Env, timeout time.Duration,
-	orm orm.Database, cache cache.RedisCache, localCache cache.LocalCache,
-	group *gin.RouterGroup,
-	producer event.Producer, saramaClient sarama.Client) {
+func NewPostRouter(PostUsecase domain.PostUsecase,
+	InteractionUseCase domain.InteractionUseCase,
+	group *gin.RouterGroup) {
 
-	repoPost := repository.NewPostRepository(orm, cache)
-	repoInteraction := repository.NewInteractionRepository(orm, cache)
-	repoPostRank := repository.NewPostRankRepository(localCache, cache)
-	postRankUsecase := usecase.NewPostRankUsecase(repoInteraction, repoPost, repoPostRank, timeout)
-	col := &controller.PostController{
-		PostUsecase:        usecase.NewPostUsecase(repoPost, timeout, producer, postRankUsecase),
-		InteractionUseCase: usecase.NewInteractionUsecase(repoInteraction, timeout),
+	c := &controller.PostController{
+		PostUsecase:        PostUsecase,
+		InteractionUseCase: InteractionUseCase,
 	}
-	consumer := event.NewBatchSyncReadEventConsumer(saramaClient, repoInteraction)
-	if err := consumer.Start(); err != nil {
-		slog.Error("OMG！消费者启动失败")
-		log.Fatal(err)
-	}
-	group.POST("/post", col.CreateOrPublish)
-	group.GET("/post", col.Info)
-	group.GET("/post/reader", col.ReaderList)
-	group.GET("/post/writer", col.WriterList)
-	group.POST("/post/like", col.Like)
-	group.POST("/post/collect", col.Collect)
-	group.GET("/post/rank", col.Rank)
+
+	group.POST("/post", c.CreateOrPublish)
+	group.GET("/post", c.Info)
+	group.GET("/post/reader", c.ReaderList)
+	group.GET("/post/writer", c.WriterList)
+	group.POST("/post/like", c.Like)
+	group.POST("/post/collect", c.Collect)
+	group.GET("/post/rank", c.Rank)
 }
