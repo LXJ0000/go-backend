@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"time"
-
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/LXJ0000/go-backend/pkg/orm"
 	"github.com/LXJ0000/go-backend/utils/snowflakeutil"
@@ -33,7 +31,7 @@ func (uc *relationRepository) GetFollower(c context.Context, userID int64, page,
 	var items []domain.Relation
 	db := uc.dao.WithPage(page, size)
 	err := db.WithContext(c).Model(&domain.Relation{}).
-	Where(filter).Order("updated_at desc").Find(&items).Error
+		Where(filter).Order("updated_at desc").Find(&items).Error
 	return items, err
 }
 
@@ -45,7 +43,7 @@ func (uc *relationRepository) GetFollowee(c context.Context, userID int64, page,
 	var items []domain.Relation
 	db := uc.dao.WithPage(page, size)
 	err := db.WithContext(c).Model(&domain.Relation{}).
-	Where(filter).Order("updated_at desc").Find(&items).Error
+		Where(filter).Order("updated_at desc").Find(&items).Error
 	return items, err
 }
 
@@ -78,8 +76,7 @@ func (uc *relationRepository) FolloweeCnt(c context.Context, userID int64) (int6
 
 func (uc *relationRepository) doFollow(c context.Context, follower, followee int64, opt bool) error {
 	update := map[string]interface{}{
-		"status":     opt,
-		"updated_at": time.Now(),
+		"status": opt,
 	}
 	create := &domain.Relation{
 		Followee:   followee,

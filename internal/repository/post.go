@@ -46,7 +46,7 @@ func (repo *postRepository) FindMany(c context.Context, filter interface{}) ([]d
 func (repo *postRepository) FindTopNPage(c context.Context, page, size int, begin time.Time) ([]domain.Post, error) {
 	var items []domain.Post
 	err := repo.dao.Raw(c).Model(&domain.Post{}).
-		Where("created_at < ? and status = ?", begin, domain.PostStatusPublish).
+		Where("created_at < ? and status = ?", begin.Unix(), domain.PostStatusPublish).
 		Offset((page - 1) * size).Limit(size).
 		Find(&items).Error
 	if err != nil {
