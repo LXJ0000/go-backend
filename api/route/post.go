@@ -9,11 +9,13 @@ import (
 
 func NewPostRouter(PostUsecase domain.PostUsecase,
 	InteractionUseCase domain.InteractionUseCase,
+	FeedUsecase domain.FeedUsecase,
 	group *gin.RouterGroup) {
 
 	c := &controller.PostController{
 		PostUsecase:        PostUsecase,
 		InteractionUseCase: InteractionUseCase,
+		FeedUsecase:        FeedUsecase,
 	}
 
 	group.POST("/post", c.CreateOrPublish)
