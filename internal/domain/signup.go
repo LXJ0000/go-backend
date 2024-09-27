@@ -5,9 +5,9 @@ import (
 )
 
 type SignupRequest struct {
-	UserName string `form:"user_name" binding:"required"`
-	Email    string `form:"email" binding:"required,email"`
-	Password string `form:"password" binding:"required"`
+	UserName string `form:"user_name" json:"user_name" binding:"required"`
+	Email    string `form:"email" json:"email" binding:"required,email"`
+	Password string `form:"password" json:"password" binding:"required"`
 }
 
 type SignupResponse struct {
