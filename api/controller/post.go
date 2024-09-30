@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"strconv"
 
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/LXJ0000/go-backend/utils/lib"
@@ -120,20 +119,18 @@ func (col *PostController) Info(c *gin.Context) {
 }
 
 func (col *PostController) Like(c *gin.Context) {
-	isLikeRaw := c.Request.FormValue("is_like")
-	postIDRaw := c.Request.FormValue("post_id")
-	postID, err := strconv.ParseInt(postIDRaw, 10, 64)
-	if err != nil {
+	req := struct {
+		IsLike bool  `json:"is_like"`
+		PostID int64 `json:"post_id,string"`
+	}{}
+	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
 		return
 	}
-	isLike, err := strconv.ParseBool(isLikeRaw)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
-		return
-	}
+	postID := req.PostID
+	isLike := req.IsLike
 	userID := c.MustGet(domain.XUserID).(int64)
-
+	var err error
 	if isLike {
 		err = col.InteractionUseCase.Like(c, domain.BizPost, postID, userID)
 	} else {
@@ -163,26 +160,20 @@ func (col *PostController) Like(c *gin.Context) {
 }
 
 func (col *PostController) Collect(c *gin.Context) {
-	isCollectRaw := c.Request.FormValue("is_collect")
-	postIDRaw := c.Request.FormValue("post_id")
-	collectionIDRaw := c.Request.FormValue("collection_id")
-	postID, err := strconv.ParseInt(postIDRaw, 10, 64)
-	if err != nil {
+	req := struct {
+		IsCollect bool  `json:"is_collect"`
+		PostID    int64 `json:"post_id,string"`
+		collectID int64 `json:"collect_id,string"`
+	}{}
+	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
 		return
 	}
-	isCollect, err := strconv.ParseBool(isCollectRaw)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
-		return
-	}
-	collectID, err := strconv.ParseInt(collectionIDRaw, 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
-		return
-	}
+	postID := req.PostID
+	isCollect := req.IsCollect
+	collectID := req.collectID
 	userID := c.MustGet(domain.XUserID).(int64)
-
+	var err error
 	if isCollect {
 		err = col.InteractionUseCase.Collect(c, domain.BizPost, postID, userID, collectID)
 	} else {
