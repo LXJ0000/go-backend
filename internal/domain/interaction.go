@@ -12,12 +12,12 @@ type Interaction struct {
 	Model
 	// idx_biz select * from . where biz ==
 	// idx_bizID_biz 联合索引 (bizID区分度高)
-	BizID int64 `gorm:"uniqueIndex:idx_interaction_bizID_biz"`
+	BizID int64 `json:"biz_id" gorm:"uniqueIndex:idx_interaction_bizID_biz"`
 	//Biz   string `gorm:"uniqueIndex:idx_interaction_bizID_biz"`
-	Biz        string `gorm:"type:varchar(255);uniqueIndex:idx_bizID_biz"` // MYSQL 写法
-	ReadCnt    int
-	LikeCnt    int
-	CollectCnt int // 3个cnt 相比较 type+cnt 在读性能友好, 每次只需要读一行
+	Biz        string `json:"biz" gorm:"type:varchar(255);uniqueIndex:idx_bizID_biz"` // MYSQL 写法
+	ReadCnt    int    `json:"read_cnt"`
+	LikeCnt    int    `json:"like_cnt"`
+	CollectCnt int    `json:"collect_cnt"` // 3个cnt 相比较 type+cnt 在读性能友好, 每次只需要读一行
 }
 
 func (Interaction) TableName() string {
@@ -77,6 +77,6 @@ func (UserCollect) TableName() string {
 }
 
 type UserInteractionStat struct {
-	Liked     bool
-	Collected bool
+	Liked     bool `json:"liked"`
+	Collected bool `json:"collected"`
 }

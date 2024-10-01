@@ -1,8 +1,11 @@
 package usecase
 
 import (
-	"github.com/LXJ0000/go-backend/internal/domain"
+	"errors"
+	"log/slog"
 	"time"
+
+	"github.com/LXJ0000/go-backend/internal/domain"
 
 	"golang.org/x/net/context"
 )
@@ -25,12 +28,30 @@ func (uc *interactionUsecase) IncrReadCount(c context.Context, biz string, id in
 func (uc *interactionUsecase) Like(c context.Context, biz string, bizID, userID int64) error {
 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
+	// 判断是否点过赞
+	_, stat, err := uc.repo.Stat(ctx, biz, bizID, userID)
+	if err != nil {
+		return err
+	}
+	if stat.Liked {
+		slog.Error("重复点赞", "biz", biz, "bizID", bizID, "userID", userID)
+		return errors.New("请勿重复点赞")
+	}
 	return uc.repo.Like(ctx, biz, bizID, userID)
 }
 
 func (uc *interactionUsecase) CancelLike(c context.Context, biz string, bizID, userID int64) error {
 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
+	// 判断是否没点过赞
+	_, stat, err := uc.repo.Stat(ctx, biz, bizID, userID)
+	if err != nil {
+		return err
+	}
+	if !stat.Liked {
+		slog.Error("取消点赞失败", "biz", biz, "bizID", bizID, "userID", userID)
+		return errors.New("取消点赞失败")
+	}
 	return uc.repo.CancelLike(ctx, biz, bizID, userID)
 }
 
@@ -43,12 +64,30 @@ func (uc *interactionUsecase) Info(c context.Context, biz string, bizID, userID 
 func (uc *interactionUsecase) Collect(c context.Context, biz string, bizID, userID, collectionID int64) error {
 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
+	// 判断是否收藏过 TODO 收藏夹处理
+	_, stat, err := uc.repo.Stat(ctx, biz, bizID, userID)
+	if err != nil {
+		return err
+	}
+	if stat.Collected {
+		slog.Error("重复收藏", "biz", biz, "bizID", bizID, "userID", userID)
+		return errors.New("请勿重复收藏")
+	}
 	return uc.repo.Collect(ctx, biz, bizID, userID, collectionID)
 }
 
 func (uc *interactionUsecase) CancelCollect(c context.Context, biz string, bizID, userID, collectionID int64) error {
 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
+	// 判断是否没收藏过 TODO 收藏夹处理
+	_, stat, err := uc.repo.Stat(ctx, biz, bizID, userID)
+	if err != nil {
+		return err
+	}
+	if !stat.Collected {
+		slog.Error("取消收藏失败", "biz", biz, "bizID", bizID, "userID", userID)
+		return errors.New("取消收藏失败")
+	}
 	return uc.repo.CancelCollect(ctx, biz, bizID, userID, collectionID)
 }
 

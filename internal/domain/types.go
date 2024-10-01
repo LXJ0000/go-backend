@@ -2,8 +2,8 @@ package domain
 
 type Model struct {
 	ID        uint `gorm:"primarykey" json:"-"`
-	CreatedAt int64
-	UpdatedAt int64
+	CreatedAt int64 `json:"created_at"`
+	UpdatedAt int64 `json:"updated_at"`
 	// DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 

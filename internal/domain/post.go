@@ -56,3 +56,9 @@ type PostListRequest struct {
 //	Count int    `json:"count"`
 //	Data  []Post `json:"data"`
 //}
+
+type PostInfoResponse struct {
+	Post        Post                `json:"post"`
+	Interaction Interaction         `json:"interaction"`
+	Stat        UserInteractionStat `json:"stat"`
+}

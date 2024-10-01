@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"sync"
 
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/LXJ0000/go-backend/utils/lib"
@@ -46,6 +47,7 @@ func (col *PostController) ReaderList(c *gin.Context) {
 		return
 	}
 
+	userID := c.MustGet(domain.XUserID).(int64)
 	filter := &domain.Post{
 		Status: domain.PostStatusPublish,
 	}
@@ -57,9 +59,26 @@ func (col *PostController) ReaderList(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Failed to list posts", err))
 		return
 	}
+
+	resp := make([]domain.PostInfoResponse, 0, len(posts))
+	for _, post := range posts {
+		go func() {
+			interaction, userInteractionInfo, err := col.InteractionUseCase.Info(c, domain.BizPost, post.PostID, userID)
+			if err != nil {
+				slog.Warn("InteractionUseCase Info Error", "error", err.Error())
+				return
+			}
+			resp = append(resp, domain.PostInfoResponse{
+				Post:        post,
+				Interaction: interaction,
+				Stat:        userInteractionInfo,
+			})
+		}()
+	}
+
 	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
 		"count":     count,
-		"post_list": posts,
+		"post_list": resp,
 	}))
 }
 
@@ -78,9 +97,28 @@ func (col *PostController) WriterList(c *gin.Context) {
 		return
 	}
 
+	resp := make([]domain.PostInfoResponse, 0, len(posts))
+	wg := sync.WaitGroup{}
+	wg.Add(len(posts))
+	for _, post := range posts {
+		go func() {
+			defer wg.Done()
+			interaction, userInteractionInfo, err := col.InteractionUseCase.Info(c, domain.BizPost, post.PostID, userID)
+			if err != nil {
+				slog.Warn("InteractionUseCase Info Error", "error", err.Error())
+				return
+			}
+			resp = append(resp, domain.PostInfoResponse{
+				Post:        post,
+				Interaction: interaction,
+				Stat:        userInteractionInfo,
+			})
+		}()
+	}
+	wg.Wait()
 	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
 		"count":     count,
-		"post_list": posts,
+		"post_list": resp,
 	}))
 }
 
@@ -110,18 +148,17 @@ func (col *PostController) Info(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp(err.Error(), err))
 		return
 	}
-	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
-		"post_detail":        post,
-		"interaction_detail": interaction,
-		"stat":               userInteractionInfo,
+	c.JSON(http.StatusOK, domain.SuccessResp(domain.PostInfoResponse{
+		Post:        post,
+		Interaction: interaction,
+		Stat:        userInteractionInfo,
 	}))
-
 }
 
 func (col *PostController) Like(c *gin.Context) {
 	req := struct {
-		IsLike bool  `json:"is_like"`
-		PostID int64 `json:"post_id,string"`
+		IsLike bool  `json:"is_like" form:"is_like"`
+		PostID int64 `json:"post_id,string" form:"post_id"`
 	}{}
 	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
@@ -161,9 +198,9 @@ func (col *PostController) Like(c *gin.Context) {
 
 func (col *PostController) Collect(c *gin.Context) {
 	req := struct {
-		IsCollect bool  `json:"is_collect"`
-		PostID    int64 `json:"post_id,string"`
-		collectID int64 `json:"collect_id,string"`
+		IsCollect bool  `json:"is_collect" form:"is_collect"`
+		PostID    int64 `json:"post_id,string" form:"post_id"`
+		CollectID int64 `json:"collect_id,string" form:"collect_id"`
 	}{}
 	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
@@ -171,7 +208,7 @@ func (col *PostController) Collect(c *gin.Context) {
 	}
 	postID := req.PostID
 	isCollect := req.IsCollect
-	collectID := req.collectID
+	collectID := req.CollectID
 	userID := c.MustGet(domain.XUserID).(int64)
 	var err error
 	if isCollect {
