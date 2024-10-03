@@ -31,7 +31,7 @@ func App() Application {
 	//app.Mongo = NewMongoDatabase(app.Env)
 	app.Orm = NewOrmDatabase(app.Env)
 	app.Cache = NewRedisCache(app.Env)
-	app.LocalCache = NewLocalCache(app.Env)
+	// app.LocalCache = NewLocalCache(app.Env)
 	logutil.Init(app.Env.AppEnv)
 	snowflakeutil.Init(app.Env.SnowflakeStartTime, app.Env.SnowflakeMachineID)
 	prometheusutil.Init(app.Env.PrometheusAddress)

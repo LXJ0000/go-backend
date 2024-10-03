@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"sort"
 	"sync"
 
 	"github.com/LXJ0000/go-backend/internal/domain"
@@ -61,8 +62,11 @@ func (col *PostController) ReaderList(c *gin.Context) {
 	}
 
 	resp := make([]domain.PostInfoResponse, 0, len(posts))
+	wg := sync.WaitGroup{}
+	wg.Add(len(posts))
 	for _, post := range posts {
 		go func() {
+			defer wg.Done()
 			interaction, userInteractionInfo, err := col.InteractionUseCase.Info(c, domain.BizPost, post.PostID, userID)
 			if err != nil {
 				slog.Warn("InteractionUseCase Info Error", "error", err.Error())
@@ -75,7 +79,10 @@ func (col *PostController) ReaderList(c *gin.Context) {
 			})
 		}()
 	}
-
+	wg.Wait()
+	sort.Slice(resp, func(i, j int) bool {
+		return resp[i].Post.CreatedAt > resp[j].Post.CreatedAt
+	})
 	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
 		"count":     count,
 		"post_list": resp,
@@ -116,6 +123,9 @@ func (col *PostController) WriterList(c *gin.Context) {
 		}()
 	}
 	wg.Wait()
+	sort.Slice(resp, func(i, j int) bool {
+		return resp[i].Post.CreatedAt > resp[j].Post.CreatedAt
+	})
 	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
 		"count":     count,
 		"post_list": resp,
