@@ -17,7 +17,7 @@ func UserLogoutKey(ssid string) string {
 
 type User struct {
 	Model
-	UserID   int64     `json:"user_id" gorm:"primaryKey"`
+	UserID   int64     `json:"user_id,string" gorm:"primaryKey"`
 	UserName string    `json:"user_name" gorm:"unique"`
 	NickName string    `json:"nick_name"`
 	Email    string    `json:"email" gorm:"unique"`
@@ -26,7 +26,7 @@ type User struct {
 	Birthday time.Time `json:"birthday" gorm:"default:null"`
 	Phone    string    `json:"phone"`
 	Region   string    `json:"region" gorm:"default:null"`
-	//Avatar   int64  `json:"avatar" gorm:"size:1024"` // file.file_id
+	Avatar   string    `json:"avatar" gorm:"size:1024"`
 	//Telephone string `json:"telephone" gorm:"size:20"`
 	//LoginType LoginType `json:"login_type" gorm:"size:20"`
 	//Role      Role      `json:"role" gorm:"default:2"` //
@@ -53,11 +53,14 @@ type UserUsecase interface {
 }
 
 type Profile struct {
-	UserName string    `json:"user_name"`
-	NickName string    `json:"nick_name"`
-	Email    string    `json:"email"`
-	AboutMe  string    `json:"about_me"`
-	Birthday time.Time `json:"birthday"`
+	UserName     string       `json:"user_name"`
+	NickName     string       `json:"nick_name"`
+	Email        string       `json:"email"`
+	AboutMe      string       `json:"about_me"`
+	Birthday     time.Time    `json:"birthday"`
+	Avatar       string       `json:"avatar"`
+	RelationStat RelationStat `json:"relation_stat"`
+	PostCnt      int64          `json:"post_cnt"`
 }
 
 //type Role int

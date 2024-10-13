@@ -8,7 +8,7 @@ type Task struct {
 	Model
 	TaskID int64  `json:"task_id"`
 	Title  string `json:"title" form:"title"`
-	UserID int64  `json:"user_id" form:"user_id"`
+	UserID int64  `json:"user_id,string" form:"user_id"`
 }
 
 func (Task) TableName() string {

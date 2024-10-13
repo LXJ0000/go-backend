@@ -19,6 +19,7 @@ type PostController struct {
 	domain.PostUsecase
 	domain.InteractionUseCase
 	domain.FeedUsecase
+	domain.UserUsecase
 }
 
 func (col *PostController) CreateOrPublish(c *gin.Context) {
@@ -67,13 +68,19 @@ func (col *PostController) ReaderList(c *gin.Context) {
 	for _, post := range posts {
 		go func() {
 			defer wg.Done()
+			// TODO 优化
 			interaction, userInteractionInfo, err := col.InteractionUseCase.Info(c, domain.BizPost, post.PostID, userID)
 			if err != nil {
 				slog.Warn("InteractionUseCase Info Error", "error", err.Error())
 				return
 			}
+			postResp, err := col.parsePostResponse(c, post)
+			if err != nil {
+				slog.Error("parsePostResponse Error", "error", err.Error())
+				return
+			}
 			resp = append(resp, domain.PostInfoResponse{
-				Post:        post,
+				Post:        postResp,
 				Interaction: interaction,
 				Stat:        userInteractionInfo,
 			})
@@ -115,8 +122,13 @@ func (col *PostController) WriterList(c *gin.Context) {
 				slog.Warn("InteractionUseCase Info Error", "error", err.Error())
 				return
 			}
+			postResp, err := col.parsePostResponse(c, post)
+			if err != nil {
+				slog.Error("parsePostResponse Error", "error", err.Error())
+				return
+			}
 			resp = append(resp, domain.PostInfoResponse{
-				Post:        post,
+				Post:        postResp,
 				Interaction: interaction,
 				Stat:        userInteractionInfo,
 			})
@@ -154,12 +166,17 @@ func (col *PostController) Info(c *gin.Context) {
 		}
 		return nil
 	})
+	postResp, err := col.parsePostResponse(c, post)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("parsePostResponse Error", err))
+		return
+	}
 	if err = eg.Wait(); err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp(err.Error(), err))
 		return
 	}
 	c.JSON(http.StatusOK, domain.SuccessResp(domain.PostInfoResponse{
-		Post:        post,
+		Post:        postResp,
 		Interaction: interaction,
 		Stat:        userInteractionInfo,
 	}))
@@ -243,4 +260,22 @@ func (col *PostController) Rank(c *gin.Context) {
 		"count": len(posts),
 		"posts": posts,
 	})
+}
+
+func (col *PostController) parsePostResponse(c context.Context, post domain.Post) (domain.PostResponse, error) {
+	author, err := col.UserUsecase.GetProfileByID(c, post.AuthorID)
+	if err != nil {
+		return domain.PostResponse{}, err
+	}
+	postResp := domain.PostResponse{
+		Author: *author,
+	}
+	postResp.PostID = post.PostID
+	postResp.Title = post.Title
+	postResp.Abstract = post.Abstract
+	postResp.Content = post.Content
+	postResp.Status = post.Status
+	postResp.CreatedAt = post.CreatedAt
+	postResp.UpdatedAt = post.UpdatedAt
+	return postResp, nil
 }

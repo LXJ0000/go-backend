@@ -53,6 +53,7 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	postRankUc := usecase.NewPostRankUsecase(interactionRepo, postRepo, postRankRepo, timeout)
 	postUc := usecase.NewPostUsecase(postRepo, timeout, producer, postRankUc)
 	relationUc := usecase.NewRelationUsecase(relationRepo, userRepo, timeout)
+	userUc := usecase.NewUserUsecase(userRepo, timeout)
 
 	feedLikeHdl := feedUsecaseHandler.NewFeedLikeHandler(feedRepo)
 	feedPostHandler := feedUsecaseHandler.NewFeedPostHandler(feedRepo, relationUc)
@@ -73,11 +74,11 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	}
 
 	// User
-	NewUserRouter(env, timeout, db, redisCache, protectedRouter)
+	NewUserRouter(env, timeout, db, redisCache, userUc, relationUc, postUc, protectedRouter)
 	// Task
 	NewTaskRouter(env, timeout, db, protectedRouter)
 	// Post
-	NewPostRouter(postUc, interactionUc, feedUc, protectedRouter)
+	NewPostRouter(postUc, interactionUc, feedUc, userUc, protectedRouter)
 	// Comment
 	NewCommentRouter(env, timeout, db, protectedRouter)
 	// Ralation

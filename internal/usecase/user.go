@@ -9,6 +9,7 @@ import (
 
 type userUsecase struct {
 	repo           domain.UserRepository
+	relationRepo   domain.RelationRepository
 	contextTimeout time.Duration
 }
 
@@ -31,7 +32,7 @@ func (uc *userUsecase) GetProfileByID(c context.Context, userID int64) (*domain.
 	return &domain.Profile{
 		UserName: user.UserName, Email: user.Email,
 		AboutMe: user.AboutMe, Birthday: user.Birthday,
-		NickName: user.NickName,
+		NickName: user.NickName, Avatar: user.Avatar,
 	}, nil
 }
 

@@ -42,6 +42,7 @@ type PostUsecase interface {
 	List(c context.Context, filter interface{}, page, size int) ([]Post, int64, error)
 	Info(c context.Context, postID int64) (Post, error)
 	TopN(c context.Context) ([]Post, error)
+	Count(c context.Context, filter interface{}) (int64, error)
 	//ReplaceTopN(c context.Context, items []Post, expiration time.Duration) error
 }
 
@@ -57,8 +58,20 @@ type PostListRequest struct {
 //	Data  []Post `json:"data"`
 //}
 
+type PostResponse struct {
+	Model
+	PostID int64 `json:"post_id,string"`
+
+	Title    string `json:"title"`
+	Abstract string `json:"abstract"`
+	Content  string `json:"content" `
+	// AuthorID int64  `json:"author_id,string" form:"author_id"`
+	Status string  `json:"status"`
+	Author Profile `json:"author"`
+}
+
 type PostInfoResponse struct {
-	Post        Post                `json:"post"`
+	Post        PostResponse        `json:"post"`
 	Interaction Interaction         `json:"interaction"`
 	Stat        UserInteractionStat `json:"stat"`
 }

@@ -21,9 +21,9 @@ func (Relation) TableName() string {
 }
 
 type RelationStat struct {
-	UserID   int64 `gorm:"unique"`
-	Follower int   // 粉丝数
-	Followee int   // 关注数
+	UserID   int64 `json:"user_id,string" gorm:"unique"`
+	Follower int   `json:"follower"` // 粉丝数
+	Followee int   `json:"followee"` // 关注数
 }
 
 type RelationUsecase interface {

@@ -13,17 +13,20 @@ type RelationController struct {
 }
 
 func (col *RelationController) Follow(c *gin.Context) {
-	followee, err := lib.Str2Int64(c.Request.FormValue("followee"))
-	if err != nil {
+	// followee, err := lib.Str2Int64(c.Request.FormValue("followee"))
+	req := struct {
+		Followee int64 `json:"followee" form:"followee"`
+	}{}
+	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
 		return
 	}
 	userID := c.MustGet(domain.XUserID).(int64)
-	if followee == userID {
-		c.JSON(http.StatusForbidden, domain.ErrorResp("You can't follow yourself", err))
+	if req.Followee == userID {
+		c.JSON(http.StatusForbidden, domain.ErrorResp("You can't follow yourself", nil))
 		return
 	}
-	if err := col.RelationUsecase.Follow(c, userID, followee); err != nil {
+	if err := col.RelationUsecase.Follow(c, userID, req.Followee); err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Follow Failed", err))
 		return
 	}
@@ -31,17 +34,20 @@ func (col *RelationController) Follow(c *gin.Context) {
 }
 
 func (col *RelationController) CancelFollow(c *gin.Context) {
-	followee, err := lib.Str2Int64(c.Request.FormValue("followee"))
-	if err != nil {
+	// followee, err := lib.Str2Int64(c.Request.FormValue("followee"))
+	req := struct {
+		Followee int64 `json:"followee" form:"followee"`
+	}{}
+	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
 		return
 	}
 	userID := c.MustGet(domain.XUserID).(int64)
-	if userID == followee {
-		c.JSON(http.StatusForbidden, domain.ErrorResp("You can't cancel follow yourself", err))
+	if userID == req.Followee {
+		c.JSON(http.StatusForbidden, domain.ErrorResp("You can't cancel follow yourself", nil))
 		return
 	}
-	if err := col.RelationUsecase.CancelFollow(c, userID, followee); err != nil {
+	if err := col.RelationUsecase.CancelFollow(c, userID, req.Followee); err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("CancelFollow Failed", err))
 		return
 	}
@@ -67,10 +73,10 @@ func (col *RelationController) FollowerList(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Get FollowerList Fail", err))
 		return
 	}
-	c.JSON(http.StatusOK, map[string]interface{}{
+	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
 		"count":     cnt,
 		"user_list": resp,
-	})
+	}))
 }
 
 func (col *RelationController) FolloweeList(c *gin.Context) {
@@ -82,8 +88,8 @@ func (col *RelationController) FolloweeList(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Get FolloweeList Fail", err))
 		return
 	}
-	c.JSON(http.StatusOK, map[string]interface{}{
+	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
 		"count":     cnt,
 		"user_list": resp,
-	})
+	}))
 }
