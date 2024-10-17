@@ -15,7 +15,7 @@ type RelationController struct {
 func (col *RelationController) Follow(c *gin.Context) {
 	// followee, err := lib.Str2Int64(c.Request.FormValue("followee"))
 	req := struct {
-		Followee int64 `json:"followee" form:"followee"`
+		Followee int64 `json:"followee,string" form:"followee"`
 	}{}
 	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
@@ -36,7 +36,7 @@ func (col *RelationController) Follow(c *gin.Context) {
 func (col *RelationController) CancelFollow(c *gin.Context) {
 	// followee, err := lib.Str2Int64(c.Request.FormValue("followee"))
 	req := struct {
-		Followee int64 `json:"followee" form:"followee"`
+		Followee int64 `json:"followee,string" form:"followee"`
 	}{}
 	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
