@@ -1,20 +1,15 @@
 package route
 
 import (
-	"github.com/LXJ0000/go-backend/internal/repository"
-	"github.com/LXJ0000/go-backend/internal/usecase"
-	"github.com/LXJ0000/go-backend/pkg/orm"
-	"time"
-
 	"github.com/LXJ0000/go-backend/api/controller"
 	"github.com/LXJ0000/go-backend/bootstrap"
+	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/gin-gonic/gin"
 )
 
-func NewTaskRouter(env *bootstrap.Env, timeout time.Duration, db orm.Database, group *gin.RouterGroup) {
-	tr := repository.NewTaskRepository(db)
+func NewTaskRouter(env *bootstrap.Env, taskUc domain.TaskUsecase, group *gin.RouterGroup) {
 	tc := &controller.TaskController{
-		TaskUsecase: usecase.NewTaskUsecase(tr, timeout),
+		TaskUsecase: taskUc,
 	}
 	group.POST("/task", tc.Create)
 	group.DELETE("/task", tc.Delete)

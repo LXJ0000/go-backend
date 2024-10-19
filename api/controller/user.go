@@ -1,6 +1,9 @@
 package controller
 
 import (
+	snowflake "github.com/LXJ0000/go-backend/utils/snowflakeutil"
+	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"time"
 
@@ -116,5 +119,86 @@ func (col *UserController) Update(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp(err.Error(), err))
 		return
 	}
+	c.JSON(http.StatusOK, domain.SuccessResp(nil))
+}
+
+func (col *UserController) Login(c *gin.Context) {
+	var request domain.LoginRequest
+
+	err := c.ShouldBind(&request)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
+		return
+	}
+
+	user, err := col.UserUsecase.GetUserByEmail(c, request.Email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("User not found with the given email", err))
+		return
+	}
+
+	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)) != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Invalid credentials", err))
+		return
+	}
+	ssid := uuid.New().String()
+	accessToken, err := col.UserUsecase.CreateAccessToken(user, ssid, col.Env.AccessTokenSecret, col.Env.AccessTokenExpiryHour)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create access token fail", err))
+		return
+	}
+
+	refreshToken, err := col.UserUsecase.CreateRefreshToken(user, ssid, col.Env.RefreshTokenSecret, col.Env.RefreshTokenExpiryHour)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create refresh token fail", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
+		"user_detail":   user,
+	}))
+
+}
+
+func (col *UserController) Signup(c *gin.Context) {
+	var request domain.SignupRequest
+
+	err := c.ShouldBind(&request)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
+		return
+	}
+
+	_, err = col.UserUsecase.GetUserByEmail(c, request.Email)
+	if err == nil {
+		c.JSON(http.StatusConflict, domain.ErrorResp("User already exists with the given email", err))
+		return
+	}
+
+	encryptedPassword, err := bcrypt.GenerateFromPassword(
+		[]byte(request.Password),
+		bcrypt.DefaultCost,
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Encrypted password fail", err))
+		return
+	}
+
+	request.Password = string(encryptedPassword)
+
+	user := domain.User{
+		UserID:   snowflake.GenID(),
+		UserName: request.UserName,
+		Email:    request.Email,
+		Password: request.Password,
+	}
+	err = col.UserUsecase.Create(c, user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create user fail with db error", err))
+		return
+	}
+
 	c.JSON(http.StatusOK, domain.SuccessResp(nil))
 }

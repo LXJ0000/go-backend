@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"github.com/LXJ0000/go-backend/utils/tokenutil"
 	"time"
 
 	"github.com/LXJ0000/go-backend/internal/domain"
@@ -46,4 +47,24 @@ func (uc *userUsecase) UpdateProfile(c context.Context, id int64, user domain.Us
 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
 	return uc.repo.Update(ctx, id, user)
+}
+
+func (uc *userUsecase) GetUserByEmail(c context.Context, email string) (domain.User, error) {
+	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
+	defer cancel()
+	return uc.repo.GetByEmail(ctx, email)
+}
+
+func (uc *userUsecase) CreateAccessToken(user domain.User, ssid string, secret string, expiry int) (accessToken string, err error) {
+	return tokenutil.CreateAccessToken(user, ssid, secret, expiry)
+}
+
+func (uc *userUsecase) CreateRefreshToken(user domain.User, ssid string, secret string, expiry int) (refreshToken string, err error) {
+	return tokenutil.CreateRefreshToken(user, ssid, secret, expiry)
+}
+
+func (uc *userUsecase) Create(c context.Context, user domain.User) error {
+	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
+	defer cancel()
+	return uc.repo.Create(ctx, user)
 }

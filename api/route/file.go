@@ -3,18 +3,12 @@ package route
 import (
 	"github.com/LXJ0000/go-backend/api/controller"
 	"github.com/LXJ0000/go-backend/bootstrap"
-	"github.com/LXJ0000/go-backend/internal/repository"
-	"github.com/LXJ0000/go-backend/internal/usecase"
-	"github.com/LXJ0000/go-backend/pkg/orm"
+	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/gin-gonic/gin"
-	"time"
 )
 
-func NewFileRouter(env *bootstrap.Env, timeout time.Duration,
-	orm orm.Database, group *gin.RouterGroup) {
-	repo := repository.NewFileRepository(orm)
-	useCase := usecase.NewFileUsecase(repo, timeout, env.LocalStaticPath, env.UrlStaticPath)
-	col := &controller.FileController{FileUsecase: useCase}
+func NewFileRouter(env *bootstrap.Env, fileUc domain.FileUsecase, group *gin.RouterGroup) {
+	col := &controller.FileController{FileUsecase: fileUc}
 	group.PUT("/file/upload", col.Upload)
 	group.PUT("/file/uploads", col.Uploads)
 	group.GET("/file/list", col.FileList)

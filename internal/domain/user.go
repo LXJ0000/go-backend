@@ -40,7 +40,6 @@ type UserRepository interface {
 	Create(c context.Context, user User) error
 	GetByEmail(c context.Context, email string) (User, error)
 	GetByID(c context.Context, id int64) (User, error)
-	//UpsertAvatar(c context.Context, avatar string) error
 	FindByUserIDs(c context.Context, userIDs []int64, page, size int) ([]User, error)
 	InvalidToken(c context.Context, ssid string, exp time.Duration) error
 	Update(c context.Context, id int64, user User) error
@@ -50,6 +49,12 @@ type UserUsecase interface {
 	GetProfileByID(c context.Context, userID int64) (*Profile, error)
 	UpdateProfile(c context.Context, userID int64, user User) error
 	Logout(c context.Context, SSID string, tokenExpiry time.Duration) error
+
+	GetUserByEmail(c context.Context, email string) (User, error)
+	CreateAccessToken(user User, ssid string, secret string, expiry int) (accessToken string, err error)
+	CreateRefreshToken(user User, ssid string, secret string, expiry int) (refreshToken string, err error)
+
+	Create(c context.Context, user User) error
 }
 
 type Profile struct {
@@ -60,7 +65,17 @@ type Profile struct {
 	Birthday     time.Time    `json:"birthday"`
 	Avatar       string       `json:"avatar"`
 	RelationStat RelationStat `json:"relation_stat"`
-	PostCnt      int64          `json:"post_cnt"`
+	PostCnt      int64        `json:"post_cnt"`
+}
+
+type LoginRequest struct {
+	Email    string `form:"email" json:"email" binding:"required,email"`
+	Password string `form:"password" json:"password" binding:"required"`
+}
+
+type LoginResponse struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 //type Role int

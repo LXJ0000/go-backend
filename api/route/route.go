@@ -32,8 +32,6 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 
 	publicRouter := server.Group("/api")
 	// All Public APIs
-	NewSignupRouter(env, timeout, db, redisCache, publicRouter)
-	NewLoginRouter(env, timeout, db, redisCache, publicRouter)
 	NewRefreshTokenRouter(env, timeout, db, redisCache, publicRouter)
 
 	protectedRouter := server.Group("/api")
@@ -42,17 +40,25 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	// All Private APIs
 
 	// 复用对象
-	userRepo := repository.NewUserRepository(db, redisCache)
-	relationRepo := repository.NewRelationRepository(db)
+	commentRepo := repository.NewCommentRepository(db)
 	feedRepo := repository.NewFeedRepository(db)
-	postRepo := repository.NewPostRepository(db, redisCache)
+	fileRepo := repository.NewFileRepository(db)
 	interactionRepo := repository.NewInteractionRepository(db, redisCache)
 	postRankRepo := repository.NewPostRankRepository(localCache, redisCache)
+	postRepo := repository.NewPostRepository(db, redisCache)
+	relationRepo := repository.NewRelationRepository(db)
+	tagRepo := repository.NewTagRepository(db)
+	taskRepo := repository.NewTaskRepository(db)
+	userRepo := repository.NewUserRepository(db, redisCache)
 
+	commentUc := usecase.NewCommentUsecase(commentRepo, timeout)
+	fileUc := usecase.NewFileUsecase(fileRepo, timeout, env.LocalStaticPath, env.UrlStaticPath)
 	interactionUc := usecase.NewInteractionUsecase(interactionRepo, timeout)
 	postRankUc := usecase.NewPostRankUsecase(interactionRepo, postRepo, postRankRepo, timeout)
 	postUc := usecase.NewPostUsecase(postRepo, timeout, producer, postRankUc)
 	relationUc := usecase.NewRelationUsecase(relationRepo, userRepo, timeout)
+	tagUc := usecase.NewTagUsecase(tagRepo, timeout)
+	taskUc := usecase.NewTaskUsecase(taskRepo, timeout)
 	userUc := usecase.NewUserUsecase(userRepo, timeout)
 
 	feedLikeHdl := feedUsecaseHandler.NewFeedLikeHandler(feedRepo)
@@ -74,19 +80,19 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	}
 
 	// User
-	NewUserRouter(env, timeout, db, redisCache, userUc, relationUc, postUc, protectedRouter)
+	NewUserRouter(env, userUc, relationUc, postUc, publicRouter, protectedRouter)
 	// Task
-	NewTaskRouter(env, timeout, db, protectedRouter)
+	NewTaskRouter(env, taskUc, protectedRouter)
 	// Post
 	NewPostRouter(postUc, interactionUc, feedUc, userUc, protectedRouter)
 	// Comment
-	NewCommentRouter(env, timeout, db, protectedRouter)
-	// Ralation
-	NewRelationRouter(env, timeout, db, redisCache, protectedRouter)
+	NewCommentRouter(env, commentUc, protectedRouter)
+	// Relation
+	NewRelationRouter(env, relationUc, protectedRouter)
 	// File
-	NewFileRouter(env, timeout, db, protectedRouter)
+	NewFileRouter(env, fileUc, protectedRouter)
 	// Tag
-	NewTagRouter(env, timeout, db, redisCache, protectedRouter)
+	NewTagRouter(env, tagUc, protectedRouter)
 	// Feed
 	NewFeedRouter(feedUc, protectedRouter)
 }
