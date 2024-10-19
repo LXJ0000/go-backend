@@ -29,12 +29,9 @@ func (col *PostController) CreateOrPublish(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
 		return
 	}
-	//now := time.Now().UnixMicro()
 	post.AuthorID = userID
 	post.PostID = snowflake.GenID()
-	//post.CreatedAt = now
-	//post.UpdatedAt = now
-	if err := col.PostUsecase.Create(c, post); err != nil {
+	if err := col.PostUsecase.Create(c, &post); err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Failed to create post", err))
 		return
 	}

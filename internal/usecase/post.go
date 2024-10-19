@@ -27,7 +27,7 @@ func NewPostUsecase(repo domain.PostRepository, timeout time.Duration, producer 
 	}
 }
 
-func (uc *postUsecase) Create(c context.Context, post domain.Post) error {
+func (uc *postUsecase) Create(c context.Context, post *domain.Post) error {
 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
 	return uc.repo.Create(ctx, post)
