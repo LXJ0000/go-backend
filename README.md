@@ -110,13 +110,13 @@ wrk -t4 -d5s -c50 -s ./script/wrk/login.lua http://localhost:8080/user/login
 go get -v -u github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common
 ```
 ### 验证码服务
-1. 安全问题：发送频率、验证码有效期、不能被暴力破解
+1. 安全问题：发送频率、验证码有效期（超时 or 已使用）、不能被暴力破解（超过一定错误次数则失效）
 
-#### 发送逻辑：
+#### 发送逻辑 (redis)： code:biz:number
 1. 没有key，发送
 2. 有key
-    - 没有过期时间，系统异常，拒绝发送
-    - 有过期时间
+    - 没有过期时间，说明系统异常，拒绝发送
+    - 有过期时间（需要判定发生频率 即1分钟发生一次吧 15-14=1）
         - 多于14分钟（设定key生命15分钟），发送频繁，拒绝发送
         - 少于14分钟，发送
 #### 验证逻辑
