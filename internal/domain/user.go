@@ -9,6 +9,8 @@ import (
 const (
 	XUserID       = "x-user-id"
 	UserSessionID = "user-session-id"
+
+	BizUserLogin = "login"
 )
 
 func UserLogoutKey(ssid string) string {
@@ -19,12 +21,12 @@ type User struct {
 	Model
 	UserID   int64     `json:"user_id,string" gorm:"primaryKey"`
 	UserName string    `json:"user_name" gorm:"unique"`
-	NickName string    `json:"nick_name"`
-	Email    string    `json:"email" gorm:"unique"`
+	NickName string    `json:"nick_name" gorm:"size:256"`
+	Email    string    `json:"email" gorm:"default:null;unique"`
 	Password string    `json:"-" gorm:"size:256"`
-	AboutMe  string    `json:"about_me"`
+	AboutMe  string    `json:"about_me" gorm:"size:256"`
 	Birthday time.Time `json:"birthday" gorm:"default:null"`
-	Phone    string    `json:"phone"`
+	Phone    string    `json:"phone" gorm:"default:null;unique"`
 	Region   string    `json:"region" gorm:"default:null"`
 	Avatar   string    `json:"avatar" gorm:"size:1024"`
 	//Telephone string `json:"telephone" gorm:"size:20"`
@@ -37,24 +39,27 @@ func (User) TableName() string {
 }
 
 type UserRepository interface {
-	Create(c context.Context, user User) error
+	Create(c context.Context, user *User) error
 	GetByEmail(c context.Context, email string) (User, error)
 	GetByID(c context.Context, id int64) (User, error)
+	GetByPhone(c context.Context, phone string) (User, error)
 	FindByUserIDs(c context.Context, userIDs []int64, page, size int) ([]User, error)
 	InvalidToken(c context.Context, ssid string, exp time.Duration) error
-	Update(c context.Context, id int64, user User) error
+	Update(c context.Context, id int64, user *User) error
 }
 
 type UserUsecase interface {
 	GetProfileByID(c context.Context, userID int64) (*Profile, error)
-	UpdateProfile(c context.Context, userID int64, user User) error
+	UpdateProfile(c context.Context, userID int64, user *User) error
 	Logout(c context.Context, SSID string, tokenExpiry time.Duration) error
 
 	GetUserByEmail(c context.Context, email string) (User, error)
 	CreateAccessToken(user User, ssid string, secret string, expiry int) (accessToken string, err error)
 	CreateRefreshToken(user User, ssid string, secret string, expiry int) (refreshToken string, err error)
 
-	Create(c context.Context, user User) error
+	Create(c context.Context, user *User) error
+
+	GetUserByPhone(c context.Context, phone string) (User, error)
 }
 
 type Profile struct {
@@ -87,6 +92,15 @@ type SignupReq struct {
 type SignupResp struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
+}
+
+type SendSMSCodeReq struct {
+	Phone string `form:"phone" json:"phone" binding:"required"`
+}
+
+type LoginBySmsReq struct {
+	Phone string `form:"phone" json:"phone" binding:"required"`
+	Code  string `form:"code" json:"code" binding:"required"`
 }
 
 //type Role int

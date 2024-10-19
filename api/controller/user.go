@@ -1,9 +1,12 @@
 package controller
 
 import (
+	"errors"
+	"fmt"
 	snowflake "github.com/LXJ0000/go-backend/utils/snowflakeutil"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 	"net/http"
 	"time"
 
@@ -17,6 +20,7 @@ type UserController struct {
 	domain.UserUsecase
 	domain.RelationUsecase
 	domain.PostUsecase
+	domain.CodeUsecase
 	Env *bootstrap.Env
 }
 
@@ -115,7 +119,7 @@ func (col *UserController) Update(c *gin.Context) {
 	}
 	user.AboutMe = req.AboutMe
 	user.NickName = req.NickName
-	if err := col.UserUsecase.UpdateProfile(c, userID, user); err != nil {
+	if err := col.UserUsecase.UpdateProfile(c, userID, &user); err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp(err.Error(), err))
 		return
 	}
@@ -175,16 +179,11 @@ func (col *UserController) Signup(c *gin.Context) {
 		return
 	}
 
-	encryptedPassword, err := bcrypt.GenerateFromPassword(
-		[]byte(request.Password),
-		bcrypt.DefaultCost,
-	)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Encrypted password fail", err))
+	var err error
+	if request.Password, err = genPassword(request.Password); err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp(domain.ErrSystemError.Error(), err))
 		return
 	}
-
-	request.Password = string(encryptedPassword)
 
 	user := domain.User{
 		UserID:   snowflake.GenID(),
@@ -192,11 +191,104 @@ func (col *UserController) Signup(c *gin.Context) {
 		Email:    request.Email,
 		Password: request.Password,
 	}
-	err = col.UserUsecase.Create(c, user)
+	err = col.UserUsecase.Create(c, &user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create user fail with db error", err))
 		return
 	}
 
 	c.JSON(http.StatusOK, domain.SuccessResp(nil))
+}
+
+func (col *UserController) LoginBySms(c *gin.Context) {
+	var req domain.LoginBySmsReq
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
+		return
+	}
+	ok, err := col.CodeUsecase.Verify(c, domain.BizUserLogin, req.Phone, req.Code)
+	if err != nil {
+		if errors.Is(err, domain.ErrCodeSendTooFrequently) {
+			c.JSON(http.StatusInternalServerError, domain.ErrorResp(domain.ErrCodeInvalid.Error(), nil))
+			return
+		}
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp(domain.ErrSystemError.Error(), err))
+		return
+	}
+	if !ok {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp(domain.ErrCodeInvalid.Error(), nil))
+		return
+	}
+
+	// 用户是否存在
+	user, err := col.UserUsecase.GetUserByPhone(c, req.Phone)
+	if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusInternalServerError, domain.ErrorResp(domain.ErrSystemError.Error(), err))
+			return
+		}
+
+		user = domain.User{
+			UserID:   snowflake.GenID(),
+			UserName: fmt.Sprintf("user_%s", req.Phone[7:]),
+			Phone:    req.Phone,
+		}
+		user.Password, err = genPassword(domain.DefaultUserPassword)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, domain.ErrorResp(domain.ErrSystemError.Error(), err))
+			return
+		}
+		if err := col.UserUsecase.Create(c, &user); err != nil {
+			c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create user fail with db error", err))
+			return
+		}
+	}
+
+	// token
+	ssid := uuid.New().String()
+	accessToken, err := col.UserUsecase.CreateAccessToken(user, ssid, col.Env.AccessTokenSecret, col.Env.AccessTokenExpiryHour)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create access token fail", err))
+		return
+	}
+
+	refreshToken, err := col.UserUsecase.CreateRefreshToken(user, ssid, col.Env.RefreshTokenSecret, col.Env.RefreshTokenExpiryHour)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create refresh token fail", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
+		"user_detail":   user,
+	}))
+}
+
+func (col *UserController) SendSMSCode(c *gin.Context) {
+	var req domain.SendSMSCodeReq
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
+		return
+	}
+	if err := col.CodeUsecase.Send(c, domain.BizUserLogin, req.Phone); err != nil {
+		if errors.Is(err, domain.ErrCodeSendTooFrequently) {
+			c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrCodeSendTooFrequently.Error(), err))
+			return
+		}
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp(domain.ErrSystemError.Error(), err))
+		return
+	}
+	c.JSON(http.StatusOK, domain.SuccessResp(nil))
+}
+
+func genPassword(password string) (string, error) {
+	encryptedPassword, err := bcrypt.GenerateFromPassword(
+		[]byte(password),
+		bcrypt.DefaultCost,
+	)
+	if err != nil {
+		return "", err
+	}
+	return string(encryptedPassword), nil
 }

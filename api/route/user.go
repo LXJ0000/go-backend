@@ -11,6 +11,7 @@ func NewUserRouter(env *bootstrap.Env,
 	userUc domain.UserUsecase,
 	relationUc domain.RelationUsecase,
 	postUc domain.PostUsecase,
+	codeUc domain.CodeUsecase,
 	publicRouter *gin.RouterGroup,
 	group *gin.RouterGroup) {
 	col := &controller.UserController{
@@ -18,6 +19,7 @@ func NewUserRouter(env *bootstrap.Env,
 		Env:             env,
 		PostUsecase:     postUc,
 		RelationUsecase: relationUc,
+		CodeUsecase:     codeUc,
 	}
 	group.POST("/logout", col.Logout)
 	group.GET("/user/profile", col.Fetch)
@@ -26,5 +28,7 @@ func NewUserRouter(env *bootstrap.Env,
 
 	publicRouter.POST("/login", col.Login)
 	publicRouter.POST("/signup", col.Signup)
+	publicRouter.POST("/send_sms_code", col.SendSMSCode)
+	publicRouter.POST("/login/sms", col.LoginBySms)
 
 }

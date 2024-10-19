@@ -43,7 +43,7 @@ func (uc *userUsecase) Logout(c context.Context, ssid string, tokenExpiry time.D
 	return uc.repo.InvalidToken(ctx, ssid, tokenExpiry)
 }
 
-func (uc *userUsecase) UpdateProfile(c context.Context, id int64, user domain.User) error {
+func (uc *userUsecase) UpdateProfile(c context.Context, id int64, user *domain.User) error {
 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
 	return uc.repo.Update(ctx, id, user)
@@ -63,8 +63,14 @@ func (uc *userUsecase) CreateRefreshToken(user domain.User, ssid string, secret 
 	return tokenutil.CreateRefreshToken(user, ssid, secret, expiry)
 }
 
-func (uc *userUsecase) Create(c context.Context, user domain.User) error {
+func (uc *userUsecase) Create(c context.Context, user *domain.User) error {
 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
 	return uc.repo.Create(ctx, user)
+}
+
+func (uc *userUsecase) GetUserByPhone(c context.Context, phone string) (domain.User, error) {
+	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
+	defer cancel()
+	return uc.repo.GetByPhone(ctx, phone)
 }

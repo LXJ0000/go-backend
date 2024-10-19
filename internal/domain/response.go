@@ -4,7 +4,7 @@ type Response struct {
 	Code    int         `json:"code"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
-	Error   string       `json:"error"`
+	Error   string      `json:"error"`
 }
 
 func ErrorResp(msg string, err error) Response {

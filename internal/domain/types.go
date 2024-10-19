@@ -7,6 +7,7 @@ import (
 var (
 	ErrSystemError = errors.New("系统错误")
 	ErrUnKnowError = errors.New("未知错误")
+	ErrBadParams   = errors.New("参数错误")
 )
 
 type Model struct {
@@ -17,8 +18,10 @@ type Model struct {
 }
 
 const (
-	DefaultPage = 0
-	DefaultSize = 10
+	DefaultPage           = 0
+	DefaultSize           = 10
+	DefaultUserPassword   = "root"
+	DefaultUserNamePrefix = "user"
 )
 
 type BasePageRequest struct {

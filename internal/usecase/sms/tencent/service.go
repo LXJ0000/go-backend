@@ -15,7 +15,7 @@ type Service struct {
 	client   *sms.Client
 }
 
-func NewService(appID, signName string, client *sms.Client) *Service {
+func NewService(appID, signName string, client *sms.Client) sms2.Service {
 	return &Service{
 		appID:    appID,
 		signName: signName,

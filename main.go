@@ -22,6 +22,8 @@ func main() {
 	producer := app.Producer
 	saramaClient := app.SaramaClient
 
+	smsClient := app.SMSAliyunClient
+
 	cron := app.Cron
 	cron.Start()
 	defer func() {
@@ -36,7 +38,7 @@ func main() {
 	server.Use(middleware.CORSMiddleware())
 	server.Use(middleware.RateLimitMiddleware(env))
 	server.Use(middleware.PrometheusMiddleware())
-	route.Setup(env, timeout, db, cache, localCache, server, producer, saramaClient)
+	route.Setup(env, timeout, db, cache, localCache, server, producer, saramaClient, smsClient)
 
 	_ = server.Run(env.ServerAddress)
 }

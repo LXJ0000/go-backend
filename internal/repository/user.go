@@ -29,8 +29,8 @@ func (u *userRepository) GetByEmail(c context.Context, email string) (domain.Use
 	return user, err
 }
 
-func (u *userRepository) Create(c context.Context, user domain.User) error {
-	return u.dao.Insert(c, &domain.User{}, &user)
+func (u *userRepository) Create(c context.Context, user *domain.User) error {
+	return u.dao.Insert(c, &domain.User{}, user)
 }
 
 func (u *userRepository) GetByID(c context.Context, id int64) (domain.User, error) {
@@ -50,6 +50,12 @@ func (u *userRepository) InvalidToken(c context.Context, ssid string, exp time.D
 	return u.cache.Set(c, domain.UserLogoutKey(ssid), "", exp)
 }
 
-func (u *userRepository) Update(c context.Context, id int64, user domain.User) error {
-	return u.dao.UpdateOne(c, &domain.User{}, map[string]interface{}{"user_id": id}, &user)
+func (u *userRepository) Update(c context.Context, id int64, user *domain.User) error {
+	return u.dao.UpdateOne(c, &domain.User{}, map[string]interface{}{"user_id": id}, user)
+}
+
+func (u *userRepository) GetByPhone(c context.Context, phone string) (domain.User, error) {
+	var user domain.User
+	err := u.dao.FindOne(c, &domain.User{}, map[string]interface{}{"phone": phone}, &user)
+	return user, err
 }
