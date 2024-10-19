@@ -68,12 +68,23 @@ type Profile struct {
 	PostCnt      int64        `json:"post_cnt"`
 }
 
-type LoginRequest struct {
+type LoginReq struct {
 	Email    string `form:"email" json:"email" binding:"required,email"`
 	Password string `form:"password" json:"password" binding:"required"`
 }
 
-type LoginResponse struct {
+type LoginResp struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+type SignupReq struct {
+	UserName string `form:"user_name" json:"user_name" binding:"required"`
+	Email    string `form:"email" json:"email" binding:"required,email"`
+	Password string `form:"password" json:"password" binding:"required"`
+}
+
+type SignupResp struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 }

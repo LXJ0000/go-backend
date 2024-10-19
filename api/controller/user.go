@@ -123,7 +123,7 @@ func (col *UserController) Update(c *gin.Context) {
 }
 
 func (col *UserController) Login(c *gin.Context) {
-	var request domain.LoginRequest
+	var request domain.LoginReq
 
 	err := c.ShouldBind(&request)
 	if err != nil {
@@ -163,16 +163,14 @@ func (col *UserController) Login(c *gin.Context) {
 }
 
 func (col *UserController) Signup(c *gin.Context) {
-	var request domain.SignupRequest
+	var request domain.SignupReq
 
-	err := c.ShouldBind(&request)
-	if err != nil {
+	if err := c.ShouldBind(&request); err != nil {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
 		return
 	}
 
-	_, err = col.UserUsecase.GetUserByEmail(c, request.Email)
-	if err == nil {
+	if _, err := col.UserUsecase.GetUserByEmail(c, request.Email); err == nil {
 		c.JSON(http.StatusConflict, domain.ErrorResp("User already exists with the given email", err))
 		return
 	}
