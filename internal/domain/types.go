@@ -8,6 +8,7 @@ var (
 	ErrSystemError = errors.New("系统错误")
 	ErrUnKnowError = errors.New("未知错误")
 	ErrBadParams   = errors.New("参数错误")
+	ErrRateLimit   = errors.New("请求过于频繁")
 )
 
 type Model struct {
