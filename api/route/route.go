@@ -1,13 +1,13 @@
 package route
 
 import (
-	"fmt"
-	"github.com/LXJ0000/go-backend/internal/usecase/sms/aliyun"
-	"github.com/LXJ0000/go-backend/internal/usecase/sms/local"
-	sms "github.com/alibabacloud-go/dysmsapi-20170525/v4/client"
 	"log"
 	"log/slog"
 	"time"
+
+	"github.com/LXJ0000/go-backend/internal/usecase/sms/aliyun"
+	"github.com/LXJ0000/go-backend/internal/usecase/sms/local"
+	sms "github.com/alibabacloud-go/dysmsapi-20170525/v4/client"
 
 	"github.com/IBM/sarama"
 	"github.com/LXJ0000/go-backend/internal/domain"
@@ -59,7 +59,6 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	userRepo := repository.NewUserRepository(db, redisCache)
 
 	codeUc := usecase.NewCodeUsecase(codeRepo, aliyun.NewService(env.SMSAppID, env.SMSSignName, smsClient))
-	fmt.Println(codeUc)
 	commentUc := usecase.NewCommentUsecase(commentRepo, timeout)
 	fileUc := usecase.NewFileUsecase(fileRepo, timeout, env.LocalStaticPath, env.UrlStaticPath)
 	interactionUc := usecase.NewInteractionUsecase(interactionRepo, timeout)
@@ -90,9 +89,8 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 
 	localCodeService := local.NewService()
 	localCodeUc := usecase.NewCodeUsecase(codeRepo, localCodeService)
-	fmt.Println(localCodeUc)
 	// User
-	NewUserRouter(env, userUc, relationUc, postUc, codeUc, publicRouter, protectedRouter) // TODO 替换成 codeUc
+	NewUserRouter(env, userUc, relationUc, postUc, codeUc, localCodeUc, publicRouter, protectedRouter) // TODO 替换成 codeUc
 	// Task
 	NewTaskRouter(env, taskUc, protectedRouter)
 	// Post

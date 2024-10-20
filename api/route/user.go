@@ -12,6 +12,7 @@ func NewUserRouter(env *bootstrap.Env,
 	relationUc domain.RelationUsecase,
 	postUc domain.PostUsecase,
 	codeUc domain.CodeUsecase,
+	localCodeUc domain.CodeUsecase,
 	publicRouter *gin.RouterGroup,
 	group *gin.RouterGroup) {
 	col := &controller.UserController{
@@ -19,7 +20,7 @@ func NewUserRouter(env *bootstrap.Env,
 		Env:             env,
 		PostUsecase:     postUc,
 		RelationUsecase: relationUc,
-		CodeUsecase:     codeUc,
+		CodeUsecase:     localCodeUc,
 	}
 	group.POST("/logout", col.Logout)
 	group.GET("/user/profile", col.Fetch)

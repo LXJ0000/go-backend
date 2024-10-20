@@ -1,6 +1,8 @@
 package bootstrap
 
 import (
+	"fmt"
+
 	"github.com/IBM/sarama"
 	"github.com/LXJ0000/go-backend/internal/event"
 	"github.com/LXJ0000/go-backend/pkg/cache"
@@ -52,3 +54,10 @@ func App() Application {
 //func (app *Application) CloseDBConnection() {
 //	CloseMongoDBConnection(app.Mongo)
 //}
+
+func init() {
+	fmt.Println("=====================================")
+	fmt.Println("若要使用 sms 服务，请配置好环境变量 ALIBABA_CLOUD_ACCESS_KEY_ID ALIBABA_CLOUD_ACCESS_KEY_SECRET")
+	fmt.Println("具体配置请联系项目管理员")
+	fmt.Println("=====================================")
+}

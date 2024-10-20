@@ -35,6 +35,7 @@ func main() {
 	timeout := time.Duration(env.ContextTimeout) * time.Minute // 接口超时时间
 
 	server := gin.Default()
+	gin.SetMode(gin.ReleaseMode)
 	server.Use(middleware.CORSMiddleware())
 	server.Use(middleware.RateLimitMiddleware(env))
 	server.Use(middleware.PrometheusMiddleware())
