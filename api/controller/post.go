@@ -163,13 +163,13 @@ func (col *PostController) Info(c *gin.Context) {
 		}
 		return nil
 	})
+	if err = eg.Wait(); err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp(err.Error(), err))
+		return
+	}
 	postResp, err := col.parsePostResponse(c, post)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("parsePostResponse Error", err))
-		return
-	}
-	if err = eg.Wait(); err != nil {
-		c.JSON(http.StatusInternalServerError, domain.ErrorResp(err.Error(), err))
 		return
 	}
 	c.JSON(http.StatusOK, domain.SuccessResp(domain.PostInfoResponse{

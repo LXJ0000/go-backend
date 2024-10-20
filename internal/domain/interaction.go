@@ -14,7 +14,7 @@ type Interaction struct {
 	// idx_bizID_biz 联合索引 (bizID区分度高)
 	BizID int64 `json:"biz_id" gorm:"uniqueIndex:idx_interaction_bizID_biz"`
 	//Biz   string `gorm:"uniqueIndex:idx_interaction_bizID_biz"`
-	Biz        string `json:"biz" gorm:"type:varchar(255);uniqueIndex:idx_bizID_biz"` // MYSQL 写法
+	Biz        string `json:"biz" gorm:"type:varchar(255);uniqueIndex:idx_interaction_bizID_biz"` // MYSQL 写法
 	ReadCnt    int    `json:"read_cnt"`
 	LikeCnt    int    `json:"like_cnt"`
 	CollectCnt int    `json:"collect_cnt"` // 3个cnt 相比较 type+cnt 在读性能友好, 每次只需要读一行
