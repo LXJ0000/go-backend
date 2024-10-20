@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -220,7 +221,7 @@ func (col *UserController) LoginBySms(c *gin.Context) {
 		return
 	}
 
-	// 用户是否存在
+	// 用户是否存在 TODO 抽象 findOrCreate
 	user, err := col.UserUsecase.GetUserByPhone(c, req.Phone)
 	if err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -230,7 +231,7 @@ func (col *UserController) LoginBySms(c *gin.Context) {
 
 		user = domain.User{
 			UserID:   snowflake.GenID(),
-			UserName: fmt.Sprintf("user_%s", req.Phone[7:]),
+			UserName: fmt.Sprintf("%s_%d%s", domain.DefaultUserNamePrefix, rand.Intn(1000), req.Phone[7:]),
 			Phone:    req.Phone,
 		}
 		user.Password, err = genPassword(domain.DefaultUserPassword)
