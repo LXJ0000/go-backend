@@ -92,7 +92,7 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	localCodeUc := usecase.NewCodeUsecase(codeRepo, localCodeService)
 	fmt.Println(localCodeUc)
 	// User
-	NewUserRouter(env, userUc, relationUc, postUc, localCodeUc, publicRouter, protectedRouter) // TODO 替换成 codeUc
+	NewUserRouter(env, userUc, relationUc, postUc, codeUc, publicRouter, protectedRouter) // TODO 替换成 codeUc
 	// Task
 	NewTaskRouter(env, taskUc, protectedRouter)
 	// Post
