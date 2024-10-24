@@ -22,7 +22,7 @@ func NewOrmDatabase(env *Env) orm.Database {
 	// ln -s /mnt/c/Users/JANNAN/Desktop/go-backend.db ./go-backend.db
 	//dsn := "root:root@tcp(127.0.0.1:3306)/go-backend?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(env.MySQLAddress), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Warn),
+		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
 		log.Fatal(err)

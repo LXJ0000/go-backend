@@ -1,6 +1,8 @@
 module github.com/LXJ0000/go-backend
 
-go 1.22.2
+go 1.22.3
+
+toolchain go1.23.2
 
 require (
 	github.com/IBM/sarama v1.43.2
@@ -30,6 +32,7 @@ require (
 )
 
 require (
+	github.com/LXJ0000/go-utils v0.0.0-20241024151810-ab94b72e6604 // indirect
 	github.com/alibabacloud-go/alibabacloud-gateway-spi v0.0.5 // indirect
 	github.com/alibabacloud-go/debug v1.0.1 // indirect
 	github.com/alibabacloud-go/endpoint-util v1.1.0 // indirect

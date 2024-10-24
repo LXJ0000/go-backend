@@ -68,6 +68,7 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	tagUc := usecase.NewTagUsecase(tagRepo, timeout)
 	taskUc := usecase.NewTaskUsecase(taskRepo, timeout)
 	userUc := usecase.NewUserUsecase(userRepo, timeout)
+	sync2OpenIMUc := usecase.NewSync2OpenIMUsecase()
 
 	feedLikeHdl := feedUsecaseHandler.NewFeedLikeHandler(feedRepo)
 	feedPostHandler := feedUsecaseHandler.NewFeedPostHandler(feedRepo, relationUc)
@@ -90,7 +91,7 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	localCodeService := local.NewService()
 	localCodeUc := usecase.NewCodeUsecase(codeRepo, localCodeService)
 	// User
-	NewUserRouter(env, userUc, relationUc, postUc, codeUc, localCodeUc, publicRouter, protectedRouter) // TODO 替换成 codeUc
+	NewUserRouter(env, userUc, relationUc, postUc, codeUc, localCodeUc, sync2OpenIMUc, publicRouter, protectedRouter) // TODO 替换成 codeUc
 	// Task
 	NewTaskRouter(env, taskUc, protectedRouter)
 	// Post

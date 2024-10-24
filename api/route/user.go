@@ -13,14 +13,16 @@ func NewUserRouter(env *bootstrap.Env,
 	postUc domain.PostUsecase,
 	codeUc domain.CodeUsecase,
 	localCodeUc domain.CodeUsecase,
+	sync2OpenIMUc domain.Sync2OpenIMUsecase,
 	publicRouter *gin.RouterGroup,
 	group *gin.RouterGroup) {
 	col := &controller.UserController{
-		UserUsecase:     userUc,
-		Env:             env,
-		PostUsecase:     postUc,
-		RelationUsecase: relationUc,
-		CodeUsecase:     localCodeUc,
+		UserUsecase:        userUc,
+		Env:                env,
+		PostUsecase:        postUc,
+		RelationUsecase:    relationUc,
+		CodeUsecase:        localCodeUc,
+		Sync2OpenIMUsecase: sync2OpenIMUc,
 	}
 	group.POST("/logout", col.Logout)
 	group.GET("/user/profile", col.Fetch)

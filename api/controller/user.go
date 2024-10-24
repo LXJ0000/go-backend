@@ -1,15 +1,18 @@
 package controller
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"log/slog"
+	"math/rand"
+	"net/http"
+	"time"
+
 	snowflake "github.com/LXJ0000/go-backend/utils/snowflakeutil"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-	"math/rand"
-	"net/http"
-	"time"
 
 	"github.com/LXJ0000/go-backend/bootstrap"
 	"github.com/LXJ0000/go-backend/internal/domain"
@@ -22,6 +25,7 @@ type UserController struct {
 	domain.RelationUsecase
 	domain.PostUsecase
 	domain.CodeUsecase
+	domain.Sync2OpenIMUsecase
 	Env *bootstrap.Env
 }
 
@@ -197,6 +201,14 @@ func (col *UserController) Signup(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create user fail with db error", err))
 		return
 	}
+
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+		defer cancel()
+		if err := col.Sync2OpenIMUsecase.SyncUser(ctx, user, domain.Sync2OpenIMOpRegister); err != nil {
+			slog.Error("Sync user to openIM fail", "error", err.Error())
+		}
+	}()
 
 	c.JSON(http.StatusOK, domain.SuccessResp(nil))
 }
