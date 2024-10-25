@@ -1,9 +1,12 @@
 package bootstrap
 
 import (
+	"fmt"
+	"log"
+	"log/slog"
+
 	"github.com/IBM/sarama"
 	"github.com/LXJ0000/go-backend/internal/event"
-	"log"
 )
 
 func NewProducer(env *Env) event.Producer {
@@ -11,7 +14,9 @@ func NewProducer(env *Env) event.Producer {
 	config.Producer.Return.Successes = true
 	client, err := sarama.NewClient([]string{env.KafkaAddr}, config)
 	if err != nil {
-		log.Fatal(err)
+		slog.Warn("kafka client init failed", "error", err.Error())
+		fmt.Println("kafka client init failed", err.Error())
+		return nil
 	}
 	producer, err := sarama.NewSyncProducerFromClient(client)
 	if err != nil {
@@ -25,7 +30,9 @@ func NewSaramaClient(env *Env) sarama.Client {
 	config.Producer.Return.Successes = true
 	client, err := sarama.NewClient([]string{env.KafkaAddr}, config)
 	if err != nil {
-		log.Fatal(err)
+		slog.Warn("kafka client init failed", "error", err.Error())
+		fmt.Println("kafka client init failed", err.Error())
+		return nil
 	}
 	return client
 }

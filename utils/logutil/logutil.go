@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-const LogDir = "/var/log/go-backend"
+const LogDir = "var/log/go-backend"
 
 func Init(appEnv string) {
 	opts := &slog.HandlerOptions{

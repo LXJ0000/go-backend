@@ -83,9 +83,11 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 
 	//生产消费
 	consumer := event.NewBatchSyncReadEventConsumer(saramaClient, interactionRepo)
-	if err := consumer.Start(); err != nil {
-		slog.Error("OMG！消费者启动失败")
-		log.Fatal(err)
+	if saramaClient != nil {
+		if err := consumer.Start(); err != nil {
+			slog.Error("OMG！消费者启动失败")
+			log.Fatal(err)
+		}
 	}
 
 	localCodeService := local.NewService()
