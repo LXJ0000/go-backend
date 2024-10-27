@@ -171,6 +171,46 @@ func (col *UserController) Login(c *gin.Context) {
 
 }
 
+func (col *UserController) LoginByPhone(c *gin.Context) {
+	var request domain.LoginByPhoneReq
+
+	err := c.ShouldBind(&request)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
+		return
+	}
+
+	user, err := col.UserUsecase.GetUserByPhone(c, request.Phone)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("User not found with the given email", err))
+		return
+	}
+
+	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)) != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Invalid credentials", err))
+		return
+	}
+	ssid := uuid.New().String()
+	accessToken, err := col.UserUsecase.CreateAccessToken(user, ssid, col.Env.AccessTokenSecret, col.Env.AccessTokenExpiryHour)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create access token fail", err))
+		return
+	}
+
+	refreshToken, err := col.UserUsecase.CreateRefreshToken(user, ssid, col.Env.RefreshTokenSecret, col.Env.RefreshTokenExpiryHour)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create refresh token fail", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
+		"user_detail":   user,
+	}))
+
+}
+
 func (col *UserController) Signup(c *gin.Context) {
 	var request domain.SignupReq
 

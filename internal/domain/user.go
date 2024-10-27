@@ -74,10 +74,14 @@ type Profile struct {
 }
 
 type LoginReq struct {
-	Email    string `form:"email" json:"email" binding:"required,email"`
+	Email    string `form:"email" json:"email" binding:"required"`
 	Password string `form:"password" json:"password" binding:"required"`
 }
 
+type LoginByPhoneReq struct {
+	Phone    string `form:"phone" json:"phone" binding:"required"`
+	Password string `form:"password" json:"password" binding:"required"`
+}
 type LoginResp struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`

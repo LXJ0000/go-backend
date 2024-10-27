@@ -33,5 +33,5 @@ func NewUserRouter(env *bootstrap.Env,
 	publicRouter.POST("/signup", col.Signup)
 	publicRouter.POST("/send_sms_code", col.SendSMSCode)
 	publicRouter.POST("/login/sms", col.LoginBySms)
-
+	publicRouter.POST("/login/phone", col.LoginByPhone)
 }
