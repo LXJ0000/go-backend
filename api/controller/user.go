@@ -150,16 +150,11 @@ func (col *UserController) Login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Invalid credentials", err))
 		return
 	}
-	ssid := uuid.New().String()
-	accessToken, err := col.UserUsecase.CreateAccessToken(user, ssid, col.Env.AccessTokenSecret, col.Env.AccessTokenExpiryHour)
+	
+	// token
+	accessToken, refreshToken, imToken, err := col.genToken(c, user)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create access token fail", err))
-		return
-	}
-
-	refreshToken, err := col.UserUsecase.CreateRefreshToken(user, ssid, col.Env.RefreshTokenSecret, col.Env.RefreshTokenExpiryHour)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create refresh token fail", err))
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp(domain.ErrSystemError.Error(), err))
 		return
 	}
 
@@ -167,6 +162,7 @@ func (col *UserController) Login(c *gin.Context) {
 		"access_token":  accessToken,
 		"refresh_token": refreshToken,
 		"user_detail":   user,
+		"im_token":      imToken,
 	}))
 
 }
@@ -190,16 +186,11 @@ func (col *UserController) LoginByPhone(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Invalid credentials", err))
 		return
 	}
-	ssid := uuid.New().String()
-	accessToken, err := col.UserUsecase.CreateAccessToken(user, ssid, col.Env.AccessTokenSecret, col.Env.AccessTokenExpiryHour)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create access token fail", err))
-		return
-	}
 
-	refreshToken, err := col.UserUsecase.CreateRefreshToken(user, ssid, col.Env.RefreshTokenSecret, col.Env.RefreshTokenExpiryHour)
+	// token
+	accessToken, refreshToken, imToken, err := col.genToken(c, user)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create refresh token fail", err))
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp(domain.ErrSystemError.Error(), err))
 		return
 	}
 
@@ -207,6 +198,7 @@ func (col *UserController) LoginByPhone(c *gin.Context) {
 		"access_token":  accessToken,
 		"refresh_token": refreshToken,
 		"user_detail":   user,
+		"im_token":      imToken,
 	}))
 
 }
@@ -295,19 +287,19 @@ func (col *UserController) LoginBySms(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create user fail with db error", err))
 			return
 		}
+		go func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+			defer cancel()
+			if err := col.Sync2OpenIMUsecase.SyncUser(ctx, user, domain.Sync2OpenIMOpRegister); err != nil {
+				slog.Error("Sync user to openIM fail", "error", err.Error())
+			}
+		}()
 	}
 
 	// token
-	ssid := uuid.New().String()
-	accessToken, err := col.UserUsecase.CreateAccessToken(user, ssid, col.Env.AccessTokenSecret, col.Env.AccessTokenExpiryHour)
+	accessToken, refreshToken, imToken, err := col.genToken(c, user)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create access token fail", err))
-		return
-	}
-
-	refreshToken, err := col.UserUsecase.CreateRefreshToken(user, ssid, col.Env.RefreshTokenSecret, col.Env.RefreshTokenExpiryHour)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create refresh token fail", err))
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp(domain.ErrSystemError.Error(), err))
 		return
 	}
 
@@ -315,6 +307,7 @@ func (col *UserController) LoginBySms(c *gin.Context) {
 		"access_token":  accessToken,
 		"refresh_token": refreshToken,
 		"user_detail":   user,
+		"im_token":      imToken,
 	}))
 }
 
@@ -344,4 +337,23 @@ func genPassword(password string) (string, error) {
 		return "", err
 	}
 	return string(encryptedPassword), nil
+}
+
+func (col *UserController) genToken(ctx context.Context, user domain.User) (string, string, string, error) {
+	ssid := uuid.New().String()
+	accessToken, err := col.UserUsecase.CreateAccessToken(user, ssid, col.Env.AccessTokenSecret, col.Env.AccessTokenExpiryHour)
+	if err != nil {
+		return "", "", "", err
+	}
+
+	refreshToken, err := col.UserUsecase.CreateRefreshToken(user, ssid, col.Env.RefreshTokenSecret, col.Env.RefreshTokenExpiryHour)
+	if err != nil {
+		return "", "", "", err
+	}
+
+	imToken, err := col.Sync2OpenIMUsecase.GetUserToken(ctx, "1", user.UserID)
+	if err != nil {
+		slog.Error("Get user token from openIM fail", "error", err.Error())
+	}
+	return accessToken, refreshToken, imToken, nil
 }

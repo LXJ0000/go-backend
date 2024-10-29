@@ -20,7 +20,7 @@ const (
 
 type Sync2OpenIMUsecase interface {
 	GetAdminToken(ctx context.Context) (string, error)
-
+	GetUserToken(ctx context.Context, PlatformID string, userID int64) (string, error)
 	SyncUser(ctx context.Context, user User, op string) error
 }
 
@@ -46,6 +46,21 @@ type GetAdminTokenRequest struct {
 }
 
 type GetAdminTokenResponse struct {
+	ErrCode int    `json:"errCode"`
+	ErrMsg  string `json:"errMsg"`
+	ErrDlt  string `json:"errDlt"`
+	Data    struct {
+		Token             string `json:"token"`
+		ExpireTimeSeconds int    `json:"expireTimeSeconds"`
+	} `json:"data"`
+}
+
+type GetUserTokenRequest struct {
+	PlatformID string `json:"platformID"`
+	UserID     string `json:"userID"`
+}
+
+type GetUserTokenResponse struct {
 	ErrCode int    `json:"errCode"`
 	ErrMsg  string `json:"errMsg"`
 	ErrDlt  string `json:"errDlt"`
