@@ -59,6 +59,39 @@ func (uc *sync2OpenIMUsecase) GetAdminToken(ctx context.Context) (string, error)
 		Header("operationID", lib.Int642Str(time.Now().UnixNano())).
 		Do().ScanJSON(&resp)
 	if err != nil || resp.ErrCode != 0 {
+		var msg []any
+		msg = append(msg, "response", resp)
+		if err != nil {
+			msg = append(msg, "error", err.Error())
+		}
+		slog.Error("get admin token fail", msg...)
+		return "", err
+	}
+	return resp.Data.Token, nil
+}
+
+func (uc *sync2OpenIMUsecase) GetUserToken(ctx context.Context, PlatformID int, userID int64) (string, error) {
+	adminToken, err := uc.GetAdminToken(ctx)
+	if err != nil {
+		return "", err
+	}
+	var resp domain.GetUserTokenResponse
+	err = httpx.NewRequest(ctx, http.MethodPost, uc.domain+"/auth/get_user_token").
+		Client(uc.client).
+		BodyWithJSON(domain.GetUserTokenRequest{
+			PlatformID: PlatformID,
+			UserID:     lib.Int642Str(userID),
+		}).
+		Header("operationID", lib.Int642Str(time.Now().UnixNano())).
+		Header("token", adminToken).
+		Do().ScanJSON(&resp)
+	if err != nil || resp.ErrCode != 0 {
+		var msg []any
+		msg = append(msg, "response", resp)
+		if err != nil {
+			msg = append(msg, "error", err.Error())
+		}
+		slog.Error("get admin token fail", msg...)
 		return "", err
 	}
 	return resp.Data.Token, nil
