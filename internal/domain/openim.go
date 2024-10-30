@@ -20,7 +20,7 @@ const (
 
 type Sync2OpenIMUsecase interface {
 	GetAdminToken(ctx context.Context) (string, error)
-	GetUserToken(ctx context.Context, PlatformID string, userID int64) (string, error)
+	GetUserToken(ctx context.Context, PlatformID int, userID int64) (string, error)
 	SyncUser(ctx context.Context, user User, op string) error
 }
 
@@ -56,7 +56,7 @@ type GetAdminTokenResponse struct {
 }
 
 type GetUserTokenRequest struct {
-	PlatformID string `json:"platformID"`
+	PlatformID int `json:"platformID"`
 	UserID     string `json:"userID"`
 }
 

@@ -351,7 +351,7 @@ func (col *UserController) genToken(ctx context.Context, user domain.User) (stri
 		return "", "", "", err
 	}
 
-	imToken, err := col.Sync2OpenIMUsecase.GetUserToken(ctx, "1", user.UserID)
+	imToken, err := col.Sync2OpenIMUsecase.GetUserToken(ctx, 1, user.UserID)
 	if err != nil {
 		slog.Error("Get user token from openIM fail", "error", err.Error())
 	}
