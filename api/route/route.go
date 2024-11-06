@@ -68,7 +68,7 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	tagUc := usecase.NewTagUsecase(tagRepo, timeout)
 	taskUc := usecase.NewTaskUsecase(taskRepo, timeout)
 	userUc := usecase.NewUserUsecase(userRepo, timeout)
-	sync2OpenIMUc := usecase.NewSync2OpenIMUsecase()
+	sync2OpenIMUc := usecase.NewSync2OpenIMUsecase(env.OpenIMServerDoamin)
 
 	feedLikeHdl := feedUsecaseHandler.NewFeedLikeHandler(feedRepo)
 	feedPostHandler := feedUsecaseHandler.NewFeedPostHandler(feedRepo, relationUc)

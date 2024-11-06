@@ -47,6 +47,8 @@ type Env struct {
 	SMSTemplateID string `mapstructure:"SMS_TEMPLATE_ID"`
 	SMSEndpoint   string `mapstructure:"SMS_ENDPOINT"`
 	SMSRegionId   string `mapstructure:"SMS_REGION_ID"`
+
+	OpenIMServerDoamin string `mapstructure:"OPENIM_SERVER_DOMAIN"`
 }
 
 func NewEnv() *Env {
