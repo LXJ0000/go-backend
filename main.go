@@ -7,10 +7,12 @@ import (
 	"github.com/LXJ0000/go-backend/api/route"
 	"github.com/LXJ0000/go-backend/bootstrap"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-
+	_ = godotenv.Load()
+	
 	app := bootstrap.App()
 
 	env := app.Env
@@ -41,5 +43,5 @@ func main() {
 	server.Use(middleware.PrometheusMiddleware())
 	route.Setup(env, timeout, db, cache, localCache, server, producer, saramaClient, smsClient)
 
-	_ = server.Run(env.ServerAddress)
+	_ = server.Run(env.ServerAddr)
 }

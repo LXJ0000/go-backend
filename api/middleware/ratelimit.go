@@ -12,7 +12,7 @@ func RateLimitMiddleware(env *bootstrap.Env) gin.HandlerFunc {
 	return ratelimit.New(
 		// ratelimit.DefaultConfig(),
 		ratelimit.Config{
-			RedisAddr:     env.RedisAddr,
+			RedisAddr:     env.RedisHost + ":" + env.RedisPort,
 			Window:        time.Second,
 			Limit:         100,
 			RedisPassword: env.RedisPassword,

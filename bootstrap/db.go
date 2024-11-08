@@ -1,6 +1,7 @@
 package bootstrap
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -21,14 +22,21 @@ func NewOrmDatabase(env *Env) orm.Database {
 	// move go-backend.db to /mnt/c/Users/JANNAN/Desktop/go-backend.db then
 	// ln -s /mnt/c/Users/JANNAN/Desktop/go-backend.db ./go-backend.db
 	//dsn := "root:root@tcp(127.0.0.1:3306)/go-backend?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(env.MySQLAddress), &gorm.Config{
+	dns := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		env.MySQLUsername,
+		env.MySQLPassword,
+		env.MySQLHost,
+		env.MySQLPORT,
+		env.MySQLDB,
+	)
+	db, err := gorm.Open(mysql.Open(dns), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	initPrometheus(db)
+	// initPrometheus(db)
 
 	if err = db.AutoMigrate(
 		&domain.Post{},

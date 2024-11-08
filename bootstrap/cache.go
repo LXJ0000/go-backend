@@ -12,7 +12,7 @@ import (
 
 func NewRedisCache(env *Env) cache.RedisCache {
 	cmd := redis.NewClient(&redis.Options{
-		Addr:     env.RedisAddr,
+		Addr:     env.RedisHost + ":" + env.RedisPort,
 		Password: env.RedisPassword,
 		DB:       env.RedisDB,
 	})
