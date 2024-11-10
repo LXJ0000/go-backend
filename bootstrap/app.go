@@ -39,7 +39,7 @@ func App() Application {
 	// app.LocalCache = NewLocalCache(app.Env)
 	logutil.Init(app.Env.AppEnv)
 	snowflakeutil.Init(app.Env.SnowflakeStartTime, app.Env.SnowflakeMachineID)
-	prometheusutil.Init(app.Env.PrometheusAddress)
+	prometheusutil.Init(app.Env.PrometheusAddr)
 
 	app.Producer = NewProducer(app.Env)
 	app.SaramaClient = NewSaramaClient(app.Env)
