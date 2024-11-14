@@ -46,6 +46,7 @@ type UserRepository interface {
 	FindByUserIDs(c context.Context, userIDs []int64, page, size int) ([]User, error)
 	InvalidToken(c context.Context, ssid string, exp time.Duration) error
 	Update(c context.Context, id int64, user *User) error
+	Search(c context.Context, keyword string, page, size int) ([]User, int, error)
 }
 
 type UserUsecase interface {
@@ -60,6 +61,7 @@ type UserUsecase interface {
 	Create(c context.Context, user *User) error
 
 	GetUserByPhone(c context.Context, phone string) (User, error)
+	Search(c context.Context, keyword string, page, size int) ([]User, int, error)
 }
 
 type Profile struct {
@@ -105,6 +107,12 @@ type SendSMSCodeReq struct {
 type LoginBySmsReq struct {
 	Phone string `form:"phone" json:"phone" binding:"required"`
 	Code  string `form:"code" json:"code" binding:"required"`
+}
+
+type UserSearchReq struct {
+	Page    int    `form:"page" json:"page"`
+	Size    int    `form:"size" json:"size"`
+	Keyword string `form:"keyword" json:"keyword" binding:"required"`
 }
 
 //type Role int
