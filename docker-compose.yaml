@@ -1,25 +1,44 @@
 version: '3.0'
 services:
   mysql:
-    image: "mysql:8.0.19"
+    image: "${MYSQL_IMAGE}"
+    volumes:
+      - "${DATA_DIR}/script/mysql/:/docker-entrypoint-initdb.d/"
+      - "${DATA_DIR}/components/mysql/data:/var/lib/mysql"
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_PASSWORD}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+    ports:
+      - "${MYSQL_PORT}:3306"
     restart: "always"
     command: "--default-authentication-plugin=mysql_native_password"
-    environment:
-      MYSQL_ROOT_PASSWORD: "root"
-      # MYSQL_DATABASE: "go-backend"
-      MYSQL_PASSWORD: "root"
-    volumes:
-      - "./script/mysql/:/docker-entrypoint-initdb.d/"
-    ports:
-      - "3306:3306"
   redis:
-    image: "redis"
-    restart: always
-    volumes:
-      - /tmp/docker/data/redis/:/data
+    image: "${REDIS_IMAGE}"
     ports:
-      - 6379:6379 # 自定义的是暴露出去的端口, Redis 容器内运行固定为 6379
-    command: redis-server --requirepass root --appendonly yes
+     - "${REDIS_PORT}:6379"
+    volumes:
+      - "${DATA_DIR}/components/redis/data:/data"
+      - "${DATA_DIR}/components/redis/config/redis.conf:/usr/local/redis/config/redis.conf"
+    environment:
+      TZ: Asia/Shanghai
+    restart: always
+    sysctls:
+      net.core.somaxconn: 1024
+    command: [ "redis-server", "/usr/local/redis/config/redis.conf", "--requirepass", "${REDIS_PASSWORD}", "--appendonly", "yes" ]
+  # minio:
+  #   image: "${MINIO_IMAGE}"
+  #   ports:
+  #     - "${MINIO_PORT}:9000"
+  #     - "${MINIO_CONSOLE_PORT}:9090"
+  #   volumes:
+  #     - "${DATA_DIR}/components/mnt/data:/data"
+  #     - "${DATA_DIR}/components/mnt/config:/root/.minio"
+  #   environment:
+  #     TZ: Asia/Shanghai
+  #     MINIO_ROOT_USER: "${MINIO_ACCESS_KEY_ID}"
+  #     MINIO_ROOT_PASSWORD: "${MINIO_SECRET_ACCESS_KEY}"
+  #   restart: always
+  #   command: minio server /data --console-address ':9090'
   # kafka-ui:
   #   container_name: kafka-ui
   #   image: 'provectuslabs/kafka-ui'

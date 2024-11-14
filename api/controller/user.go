@@ -29,6 +29,23 @@ type UserController struct {
 	Env *bootstrap.Env
 }
 
+func (col *UserController) Search(c *gin.Context) {
+	var q domain.UserSearchReq
+	if err := c.ShouldBind(&q); err != nil {
+		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
+		return
+	}
+	users, count, err := col.UserUsecase.Search(c, q.Keyword, q.Page, q.Size)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Search user fail with db error", err))
+		return
+	}
+	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
+		"users": users,
+		"count": count,
+	}))
+}
+
 func (col *UserController) Profile(c *gin.Context) {
 	userIDStr := c.Query("user_id")
 	if userIDStr == "" {
@@ -150,7 +167,7 @@ func (col *UserController) Login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Invalid credentials", err))
 		return
 	}
-	
+
 	// token
 	accessToken, refreshToken, imToken, err := col.genToken(c, user)
 	if err != nil {

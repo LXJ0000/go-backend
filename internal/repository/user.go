@@ -23,6 +23,23 @@ func NewUserRepository(dao orm.Database, cache cache.RedisCache) domain.UserRepo
 	}
 }
 
+func (u *userRepository) Search(c context.Context, keyword string, page, size int) ([]domain.User, int, error) {
+	var (
+		items []domain.User
+		count int64
+	)
+	db := u.dao.Raw(c)
+	q := db.Model(&domain.User{}).Where("user_name LIKE ? or nick_name LIKE ?", "%"+keyword+"%", "%"+keyword+"%")
+	if err := q.Count(&count).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if err := q.Offset((page - 1) * size).Limit(size).Find(&items).Error; err != nil {
+		return nil, 0, err
+	}
+	return items, int(count), nil
+}
+
 func (u *userRepository) GetByEmail(c context.Context, email string) (domain.User, error) {
 	var user domain.User
 	err := u.dao.FindOne(c, &domain.User{}, map[string]interface{}{"email": email}, &user)

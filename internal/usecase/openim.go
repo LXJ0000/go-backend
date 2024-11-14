@@ -16,8 +16,11 @@ type sync2OpenIMUsecase struct {
 	client *http.Client
 }
 
-func NewSync2OpenIMUsecase() domain.Sync2OpenIMUsecase {
-	return &sync2OpenIMUsecase{client: http.DefaultClient, domain: domain.DefaultOpenIMDomain}
+func NewSync2OpenIMUsecase(addr string) domain.Sync2OpenIMUsecase {
+	if addr == "" {
+		addr = domain.DefaultOpenIMDomain
+	}
+	return &sync2OpenIMUsecase{client: http.DefaultClient, domain: addr}
 }
 
 func (uc *sync2OpenIMUsecase) SyncUser(ctx context.Context, user domain.User, op string) error {

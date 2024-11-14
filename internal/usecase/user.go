@@ -2,8 +2,9 @@ package usecase
 
 import (
 	"context"
-	"github.com/LXJ0000/go-backend/utils/tokenutil"
 	"time"
+
+	"github.com/LXJ0000/go-backend/utils/tokenutil"
 
 	"github.com/LXJ0000/go-backend/internal/domain"
 )
@@ -19,6 +20,12 @@ func NewUserUsecase(userRepository domain.UserRepository, timeout time.Duration)
 		repo:           userRepository,
 		contextTimeout: timeout,
 	}
+}
+
+func (uc *userUsecase) Search(c context.Context, keyword string, page, size int) ([]domain.User,int,  error) {
+	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
+	defer cancel()
+	return uc.repo.Search(ctx, keyword, page, size)
 }
 
 func (uc *userUsecase) GetProfileByID(c context.Context, userID int64) (*domain.Profile, error) {

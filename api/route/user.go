@@ -28,6 +28,7 @@ func NewUserRouter(env *bootstrap.Env,
 	group.GET("/user/profile", col.Fetch)
 	group.POST("/user/edit", col.Update)
 	group.GET("/user", col.Profile)
+	group.POST("user/search", col.Search)
 
 	publicRouter.POST("/login", col.Login)
 	publicRouter.POST("/signup", col.Signup)

@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/LXJ0000/go-backend/pkg/cos"
+	"github.com/LXJ0000/go-backend/pkg/file"
 	"github.com/minio/minio-go/v7"
 )
 
@@ -14,7 +14,7 @@ type Minio struct {
 	client *minio.Client
 }
 
-func NewMinio(client *minio.Client) cos.FileStorage {
+func NewMinio(client *minio.Client) file.FileStorage {
 	return &Minio{client: client}
 }
 
