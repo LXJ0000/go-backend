@@ -39,3 +39,11 @@ var/
 - script 项目使用到的脚本
 - utils 工具集合
 - var 日志记录
+
+## 项目运行
+```bash
+git clone git@github.com:LXJ0000/go-backend.git
+cd go-backend
+docker compose up -d
+go run main.go
+```
