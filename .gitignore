@@ -6,3 +6,9 @@ var/
 components/
 .env
 .env.example
+
+es
+
+stringer
+
+simple-im
