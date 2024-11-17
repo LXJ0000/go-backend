@@ -32,7 +32,10 @@ func (col *RefreshTokenController) RefreshToken(c *gin.Context) {
 	}
 
 	tokenExpiry := time.Duration(col.Env.RefreshTokenExpiryHour) * time.Hour
-	col.UserUsecase.Logout(c, oldSsid, tokenExpiry)
+	if err := col.UserUsecase.Logout(c, oldSsid, tokenExpiry); err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("logout fail", err))
+		return
+	}
 
 	user, err := col.RefreshTokenUsecase.GetUserByID(c, userID)
 	if err != nil {
