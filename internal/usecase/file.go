@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/LXJ0000/go-backend/pkg/file"
 	"github.com/LXJ0000/go-backend/utils/fileutil"
 	"github.com/LXJ0000/go-backend/utils/md5util"
 	snowflake "github.com/LXJ0000/go-backend/utils/snowflakeutil"
@@ -24,13 +25,19 @@ type fileUsecase struct {
 	contextTimeout time.Duration
 	localStaticUrl string
 	urlStaticUrl   string
+
+	minioClient file.FileStorage
 }
 
-func NewFileUsecase(repo domain.FileRepository, contextTimeout time.Duration, localStaticUrl string, urlStaticUrl string) domain.FileUsecase {
+func NewFileUsecase(repo domain.FileRepository,
+	contextTimeout time.Duration, localStaticUrl string, urlStaticUrl string,
+	minioClient file.FileStorage,
+) domain.FileUsecase {
 	return &fileUsecase{repo: repo,
 		contextTimeout: contextTimeout,
 		localStaticUrl: localStaticUrl,
 		urlStaticUrl:   urlStaticUrl,
+		minioClient:    minioClient,
 	}
 }
 
@@ -38,11 +45,13 @@ func (f *fileUsecase) Upload(c context.Context, sourceFile *multipart.FileHeader
 	ctx, cancel := context.WithTimeout(c, f.contextTimeout)
 	defer cancel()
 
+	// 计算文件 MD5
 	fileHash, err := f.hash(sourceFile)
 	if err != nil {
 		return domain.File{}, err
 	}
 
+	// 检查文件是否已存在
 	exists, file, err := f.checkFileMd5(ctx, fileHash)
 	if err != nil {
 		return domain.File{}, err
@@ -51,25 +60,39 @@ func (f *fileUsecase) Upload(c context.Context, sourceFile *multipart.FileHeader
 		return file, nil
 	}
 
-	sourceFile.Filename = f.uniqueFileName(sourceFile)
-	dst := filepath.Join(f.localStaticUrl, "file", sourceFile.Filename)
-	if err := fileutil.SaveUploadedFile(sourceFile, dst); err != nil {
-		return domain.File{}, err
-	}
-
-	//now := time.Now().UnixMicro()
 	file = domain.File{
 		FileID: snowflake.GenID(),
 		Name:   sourceFile.Filename,
-		Path:   dst,
 		Type:   sourceFile.Header.Get("Content-Type"),
-		Source: domain.FileSourceLocal,
 		Hash:   fileHash,
 	}
-	//file.CreatedAt = now
-	//file.UpdatedAt = now
-	if err := f.repo.Upload(ctx, file); err != nil {
-		go func() { _ = fileutil.RemoveFile(dst) }()
+
+	// 文件不存在 存储文件 默认存储到 minio 后续改造可以选择存储本地与 minio
+	var path string
+	if true { // 判断文件上传到本地还是 minio
+		file.Source = domain.FileSourceMinio
+		path, err = f.upload2Minio(ctx, sourceFile)
+		if err != nil {
+			return domain.File{}, err
+		}
+	} else {
+		file.Source = domain.FileSourceLocal
+		path, err = f.upload2Local(sourceFile)
+		if err != nil {
+			return domain.File{}, err
+		}
+	}
+
+	// 存储到数据库
+	file.Path = path
+	if err := f.repo.Upload(ctx, &file); err != nil { // 存储失败的一些操作
+		go func() {
+			if true { // 判断文件上传到本地还是 minio
+
+			} else {
+				_ = fileutil.RemoveFile(path)
+			}
+		}() // 上传失败删除文件
 		return domain.File{}, nil
 	}
 
@@ -101,33 +124,45 @@ func (f *fileUsecase) Uploads(c context.Context, sourceFiles []*multipart.FileHe
 			}
 			if exists {
 				resp.Data[sourceFileName] = file
-
 				return
 			}
 
-			sourceFile.Filename = f.uniqueFileName(sourceFile)
-			dst := filepath.Join(f.localStaticUrl, "file", sourceFile.Filename)
-			if err := fileutil.SaveUploadedFile(sourceFile, dst); err != nil {
-				resp.Data[sourceFileName] = err.Error()
-				return
-			}
-
-			//now := time.Now().UnixMicro()
 			file = domain.File{
 				FileID: snowflake.GenID(),
 				Name:   sourceFile.Filename,
-				Path:   dst,
 				Type:   sourceFile.Header.Get("Content-Type"),
-				Source: domain.FileSourceLocal,
 				Hash:   fileHash,
 			}
-			//file.CreatedAt = now
-			//file.UpdatedAt = now
-			if err := f.repo.Upload(ctx, file); err != nil {
-				resp.Data[sourceFileName] = err.Error()
+
+			// 文件不存在 存储文件 默认存储到 minio 后续改造可以选择存储本地与 minio
+			var path string
+			if true { // 判断文件上传到本地还是 minio
+				file.Source = domain.FileSourceMinio
+				path, err = f.upload2Minio(ctx, sourceFile)
+				if err != nil {
+					resp.Data[sourceFileName] = err.Error()
+					return
+				}
+			} else {
+				file.Source = domain.FileSourceLocal
+				path, err = f.upload2Local(sourceFile)
+				if err != nil {
+					resp.Data[sourceFileName] = err.Error()
+					return
+				}
+			}
+
+			// 存储到数据库
+			file.Path = path
+			if err := f.repo.Upload(ctx, &file); err != nil { // 存储失败的一些操作
 				go func() {
-					_ = fileutil.RemoveFile(dst)
-				}()
+					if true { // 判断文件上传到本地还是 minio
+
+					} else {
+						_ = fileutil.RemoveFile(path)
+					}
+				}() // 上传失败删除文件
+				resp.Data[sourceFileName] = err.Error()
 				return
 			}
 			resp.Data[sourceFileName] = file
@@ -175,4 +210,27 @@ func (f *fileUsecase) hash(file *multipart.FileHeader) (string, error) {
 	// 获取文件MD5
 	fileHash := md5util.Md5(byteData)
 	return fileHash, nil
+}
+
+func (f *fileUsecase) upload2Minio(c context.Context, sourceFile *multipart.FileHeader) (string, error) {
+	ctx, cancel := context.WithTimeout(c, f.contextTimeout)
+	defer cancel()
+	byteData, err := fileutil.FileHeaderToBytes(sourceFile)
+	if err != nil {
+		return "", err
+	}
+	if err := f.minioClient.UploadFile(ctx, domain.FileBucket, sourceFile.Filename, byteData); err != nil {
+		return "", err
+	}
+	// 获取 minio 文件路径
+	return f.minioClient.GetFilePath(ctx, domain.FileBucket, sourceFile.Filename)
+}
+
+func (f *fileUsecase) upload2Local(sourceFile *multipart.FileHeader) (string, error) {
+	sourceFile.Filename = f.uniqueFileName(sourceFile)
+	path := filepath.Join(f.localStaticUrl, "file", sourceFile.Filename)
+	if err := fileutil.SaveUploadedFile(sourceFile, path); err != nil {
+		return "", err
+	}
+	return path, nil
 }

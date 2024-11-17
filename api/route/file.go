@@ -9,7 +9,7 @@ import (
 
 func NewFileRouter(env *bootstrap.Env, fileUc domain.FileUsecase, group *gin.RouterGroup) {
 	col := &controller.FileController{FileUsecase: fileUc}
-	group.PUT("/file/upload", col.Upload)
-	group.PUT("/file/uploads", col.Uploads)
+	group.POST("/file/upload", col.Upload)
+	group.POST("/file/uploads", col.Uploads)
 	group.GET("/file/list", col.FileList)
 }

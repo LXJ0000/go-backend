@@ -26,7 +26,35 @@ type UserController struct {
 	domain.PostUsecase
 	domain.CodeUsecase
 	domain.Sync2OpenIMUsecase
+	domain.FileUsecase
 	Env *bootstrap.Env
+}
+
+func (col *UserController) Avatar(c *gin.Context) {
+	// 调用 fileStorage 上传文件
+	file, err := c.FormFile("avatar")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
+		return
+	}
+	resp, err := col.FileUsecase.Upload(c, file)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Upload File Fail", err))
+		return
+	}
+	path := resp.Path
+	// 存储文件路径到用户数据库
+	userID := c.MustGet(domain.XUserID).(int64)
+	err = col.UserUsecase.UpdateProfile(c, userID, &domain.User{
+		Avatar: path,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Update user avatar fail with db error", err))
+		return
+	}
+	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
+		"path": path,
+	}))
 }
 
 func (col *UserController) Search(c *gin.Context) {

@@ -6,6 +6,7 @@ import (
 	"github.com/IBM/sarama"
 	"github.com/LXJ0000/go-backend/internal/event"
 	"github.com/LXJ0000/go-backend/pkg/cache"
+	"github.com/LXJ0000/go-backend/pkg/file"
 	"github.com/LXJ0000/go-backend/pkg/orm"
 	"github.com/LXJ0000/go-backend/utils/logutil"
 	"github.com/LXJ0000/go-backend/utils/prometheusutil"
@@ -28,6 +29,8 @@ type Application struct {
 	Cron *cron.Cron
 
 	SMSAliyunClient *sms.Client
+
+	MinioClient file.FileStorage
 }
 
 func App() Application {
@@ -47,6 +50,8 @@ func App() Application {
 	app.Cron = NewCron(app.LocalCache, app.Cache, app.Orm)
 
 	app.SMSAliyunClient = NewAliyunClient(app.Env)
+
+	app.MinioClient = NewMinio()
 
 	return *app
 }

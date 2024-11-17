@@ -26,6 +26,8 @@ func main() {
 
 	smsClient := app.SMSAliyunClient
 
+	minioClient := app.MinioClient
+
 	cron := app.Cron
 	cron.Start()
 	defer func() {
@@ -41,7 +43,7 @@ func main() {
 	server.Use(middleware.CORSMiddleware())
 	server.Use(middleware.RateLimitMiddleware(env))
 	server.Use(middleware.PrometheusMiddleware())
-	route.Setup(env, timeout, db, cache, localCache, server, producer, saramaClient, smsClient)
+	route.Setup(env, timeout, db, cache, localCache, server, producer, saramaClient, smsClient, minioClient)
 
 	_ = server.Run(env.ServerAddr)
 }

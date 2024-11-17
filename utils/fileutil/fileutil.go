@@ -1,6 +1,7 @@
 package fileutil
 
 import (
+	"bytes"
 	"io"
 	"mime/multipart"
 	"os"
@@ -31,6 +32,22 @@ func SaveUploadedFile(file *multipart.FileHeader, dst string) error {
 
 func RemoveFile(file string) error {
 	return os.Remove(file)
+}
+
+// FileHeaderToBytes 将 *multipart.FileHeader 转换为 []byte
+func FileHeaderToBytes(fileHeader *multipart.FileHeader) ([]byte, error) {
+	file, err := fileHeader.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	var buf bytes.Buffer
+	if _, err := io.Copy(&buf, file); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }
 
 //

@@ -1,11 +1,8 @@
-.DS_Store
-bin/
-/.idea
-.idea
-# .env
-.vscode
+.idea/
+.vscode/
 *.db
 __debug*
-# docker*
 var/
 components/
+.env
+.env.example

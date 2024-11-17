@@ -14,6 +14,7 @@ func NewUserRouter(env *bootstrap.Env,
 	codeUc domain.CodeUsecase,
 	localCodeUc domain.CodeUsecase,
 	sync2OpenIMUc domain.Sync2OpenIMUsecase,
+	fileUsecase domain.FileUsecase,
 	publicRouter *gin.RouterGroup,
 	group *gin.RouterGroup) {
 	col := &controller.UserController{
@@ -23,12 +24,14 @@ func NewUserRouter(env *bootstrap.Env,
 		RelationUsecase:    relationUc,
 		CodeUsecase:        localCodeUc,
 		Sync2OpenIMUsecase: sync2OpenIMUc,
+		FileUsecase:        fileUsecase,
 	}
 	group.POST("/logout", col.Logout)
 	group.GET("/user/profile", col.Fetch)
 	group.POST("/user/edit", col.Update)
 	group.GET("/user", col.Profile)
 	group.POST("user/search", col.Search)
+	group.POST("user/avatar", col.Avatar)
 
 	publicRouter.POST("/login", col.Login)
 	publicRouter.POST("/signup", col.Signup)

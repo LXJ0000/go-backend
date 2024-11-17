@@ -42,3 +42,7 @@ func (m *Kodo) DeleteFile(ctx context.Context, bucketName, objectName string) er
 func (m *Kodo) ListFiles(ctx context.Context, bucketName string) ([]string, error) {
 	return nil, nil
 }
+
+func (m *Kodo) GetFilePath(ctx context.Context, bucketName, objectName string) (string, error) {
+	return "", nil
+}

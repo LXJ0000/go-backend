@@ -9,21 +9,22 @@ import (
 const (
 	FileTypeUnknown = "unknown"
 	FileTypeImage   = "image"
-)
 
-const (
 	FileSourceKnown = "unknown"
 	FileSourceLocal = "local"
+	FileSourceMinio = "minio"
+
+	FileBucket = "go-backend"
 )
 
 type File struct {
 	Model
-	FileID int64 `gorm:"primaryKey"`
-	Name   string
-	Path   string
-	Type   string
-	Source string
-	Hash   string `gorm:"unique"`
+	FileID int64  `json:"file_id" gorm:"primaryKey"`
+	Name   string `json:"name"`
+	Path   string `json:"path"`
+	Type   string `json:"type"`
+	Source string `json:"source"`
+	Hash   string `json:"hash" gorm:"unique"`
 }
 
 func (File) TableName() string {
@@ -37,8 +38,8 @@ type FileUsecase interface {
 }
 
 type FileRepository interface {
-	Upload(c context.Context, file File) error
-	Uploads(c context.Context, files []File) error
+	Upload(c context.Context, file *File) error
+	Uploads(c context.Context, files []*File) error
 	FileList(c context.Context, fileType, fileSource string, page, size int) ([]File, int, error)
 	FindByHash(c context.Context, hash string) (File, error)
 }

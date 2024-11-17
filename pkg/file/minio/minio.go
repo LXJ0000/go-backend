@@ -3,6 +3,7 @@ package minio
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"os"
 
@@ -39,11 +40,11 @@ func (m *Minio) ListBuckets(ctx context.Context) ([]string, error) {
 }
 
 func (m *Minio) UploadFile(ctx context.Context, bucketName, objectName string, file []byte) error { // TODO origin_name
-	m.client.PutObject(ctx,
+	_, err := m.client.PutObject(ctx,
 		bucketName, objectName, bytes.NewReader(file), int64(len(file)),
 		minio.PutObjectOptions{ContentType: "application/octet-stream"},
 	)
-	return nil
+	return err
 }
 
 func (m *Minio) DownloadFile(ctx context.Context, bucketName, objectName string, filePath string) error {
@@ -53,7 +54,9 @@ func (m *Minio) DownloadFile(ctx context.Context, bucketName, objectName string,
 	}
 	defer object.Close()
 	buf := new(bytes.Buffer)
-	buf.ReadFrom(object)
+	if _, err := buf.ReadFrom(object); err != nil {
+		return err
+	}
 	file, err := os.Create(filePath)
 	if err != nil {
 		return err
@@ -77,4 +80,13 @@ func (m *Minio) ListFiles(ctx context.Context, bucketName string) ([]string, err
 		objectNames = append(objectNames, object.Key)
 	}
 	return objectNames, nil
+}
+
+func (m *Minio) GetFilePath(ctx context.Context, bucketName, objectName string) (string, error) {
+	// url, err := m.client.PresignedGetObject(context.Background(), bucketName, objectName, time.Hour*24*7, nil)
+	// if err != nil {
+	// 	return "", err
+	// }
+	// return url.String(), nil
+	return fmt.Sprintf("%s/%s/%s", m.client.EndpointURL(), bucketName, objectName), nil
 }

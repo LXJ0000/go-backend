@@ -17,6 +17,7 @@ import (
 	feedUsecase "github.com/LXJ0000/go-backend/internal/usecase/feed"
 	feedUsecaseHandler "github.com/LXJ0000/go-backend/internal/usecase/feed/handler"
 	"github.com/LXJ0000/go-backend/pkg/cache"
+	"github.com/LXJ0000/go-backend/pkg/file"
 	"github.com/LXJ0000/go-backend/pkg/orm"
 
 	"github.com/LXJ0000/go-backend/api/middleware"
@@ -29,6 +30,7 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	server *gin.Engine,
 	producer event.Producer, saramaClient sarama.Client,
 	smsClient *sms.Client,
+	minioClient file.FileStorage,
 ) {
 
 	server.Static(env.UrlStaticPath, env.LocalStaticPath)
@@ -60,7 +62,7 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 
 	codeUc := usecase.NewCodeUsecase(codeRepo, aliyun.NewService(env.SMSAppID, env.SMSSignName, smsClient))
 	commentUc := usecase.NewCommentUsecase(commentRepo, timeout)
-	fileUc := usecase.NewFileUsecase(fileRepo, timeout, env.LocalStaticPath, env.UrlStaticPath)
+	fileUc := usecase.NewFileUsecase(fileRepo, timeout, env.LocalStaticPath, env.UrlStaticPath, minioClient)
 	interactionUc := usecase.NewInteractionUsecase(interactionRepo, timeout)
 	postRankUc := usecase.NewPostRankUsecase(interactionRepo, postRepo, postRankRepo, timeout)
 	postUc := usecase.NewPostUsecase(postRepo, timeout, producer, postRankUc)
@@ -93,7 +95,7 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	localCodeService := local.NewService()
 	localCodeUc := usecase.NewCodeUsecase(codeRepo, localCodeService)
 	// User
-	NewUserRouter(env, userUc, relationUc, postUc, codeUc, localCodeUc, sync2OpenIMUc, publicRouter, protectedRouter) // TODO 替换成 codeUc
+	NewUserRouter(env, userUc, relationUc, postUc, codeUc, localCodeUc, sync2OpenIMUc, fileUc, publicRouter, protectedRouter) // TODO 替换成 codeUc
 	// Task
 	NewTaskRouter(env, taskUc, protectedRouter)
 	// Post
