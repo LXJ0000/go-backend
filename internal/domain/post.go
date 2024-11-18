@@ -10,14 +10,16 @@ const (
 
 	PostStatusHide    string = "hide"
 	PostStatusPublish string = "publish"
+
+	PromptOfPostAbstract = "请你根据以下内容,生成文章摘要,不多于20字."
 )
 
 type Post struct {
 	Model
 	PostID int64 `json:"post_id,string" gorm:"primaryKey"`
 
-	Title    string `json:"title" form:"title" binding:"required"`
-	Abstract string `json:"abstract" form:"abstract" binding:"required"`
+	Title    string `json:"title" form:"title"`
+	Abstract string `json:"abstract" form:"abstract"`
 	Content  string `json:"content" form:"content" binding:"required"`
 	AuthorID int64  `json:"author_id,string" form:"author_id"`
 	Status   string `json:"status" form:"status" binding:"required"`
@@ -35,6 +37,7 @@ type PostRepository interface {
 	List(c context.Context, filter interface{}, page, size int) ([]Post, error)
 	FindTopNPage(c context.Context, page, size int, begin time.Time) ([]Post, error)
 	Count(c context.Context, filter interface{}) (int64, error)
+	Update(c context.Context, id int64, post *Post) error
 }
 
 type PostUsecase interface {

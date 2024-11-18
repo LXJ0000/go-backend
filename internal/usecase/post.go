@@ -6,6 +6,7 @@ import (
 
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/LXJ0000/go-backend/internal/event"
+	"github.com/LXJ0000/go-backend/pkg/chat"
 	"golang.org/x/net/context"
 	"golang.org/x/sync/errgroup"
 )
@@ -16,20 +17,33 @@ type postUsecase struct {
 	producer       event.Producer
 
 	postRankUsecase *PostRankUsecase
+	doubao          chat.Chat
 }
 
-func NewPostUsecase(repo domain.PostRepository, timeout time.Duration, producer event.Producer, postRankUsecase *PostRankUsecase) domain.PostUsecase {
+func NewPostUsecase(repo domain.PostRepository, timeout time.Duration, producer event.Producer,
+	postRankUsecase *PostRankUsecase,
+	doubao chat.Chat,
+) domain.PostUsecase {
 	return &postUsecase{
 		repo:            repo,
 		contextTimeout:  timeout,
 		producer:        producer,
 		postRankUsecase: postRankUsecase,
+		doubao:          doubao,
 	}
 }
 
 func (uc *postUsecase) Create(c context.Context, post *domain.Post) error {
 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
+	if post.Abstract == "" {
+		// 调用豆包大模型生成 abstract
+		go func() {
+			subCtx, subCancel := context.WithTimeout(context.Background(), 3*time.Minute)
+			defer subCancel()
+			uc.GenerateAbstract(subCtx, post)
+		}()
+	}
 	return uc.repo.Create(ctx, post)
 }
 
@@ -90,4 +104,15 @@ func (uc *postUsecase) TopN(c context.Context) ([]domain.Post, error) {
 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
 	return uc.postRankUsecase.GetTopN(ctx)
+}
+
+func (uc *postUsecase) GenerateAbstract(c context.Context, post *domain.Post) {
+	// 1. doubao
+	abstract, err := uc.doubao.NormalChat(domain.PromptOfPostAbstract, post.Content)
+	if err != nil {
+		slog.Warn("GenerateAbstract by doubao fail", "error", err.Error())
+		return
+	}
+	// 2. 入库
+	uc.repo.Update(c, post.PostID, &domain.Post{Abstract: abstract})
 }

@@ -18,6 +18,10 @@ func NewPostRepository(dao orm.Database, redisCache cache.RedisCache) domain.Pos
 	return &postRepository{dao: dao, redisCache: redisCache}
 }
 
+func (repo *postRepository) Update(c context.Context, id int64, post *domain.Post) error {
+	return repo.dao.UpdateOne(c, &domain.Post{}, map[string]interface{}{"user_id": id}, post)
+}
+
 func (repo *postRepository) Create(c context.Context, post *domain.Post) error {
 	return repo.dao.Insert(c, &domain.Post{}, post)
 }

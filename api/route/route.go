@@ -67,7 +67,7 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	fileUc := usecase.NewFileUsecase(fileRepo, timeout, env.LocalStaticPath, env.UrlStaticPath, minioClient)
 	interactionUc := usecase.NewInteractionUsecase(interactionRepo, timeout)
 	postRankUc := usecase.NewPostRankUsecase(interactionRepo, postRepo, postRankRepo, timeout)
-	postUc := usecase.NewPostUsecase(postRepo, timeout, producer, postRankUc)
+	postUc := usecase.NewPostUsecase(postRepo, timeout, producer, postRankUc, doubaoChat)
 	relationUc := usecase.NewRelationUsecase(relationRepo, userRepo, timeout)
 	tagUc := usecase.NewTagUsecase(tagRepo, timeout)
 	taskUc := usecase.NewTaskUsecase(taskRepo, timeout)
