@@ -28,6 +28,8 @@ func main() {
 
 	minioClient := app.MinioClient
 
+	daobaoChat := app.DoubaoChat
+
 	cron := app.Cron
 	cron.Start()
 	defer func() {
@@ -43,7 +45,7 @@ func main() {
 	server.Use(middleware.CORSMiddleware())
 	server.Use(middleware.RateLimitMiddleware(env))
 	server.Use(middleware.PrometheusMiddleware())
-	route.Setup(env, timeout, db, cache, localCache, server, producer, saramaClient, smsClient, minioClient)
+	route.Setup(env, timeout, db, cache, localCache, server, producer, saramaClient, smsClient, minioClient, daobaoChat)
 
 	_ = server.Run(env.ServerAddr)
 }

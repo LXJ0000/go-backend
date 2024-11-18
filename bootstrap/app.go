@@ -6,6 +6,7 @@ import (
 	"github.com/IBM/sarama"
 	"github.com/LXJ0000/go-backend/internal/event"
 	"github.com/LXJ0000/go-backend/pkg/cache"
+	"github.com/LXJ0000/go-backend/pkg/chat"
 	"github.com/LXJ0000/go-backend/pkg/file"
 	"github.com/LXJ0000/go-backend/pkg/orm"
 	"github.com/LXJ0000/go-backend/utils/logutil"
@@ -31,6 +32,8 @@ type Application struct {
 	SMSAliyunClient *sms.Client
 
 	MinioClient file.FileStorage
+
+	DoubaoChat chat.Chat
 }
 
 func App() Application {
@@ -52,6 +55,8 @@ func App() Application {
 	app.SMSAliyunClient = NewAliyunClient(app.Env)
 
 	app.MinioClient = NewMinio()
+
+	app.DoubaoChat = NewDoubaoChat()
 
 	return *app
 }

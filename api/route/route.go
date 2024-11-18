@@ -17,6 +17,7 @@ import (
 	feedUsecase "github.com/LXJ0000/go-backend/internal/usecase/feed"
 	feedUsecaseHandler "github.com/LXJ0000/go-backend/internal/usecase/feed/handler"
 	"github.com/LXJ0000/go-backend/pkg/cache"
+	"github.com/LXJ0000/go-backend/pkg/chat"
 	"github.com/LXJ0000/go-backend/pkg/file"
 	"github.com/LXJ0000/go-backend/pkg/orm"
 
@@ -31,6 +32,7 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	producer event.Producer, saramaClient sarama.Client,
 	smsClient *sms.Client,
 	minioClient file.FileStorage,
+	doubaoChat chat.Chat,
 ) {
 
 	server.Static(env.UrlStaticPath, env.LocalStaticPath)
