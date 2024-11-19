@@ -11,7 +11,7 @@ const (
 	PostStatusHide    string = "hide"
 	PostStatusPublish string = "publish"
 
-	PromptOfPostAbstract = "请你根据以下内容,生成文章摘要,不多于20字."
+	PromptOfPostAbstract = "请你根据以下内容,生成文章摘要,不多于20字.你的输出将会直接被用于生成文章摘要.因此除了文章摘要,请不要包含其他内容.\\n"
 )
 
 type Post struct {

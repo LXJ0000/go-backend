@@ -37,8 +37,9 @@ func (uc *postUsecase) Create(c context.Context, post *domain.Post) error {
 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
 	if post.Abstract == "" {
-		// 调用豆包大模型生成 abstract
+		// 调用豆包大模型生成 abstract 感觉太费钱了
 		go func() {
+			return
 			subCtx, subCancel := context.WithTimeout(context.Background(), 3*time.Minute)
 			defer subCancel()
 			uc.GenerateAbstract(subCtx, post)
