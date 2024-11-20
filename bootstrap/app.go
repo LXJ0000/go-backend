@@ -13,7 +13,6 @@ import (
 	"github.com/LXJ0000/go-backend/utils/prometheusutil"
 	"github.com/LXJ0000/go-backend/utils/snowflakeutil"
 	sms "github.com/alibabacloud-go/dysmsapi-20170525/v4/client"
-	"github.com/robfig/cron/v3"
 )
 
 type Application struct {
@@ -27,7 +26,7 @@ type Application struct {
 
 	SaramaClient sarama.Client
 
-	Cron *cron.Cron
+	// Cron *cron.Cron
 
 	SMSAliyunClient *sms.Client
 
@@ -49,8 +48,6 @@ func App() Application {
 
 	app.Producer = NewProducer(app.Env)
 	app.SaramaClient = NewSaramaClient(app.Env)
-
-	app.Cron = NewCron(app.LocalCache, app.Cache, app.Orm)
 
 	app.SMSAliyunClient = NewAliyunClient(app.Env)
 

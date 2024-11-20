@@ -12,7 +12,7 @@ import (
 
 func main() {
 	_ = godotenv.Load()
-	
+
 	app := bootstrap.App()
 
 	env := app.Env
@@ -30,13 +30,14 @@ func main() {
 
 	daobaoChat := app.DoubaoChat
 
-	cron := app.Cron
-	cron.Start()
-	defer func() {
-		// 优雅退出
-		ctx := cron.Stop()
-		<-ctx.Done()
-	}()
+	// TODO wire 前置到这里
+	// cron := bootstrap.NewCron()
+	// cron.Start()
+	// defer func() {
+	// 	// 优雅退出
+	// 	ctx := cron.Stop()
+	// 	<-ctx.Done()
+	// }()
 
 	timeout := time.Duration(env.ContextTimeout) * time.Minute // 接口超时时间
 
@@ -45,7 +46,8 @@ func main() {
 	server.Use(middleware.CORSMiddleware())
 	server.Use(middleware.RateLimitMiddleware(env))
 	server.Use(middleware.PrometheusMiddleware())
-	route.Setup(env, timeout, db, cache, localCache, server, producer, saramaClient, smsClient, minioClient, daobaoChat)
+	apiCache := middleware.NewAPICacheMiddleware(cache)
+	route.Setup(env, timeout, db, cache, localCache, server, producer, saramaClient, smsClient, minioClient, daobaoChat, apiCache)
 
 	_ = server.Run(env.ServerAddr)
 }

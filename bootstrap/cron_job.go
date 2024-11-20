@@ -7,10 +7,7 @@ import (
 	"time"
 
 	"github.com/LXJ0000/go-backend/internal/domain"
-	repository "github.com/LXJ0000/go-backend/internal/repository"
 	"github.com/LXJ0000/go-backend/internal/usecase"
-	"github.com/LXJ0000/go-backend/pkg/cache"
-	"github.com/LXJ0000/go-backend/pkg/orm"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/robfig/cron/v3"
 )
@@ -87,13 +84,8 @@ func InitCronRankJob(rankJob *RankJob) *cron.Cron {
 	return expr
 }
 
-// NewCron 
-func NewCron(localCache cache.LocalCache, redisCache cache.RedisCache, dao orm.Database) *cron.Cron {
-	timeout := time.Minute
-	interactionRepository := repository.NewInteractionRepository(dao, redisCache)
-	postRepository := repository.NewPostRepository(dao, redisCache)
-	postRankRepository := repository.NewPostRankRepository(localCache, redisCache)
-	postRankUsecase := usecase.NewPostRankUsecase(interactionRepository, postRepository, postRankRepository, timeout)
+// NewCron
+func NewCron(timeout time.Duration, postRankUsecase *usecase.PostRankUsecase) *cron.Cron {
 	rankJob := NewRankJob(postRankUsecase, timeout)
 	return InitCronRankJob(rankJob)
 }

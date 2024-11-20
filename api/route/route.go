@@ -33,6 +33,7 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	smsClient *sms.Client,
 	minioClient file.FileStorage,
 	doubaoChat chat.Chat,
+	apiCache func(timeout time.Duration) gin.HandlerFunc,
 ) {
 
 	server.Static(env.UrlStaticPath, env.LocalStaticPath)
@@ -66,7 +67,7 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	commentUc := usecase.NewCommentUsecase(commentRepo, timeout)
 	fileUc := usecase.NewFileUsecase(fileRepo, timeout, env.LocalStaticPath, env.UrlStaticPath, minioClient)
 	interactionUc := usecase.NewInteractionUsecase(interactionRepo, timeout)
-	postRankUc := usecase.NewPostRankUsecase(interactionRepo, postRepo, postRankRepo, timeout)
+	postRankUc := usecase.NewPostRankUsecase(timeout, interactionRepo, postRepo, postRankRepo, doubaoChat)
 	postUc := usecase.NewPostUsecase(postRepo, timeout, producer, postRankUc, doubaoChat)
 	relationUc := usecase.NewRelationUsecase(relationRepo, userRepo, timeout)
 	tagUc := usecase.NewTagUsecase(tagRepo, timeout)
@@ -96,12 +97,22 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 
 	localCodeService := local.NewService()
 	localCodeUc := usecase.NewCodeUsecase(codeRepo, localCodeService)
+
+	// Cron
+	cron := bootstrap.NewCron(timeout, postRankUc)
+	cron.Start()
+	defer func() {
+		// 优雅退出
+		ctx := cron.Stop()
+		<-ctx.Done()
+	}()
+
 	// User
 	NewUserRouter(env, userUc, relationUc, postUc, codeUc, localCodeUc, sync2OpenIMUc, fileUc, publicRouter, protectedRouter) // TODO 替换成 codeUc
 	// Task
 	NewTaskRouter(env, taskUc, protectedRouter)
 	// Post
-	NewPostRouter(postUc, interactionUc, feedUc, userUc, protectedRouter)
+	NewPostRouter(postUc, interactionUc, feedUc, userUc,apiCache,  protectedRouter)
 	// Comment
 	NewCommentRouter(env, commentUc, protectedRouter)
 	// Relation

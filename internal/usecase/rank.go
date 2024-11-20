@@ -24,10 +24,10 @@ type PostRankUsecase struct {
 }
 
 func NewPostRankUsecase(
+	contextTimeout time.Duration,
 	interactionRepository domain.InteractionRepository,
 	postRepository domain.PostRepository,
 	rankRepository domain.RankRepository,
-	contextTimeout time.Duration,
 	doubao chat.Chat,
 ) *PostRankUsecase {
 	return &PostRankUsecase{
