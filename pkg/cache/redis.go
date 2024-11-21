@@ -47,3 +47,7 @@ func (c *RedisCache) HGetAll(ctx context.Context, key string) (map[string]string
 func (c *RedisCache) Exist(ctx context.Context, key string) (int64, error) {
 	return c.cmd.Exists(ctx, key).Result()
 }
+
+func (c *RedisCache) SetNx(ctx context.Context, key string, value interface{}, expiration time.Duration) (bool, error) {
+	return c.cmd.SetNX(ctx, key, value, expiration).Result()
+}
