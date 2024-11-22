@@ -5,7 +5,6 @@ __debug*
 var/
 components/
 .env
-.env.example
 
 es
 
