@@ -11,6 +11,8 @@ type Database interface {
 	FindOne(c context.Context, model interface{}, filter interface{}, item interface{}) error
 	FindMany(c context.Context, model interface{}, filter interface{}, items interface{}) error
 	FindPage(c context.Context, model interface{}, filter interface{}, page, size int, items interface{}) error
+	FindManyRev(c context.Context, model interface{}, filter interface{}, items interface{}) error
+	FindPageRev(c context.Context, model interface{}, filter interface{}, page, size int, items interface{}) error
 	Insert(c context.Context, model interface{}, item interface{}) error
 	DeleteOne(c context.Context, model interface{}, item interface{}) error
 	UpdateOne(c context.Context, model interface{}, filter interface{}, update interface{}) error
@@ -47,6 +49,18 @@ func (dao *database) FindPage(c context.Context, model interface{}, filter inter
 		size = defaultSize
 	}
 	return dao.db.WithContext(c).Model(model).Where(filter).Offset((page - 1) * size).Limit(size).Find(items).Error
+}
+
+func (dao *database) FindManyRev(c context.Context, model interface{}, filter interface{}, items interface{}) error {
+	return dao.db.WithContext(c).Model(model).Where(filter).Order("id DESC").Find(items).Error
+}
+
+func (dao *database) FindPageRev(c context.Context, model interface{}, filter interface{}, page, size int, items interface{}) error {
+	if page == 0 || size == 0 {
+		page = defaultPage
+		size = defaultSize
+	}
+	return dao.db.WithContext(c).Model(model).Where(filter).Order("id DESC").Offset((page - 1) * size).Limit(size).Find(items).Error
 }
 
 func (dao *database) Insert(c context.Context, model interface{}, item interface{}) error {
