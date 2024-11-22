@@ -80,7 +80,12 @@ func (col *UserController) BatchProfile(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
-	profiles, err := col.UserUsecase.BatchGetProfileByID(c, req.UserIDs)
+	var userIDs []int64
+	for _, idStr := range req.UserIDs {
+		id, _ := lib.Str2Int64(idStr)
+		userIDs = append(userIDs, id)
+	}
+	profiles, err := col.UserUsecase.BatchGetProfileByID(c, userIDs)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Batch get profile by user_ids fail with db error", err))
 		return

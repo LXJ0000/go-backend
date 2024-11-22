@@ -66,6 +66,7 @@ type UserUsecase interface {
 }
 
 type Profile struct {
+	UserID       int64        `json:"user_id,string"`
 	UserName     string       `json:"user_name"`
 	NickName     string       `json:"nick_name"`
 	Email        string       `json:"email"`
@@ -117,7 +118,7 @@ type UserSearchReq struct {
 }
 
 type UserBatchProfileReq struct {
-	UserIDs []int64 `form:"user_ids" json:"user_ids"`
+	UserIDs []string `form:"user_ids" json:"user_ids"`
 }
 
 //type Role int

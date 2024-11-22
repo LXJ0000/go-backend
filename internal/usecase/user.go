@@ -34,6 +34,7 @@ func (uc *userUsecase) BatchGetProfileByID(c context.Context, userIDs []int64) (
 	profiles := make([]domain.Profile, 0, len(users))
 	for _, user := range users {
 		profiles = append(profiles, domain.Profile{
+			UserID:   user.UserID,
 			UserName: user.UserName, Email: user.Email,
 			AboutMe: user.AboutMe, Birthday: user.Birthday,
 			NickName: user.NickName, Avatar: user.Avatar,
