@@ -2,11 +2,12 @@ package controller
 
 import (
 	"database/sql"
+	"net/http"
+
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/LXJ0000/go-backend/utils/lib"
 	"github.com/LXJ0000/go-backend/utils/snowflakeutil"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 type CommentController struct {
@@ -16,7 +17,7 @@ type CommentController struct {
 func (col *CommentController) Create(c *gin.Context) {
 	var req domain.CommentCreateRequest
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 
@@ -46,7 +47,7 @@ func (col *CommentController) Delete(c *gin.Context) {
 	commentIDRaw := c.Query("comment_id")
 	commentID, err := lib.Str2Int64(commentIDRaw)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 	if err := col.CommentUsecase.Delete(c, commentID); err != nil {
@@ -58,7 +59,7 @@ func (col *CommentController) Delete(c *gin.Context) {
 func (col *CommentController) FindTop(c *gin.Context) {
 	var req domain.CommentListRequest
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 	resp, err := col.CommentUsecase.FindTop(c.Request.Context(), req.Biz, req.BizID, req.MinID, req.Limit)

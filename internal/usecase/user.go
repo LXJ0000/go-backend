@@ -22,7 +22,28 @@ func NewUserUsecase(userRepository domain.UserRepository, timeout time.Duration)
 	}
 }
 
-func (uc *userUsecase) Search(c context.Context, keyword string, page, size int) ([]domain.User,int,  error) {
+func (uc *userUsecase) BatchGetProfileByID(c context.Context, userIDs []int64) ([]domain.Profile, error) {
+	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
+	defer cancel()
+
+	users, err := uc.repo.FindByUserIDs(ctx, userIDs, 1, len(userIDs))
+	if err != nil {
+		return nil, err
+	}
+
+	profiles := make([]domain.Profile, 0, len(users))
+	for _, user := range users {
+		profiles = append(profiles, domain.Profile{
+			UserName: user.UserName, Email: user.Email,
+			AboutMe: user.AboutMe, Birthday: user.Birthday,
+			NickName: user.NickName, Avatar: user.Avatar,
+		})
+	}
+
+	return profiles, nil
+}
+
+func (uc *userUsecase) Search(c context.Context, keyword string, page, size int) ([]domain.User, int, error) {
 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
 	return uc.repo.Search(ctx, keyword, page, size)

@@ -26,7 +26,7 @@ func (col *PostController) CreateOrPublish(c *gin.Context) {
 	userID := c.MustGet(domain.XUserID).(int64)
 	var post domain.Post
 	if err := c.ShouldBind(&post); err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 	post.AuthorID = userID
@@ -42,7 +42,7 @@ func (col *PostController) ReaderList(c *gin.Context) {
 	//读者查看列表 只能查看已发布的文章
 	var req domain.PostListRequest
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 
@@ -97,7 +97,7 @@ func (col *PostController) WriterList(c *gin.Context) {
 	//创作者查看列表 可以查看所有自己的帖子
 	var req domain.PostListRequest
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 	userID := c.MustGet(domain.XUserID).(int64)
@@ -145,7 +145,7 @@ func (col *PostController) Info(c *gin.Context) {
 	postID, err := lib.Str2Int64(c.Query("post_id"))
 	userID := c.MustGet(domain.XUserID).(int64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 	var post domain.Post
@@ -185,7 +185,7 @@ func (col *PostController) Like(c *gin.Context) {
 		PostID int64 `json:"post_id,string" form:"post_id"`
 	}{}
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 	postID := req.PostID
@@ -227,7 +227,7 @@ func (col *PostController) Collect(c *gin.Context) {
 		CollectID int64 `json:"collect_id,string" form:"collect_id"`
 	}{}
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 	postID := req.PostID
