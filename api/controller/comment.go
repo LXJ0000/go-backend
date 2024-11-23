@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"database/sql"
 	"net/http"
 
 	"github.com/LXJ0000/go-backend/internal/domain"
@@ -21,19 +20,17 @@ func (col *CommentController) Create(c *gin.Context) {
 		return
 	}
 
-	var comment domain.Comment
-	//now := time.Now().UnixMicro()
-	comment.CommentID = snowflakeutil.GenID()
-	comment.UserID = c.MustGet(domain.XUserID).(int64)
-	comment.Biz = req.Biz
-	comment.BizID = req.BizID
-	comment.Content = req.Content
-	comment.RootID = sql.NullInt64{Int64: req.RootID, Valid: req.RootID != 0}
-	comment.ParentID = sql.NullInt64{Int64: req.ParentID, Valid: req.ParentID != 0}
-	//comment.CreatedAt = now
-	//comment.UpdatedAt = now
+	comment := domain.Comment{
+		CommentID:       snowflakeutil.GenID(),
+		UserID:          c.MustGet(domain.XUserID).(int64),
+		Biz:             req.Biz,
+		BizID:           lib.Str2Int64DefaultZero(req.BizID),
+		Content:         req.Content,
+		ParentCommentID: lib.Str2Int64DefaultZero(req.ParentID),
+		ToUserID:        lib.Str2Int64DefaultZero(req.ToUserID),
+	}
 
-	if err := col.CommentUsecase.Create(c.Request.Context(), comment); err != nil {
+	if err := col.CommentUsecase.Create(c.Request.Context(), &comment); err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create comment fail", err))
 		return
 	}
@@ -62,7 +59,7 @@ func (col *CommentController) FindTop(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
-	resp, err := col.CommentUsecase.FindTop(c.Request.Context(), req.Biz, req.BizID, req.MinID, req.Limit)
+	resp, err := col.CommentUsecase.FindTop(c.Request.Context(), req.Biz, lib.Str2Int64DefaultZero(req.BizID), lib.Str2Int64DefaultZero(req.MinID), req.Limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("FindTop comment fail", err))
 		return

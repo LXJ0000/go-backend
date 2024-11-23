@@ -16,7 +16,7 @@ func NewCommentUsecase(commentRepo domain.CommentRepository, contextTimeout time
 	return &commentUsecase{commentRepo: commentRepo, contextTimeout: contextTimeout}
 }
 
-func (uc *commentUsecase) Create(c context.Context, comment domain.Comment) error {
+func (uc *commentUsecase) Create(c context.Context, comment *domain.Comment) error {
 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
 	return uc.commentRepo.Create(ctx, comment)
