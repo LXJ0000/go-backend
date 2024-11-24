@@ -50,7 +50,7 @@ type UserRepository interface {
 }
 
 type UserUsecase interface {
-	GetProfileByID(c context.Context, userID int64) (*Profile, error)
+	GetProfileByID(c context.Context, userID int64) (Profile, error)
 	BatchGetProfileByID(c context.Context, userIDs []int64) ([]Profile, error)
 	UpdateProfile(c context.Context, userID int64, user *User) error
 	Logout(c context.Context, SSID string, tokenExpiry time.Duration) error

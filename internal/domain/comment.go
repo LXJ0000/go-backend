@@ -29,14 +29,16 @@ func (Comment) TableName() string {
 
 type CommentRepository interface {
 	Create(c context.Context, comment *Comment) error
-	Delete(c context.Context, id int64) error                                                // 删除本节点和其对应的子节点
-	FindTop(c context.Context, biz string, bizID, minID int64, limit int) ([]Comment, error) // 查找一级评论
+	Delete(c context.Context, id int64) error                                                            // 删除本节点和其对应的子节点
+	Find(c context.Context, biz string, bizID, parentID, minID int64, limit int) ([]Comment, int, error) // 查找一级评论则 parentID=0
+	Count(c context.Context, biz string, bizID int64) (int, error)
 }
 
 type CommentUsecase interface {
 	Create(c context.Context, comment *Comment) error
 	Delete(c context.Context, id int64) error
-	FindTop(c context.Context, biz string, bizID, minID int64, limit int) ([]Comment, error)
+	Find(c context.Context, biz string, bizID, parentID, minID int64, limit int) ([]Comment, int, error)
+	Count(c context.Context, biz string, bizID int64) (int, error)
 }
 
 type CommentCreateRequest struct {
@@ -49,8 +51,15 @@ type CommentCreateRequest struct {
 }
 
 type CommentListRequest struct {
-	Biz   string `json:"biz" form:"biz"`
-	BizID string `json:"biz_id,string" form:"biz_id"`
-	MinID string `json:"min_id,string" form:"min_id"`
-	Limit int    `json:"limit" form:"limit"`
+	Biz      string `json:"biz" form:"biz"`
+	BizID    string `json:"biz_id" form:"biz_id"`
+	MinID    string `json:"min_id" form:"min_id"`
+	Limit    int    `json:"limit" form:"limit"`
+	ParentID string `json:"parent_id" form:"parent_id"` // default 0 表示查找一级评论
+}
+
+type CommentInfo struct {
+	Comment
+	UserProfile   Profile `json:"user_profile,omitempty"`
+	ToUserProfile Profile `json:"to_user_profile,omitempty"`
 }

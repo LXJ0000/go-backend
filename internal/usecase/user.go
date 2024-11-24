@@ -50,16 +50,16 @@ func (uc *userUsecase) Search(c context.Context, keyword string, page, size int)
 	return uc.repo.Search(ctx, keyword, page, size)
 }
 
-func (uc *userUsecase) GetProfileByID(c context.Context, userID int64) (*domain.Profile, error) {
+func (uc *userUsecase) GetProfileByID(c context.Context, userID int64) (domain.Profile, error) {
 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
 
 	user, err := uc.repo.GetByID(ctx, userID)
 	if err != nil {
-		return nil, err
+		return domain.Profile{}, err
 	}
 
-	return &domain.Profile{
+	return domain.Profile{
 		UserName: user.UserName, Email: user.Email,
 		AboutMe: user.AboutMe, Birthday: user.Birthday,
 		NickName: user.NickName, Avatar: user.Avatar,

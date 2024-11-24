@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"context"
 	"net/http"
+	"time"
 
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/LXJ0000/go-backend/utils/lib"
@@ -10,7 +12,8 @@ import (
 )
 
 type CommentController struct {
-	CommentUsecase domain.CommentUsecase
+	domain.CommentUsecase
+	domain.UserUsecase
 }
 
 func (col *CommentController) Create(c *gin.Context) {
@@ -29,14 +32,23 @@ func (col *CommentController) Create(c *gin.Context) {
 		ParentCommentID: lib.Str2Int64DefaultZero(req.ParentID),
 		ToUserID:        lib.Str2Int64DefaultZero(req.ToUserID),
 	}
-
+	var toUser domain.Profile
 	if err := col.CommentUsecase.Create(c.Request.Context(), &comment); err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Create comment fail", err))
 		return
 	}
+	if comment.ToUserID != 0 {
+		var err error
+		toUser, err = col.UserUsecase.GetProfileByID(context.Background(), comment.ToUserID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, domain.ErrorResp("Get user profile fail", err))
+			return
+		}
+	}
 
 	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
 		"comment_detail": comment,
+		"to_user":        toUser,
 	}))
 }
 
@@ -59,12 +71,44 @@ func (col *CommentController) FindTop(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
-	resp, err := col.CommentUsecase.FindTop(c.Request.Context(), req.Biz, lib.Str2Int64DefaultZero(req.BizID), lib.Str2Int64DefaultZero(req.MinID), req.Limit)
+	// 获取评论列表
+	comments, count, err := col.CommentUsecase.Find(c.Request.Context(), req.Biz, lib.Str2Int64DefaultZero(req.BizID), lib.Str2Int64DefaultZero(req.ParentID), lib.Str2Int64DefaultZero(req.MinID), req.Limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("FindTop comment fail", err))
 		return
 	}
+	// 获取用户信息
+	userIDs := make([]int64, 0, len(comments)*2)
+	for _, v := range comments {
+		userIDs = append(userIDs, v.UserID)
+		if v.ToUserID != 0 {
+			userIDs = append(userIDs, v.ToUserID)
+		}
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+	defer cancel()
+	userID2Info := make(map[int64]domain.Profile, len(userIDs))
+	users, err := col.UserUsecase.BatchGetProfileByID(ctx, userIDs)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Find user fail", err))
+		return
+	}
+	for _, u := range users {
+		userID2Info[u.UserID] = u
+	}
+	commentInfos := make([]domain.CommentInfo, 0, len(comments))
+	for _, v := range comments {
+		item := domain.CommentInfo{
+			Comment:     v,
+			UserProfile: userID2Info[v.UserID],
+		}
+		if v.ToUserID != 0 {
+			item.ToUserProfile = userID2Info[v.ToUserID]
+		}
+		commentInfos = append(commentInfos, item)
+	}
 	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
-		"comment_list": resp,
+		"comment_list": commentInfos,
+		"count":        count,
 	}))
 }

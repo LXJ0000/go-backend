@@ -7,11 +7,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewCommentRouter(env *bootstrap.Env, commentUc domain.CommentUsecase, group *gin.RouterGroup) {
+func NewCommentRouter(env *bootstrap.Env, commentUc domain.CommentUsecase,
+	userUc domain.UserUsecase,
+	group *gin.RouterGroup) {
 	col := &controller.CommentController{
 		CommentUsecase: commentUc,
+		UserUsecase:    userUc,
 	}
 	group.POST("/comment", col.Create)
 	group.DELETE("/comment", col.Delete)
-	group.GET("/comment", col.FindTop)
+	group.POST("/comment.list", col.FindTop)
 }

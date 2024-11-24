@@ -74,7 +74,8 @@ type PostResponse struct {
 }
 
 type PostInfoResponse struct {
-	Post        PostResponse        `json:"post"`
-	Interaction Interaction         `json:"interaction"`
-	Stat        UserInteractionStat `json:"stat"`
+	Post         PostResponse        `json:"post"`
+	Interaction  Interaction         `json:"interaction"`
+	Stat         UserInteractionStat `json:"stat"`
+	CommentCount int                 `json:"comment_count"`
 }
