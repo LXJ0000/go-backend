@@ -9,10 +9,12 @@ import (
 
 func NewCommentRouter(env *bootstrap.Env, commentUc domain.CommentUsecase,
 	userUc domain.UserUsecase,
+	intrUc domain.InteractionUseCase,
 	group *gin.RouterGroup) {
 	col := &controller.CommentController{
-		CommentUsecase: commentUc,
-		UserUsecase:    userUc,
+		CommentUsecase:     commentUc,
+		UserUsecase:        userUc,
+		InteractionUseCase: intrUc,
 	}
 	group.POST("/comment", col.Create)
 	group.DELETE("/comment", col.Delete)

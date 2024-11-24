@@ -4,6 +4,10 @@ import (
 	"golang.org/x/net/context"
 )
 
+const (
+	BizComment = "comment"
+)
+
 // 帖子
 // 一级评论 某个用户回复该帖子 commentid userid content
 // 二级评论 在某个一级评论下回复 commentid userid content parentid(一级评论的commentid)
@@ -62,4 +66,6 @@ type CommentInfo struct {
 	Comment
 	UserProfile   Profile `json:"user_profile,omitempty"`
 	ToUserProfile Profile `json:"to_user_profile,omitempty"`
+	Liked         bool    `json:"liked"`
+	LikeCount     int     `json:"like_cnt"`
 }

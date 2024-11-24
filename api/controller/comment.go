@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 type CommentController struct {
 	domain.CommentUsecase
 	domain.UserUsecase
+	domain.InteractionUseCase
 }
 
 func (col *CommentController) Create(c *gin.Context) {
@@ -66,6 +68,7 @@ func (col *CommentController) Delete(c *gin.Context) {
 }
 
 func (col *CommentController) FindTop(c *gin.Context) {
+	userID := c.MustGet(domain.XUserID).(int64)
 	var req domain.CommentListRequest
 	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
@@ -98,9 +101,17 @@ func (col *CommentController) FindTop(c *gin.Context) {
 	}
 	commentInfos := make([]domain.CommentInfo, 0, len(comments))
 	for _, v := range comments {
+		interaction, userInteractionInfo, err := col.InteractionUseCase.Info(c, domain.BizComment, v.CommentID, userID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, domain.ErrorResp("InteractionUseCase Info Error", err))
+			slog.Warn("InteractionUseCase Info Error", "error", err.Error())
+			return
+		}
 		item := domain.CommentInfo{
 			Comment:     v,
 			UserProfile: userID2Info[v.UserID],
+			Liked:       userInteractionInfo.Liked,
+			LikeCount:   interaction.LikeCnt,
 		}
 		if v.ToUserID != 0 {
 			item.ToUserProfile = userID2Info[v.ToUserID]

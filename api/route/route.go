@@ -114,7 +114,7 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	// Post
 	NewPostRouter(postUc, interactionUc, feedUc, userUc, commentUc, apiCache, protectedRouter)
 	// Comment
-	NewCommentRouter(env, commentUc, userUc, protectedRouter)
+	NewCommentRouter(env, commentUc, userUc, interactionUc, protectedRouter)
 	// Relation
 	NewRelationRouter(env, relationUc, protectedRouter)
 	// File
@@ -123,4 +123,6 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	NewTagRouter(env, tagUc, protectedRouter)
 	// Feed
 	NewFeedRouter(feedUc, protectedRouter)
+	// Intr
+	NewIntrRouter(interactionUc, feedUc, protectedRouter)
 }

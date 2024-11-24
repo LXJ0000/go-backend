@@ -192,7 +192,7 @@ func (col *PostController) Info(c *gin.Context) {
 	}))
 }
 
-func (col *PostController) Like(c *gin.Context) {
+func (col *PostController) Like(c *gin.Context) { // TODO 抽象成资源操作而不是针对帖子的操作
 	req := struct {
 		IsLike bool  `json:"is_like" form:"is_like"`
 		PostID int64 `json:"post_id,string" form:"post_id"`
