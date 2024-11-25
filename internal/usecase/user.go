@@ -60,6 +60,7 @@ func (uc *userUsecase) GetProfileByID(c context.Context, userID int64) (domain.P
 	}
 
 	return domain.Profile{
+		UserID: user.UserID,
 		UserName: user.UserName, Email: user.Email,
 		AboutMe: user.AboutMe, Birthday: user.Birthday,
 		NickName: user.NickName, Avatar: user.Avatar,
