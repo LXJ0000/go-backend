@@ -18,6 +18,10 @@ func NewPostRepository(dao orm.Database, redisCache cache.RedisCache) domain.Pos
 	return &postRepository{dao: dao, redisCache: redisCache}
 }
 
+func (repo *postRepository) Update(c context.Context, id int64, post *domain.Post) error {
+	return repo.dao.UpdateOne(c, &domain.Post{}, map[string]interface{}{"user_id": id}, post)
+}
+
 func (repo *postRepository) Create(c context.Context, post *domain.Post) error {
 	return repo.dao.Insert(c, &domain.Post{}, post)
 }
@@ -30,7 +34,7 @@ func (repo *postRepository) GetByID(c context.Context, id int64) (domain.Post, e
 
 func (repo *postRepository) List(c context.Context, filter interface{}, page, size int) ([]domain.Post, error) {
 	var items []domain.Post
-	err := repo.dao.FindPage(c, &domain.Post{}, filter, page, size, &items)
+	err := repo.dao.FindPageRev(c, &domain.Post{}, filter, page, size, &items)
 	return items, err
 }
 

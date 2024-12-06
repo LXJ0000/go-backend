@@ -18,7 +18,7 @@ func (col *RelationController) Follow(c *gin.Context) {
 		Followee int64 `json:"followee,string" form:"followee"`
 	}{}
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 	userID := c.MustGet(domain.XUserID).(int64)
@@ -39,7 +39,7 @@ func (col *RelationController) CancelFollow(c *gin.Context) {
 		Followee int64 `json:"followee,string" form:"followee"`
 	}{}
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 	userID := c.MustGet(domain.XUserID).(int64)

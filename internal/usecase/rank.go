@@ -2,11 +2,14 @@ package usecase
 
 import (
 	"context"
-	"github.com/LXJ0000/go-backend/internal/domain"
-	"github.com/LXJ0000/go-lib/queue"
 	"log/slog"
 	"math"
+	"sync"
 	"time"
+
+	"github.com/LXJ0000/go-backend/internal/domain"
+	"github.com/LXJ0000/go-backend/pkg/chat"
+	"github.com/LXJ0000/go-lib/queue"
 )
 
 type PostRankUsecase struct {
@@ -17,13 +20,15 @@ type PostRankUsecase struct {
 	n                     int
 	getScore              func(likeCnt int, updateTime time.Time) float64
 	contextTimeout        time.Duration
+	doubao                chat.Chat
 }
 
 func NewPostRankUsecase(
+	contextTimeout time.Duration,
 	interactionRepository domain.InteractionRepository,
 	postRepository domain.PostRepository,
 	rankRepository domain.RankRepository,
-	contextTimeout time.Duration,
+	doubao chat.Chat,
 ) *PostRankUsecase {
 	return &PostRankUsecase{
 		interactionRepository: interactionRepository,
@@ -38,6 +43,7 @@ func NewPostRankUsecase(
 			return (cnt - 1) / math.Pow(t+2, g)
 		},
 		contextTimeout: contextTimeout,
+		doubao:         doubao,
 	}
 }
 
@@ -106,15 +112,35 @@ func (ru *PostRankUsecase) topN(c context.Context) ([]domain.Post, error) {
 		offset += ru.batchSize
 	}
 	res := make([]domain.Post, heap.Size())
+	wg := sync.WaitGroup{}
+	wg.Add(heap.Size())
 	for i := heap.Size() - 1; heap.Size() > 0; i-- {
 		post := heap.Pop().post
 		res[i] = post
+		go func() { // 异步生成 abstract 并入库
+			defer wg.Done()
+			if res[i].Abstract == "" {
+				ru.GenerateAbstract(c, &res[i]) // 这里会直接修改 res[i] 中的 Abstract
+			}
+		}()
 	}
+	wg.Wait() // 等待所有 abstract 生成完毕
 	return res, nil
 }
 
 func (ru *PostRankUsecase) GetTopN(c context.Context) ([]domain.Post, error) {
 	ctx, cancel := context.WithTimeout(c, ru.contextTimeout)
 	defer cancel()
-	return ru.rankRepository.GetTopN(ctx)
+	return ru.rankRepository.GetTopN(ctx) // 直接从缓存中拉取数据
+}
+
+func (uc *PostRankUsecase) GenerateAbstract(c context.Context, post *domain.Post) {
+	// 1. doubao
+	abstract, err := uc.doubao.NormalChat(domain.PromptOfPostAbstract, post.Content)
+	if err != nil {
+		slog.Warn("GenerateAbstract by doubao fail", "error", err.Error())
+		return
+	}
+	// 2. 入库
+	uc.postRepository.Update(c, post.PostID, &domain.Post{Abstract: abstract})
 }

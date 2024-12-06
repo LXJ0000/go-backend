@@ -34,7 +34,7 @@ func (col *UserController) Avatar(c *gin.Context) {
 	// 调用 fileStorage 上传文件
 	file, err := c.FormFile("avatar")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 	resp, err := col.FileUsecase.Upload(c, file)
@@ -60,7 +60,7 @@ func (col *UserController) Avatar(c *gin.Context) {
 func (col *UserController) Search(c *gin.Context) {
 	var q domain.UserSearchReq
 	if err := c.ShouldBind(&q); err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 	users, count, err := col.UserUsecase.Search(c, q.Keyword, q.Page, q.Size)
@@ -74,15 +74,36 @@ func (col *UserController) Search(c *gin.Context) {
 	}))
 }
 
+func (col *UserController) BatchProfile(c *gin.Context) {
+	var req domain.UserBatchProfileReq
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
+		return
+	}
+	var userIDs []int64
+	for _, idStr := range req.UserIDs {
+		id, _ := lib.Str2Int64(idStr)
+		userIDs = append(userIDs, id)
+	}
+	profiles, err := col.UserUsecase.BatchGetProfileByID(c, userIDs)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Batch get profile by user_ids fail with db error", err))
+		return
+	}
+	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
+		"profiles": profiles,
+	}))
+}
+
 func (col *UserController) Profile(c *gin.Context) {
 	userIDStr := c.Query("user_id")
 	if userIDStr == "" {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", nil))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), nil))
 		return
 	}
 	userID, err := lib.Str2Int64(userIDStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 	profile, err := col.UserUsecase.GetProfileByID(c, userID)
@@ -155,7 +176,7 @@ func (col *UserController) Update(c *gin.Context) {
 		AboutMe  string `json:"about_me" form:"about_me"`
 	}{}
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 	user := domain.User{}
@@ -181,7 +202,7 @@ func (col *UserController) Login(c *gin.Context) {
 
 	err := c.ShouldBind(&request)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 
@@ -217,7 +238,7 @@ func (col *UserController) LoginByPhone(c *gin.Context) {
 
 	err := c.ShouldBind(&request)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 
@@ -252,7 +273,7 @@ func (col *UserController) Signup(c *gin.Context) {
 	var request domain.SignupReq
 
 	if err := c.ShouldBind(&request); err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 

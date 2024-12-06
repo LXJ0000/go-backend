@@ -50,7 +50,8 @@ type UserRepository interface {
 }
 
 type UserUsecase interface {
-	GetProfileByID(c context.Context, userID int64) (*Profile, error)
+	GetProfileByID(c context.Context, userID int64) (Profile, error)
+	BatchGetProfileByID(c context.Context, userIDs []int64) ([]Profile, error)
 	UpdateProfile(c context.Context, userID int64, user *User) error
 	Logout(c context.Context, SSID string, tokenExpiry time.Duration) error
 
@@ -65,6 +66,7 @@ type UserUsecase interface {
 }
 
 type Profile struct {
+	UserID       int64        `json:"user_id,string"`
 	UserName     string       `json:"user_name"`
 	NickName     string       `json:"nick_name"`
 	Email        string       `json:"email"`
@@ -113,6 +115,10 @@ type UserSearchReq struct {
 	Page    int    `form:"page" json:"page"`
 	Size    int    `form:"size" json:"size"`
 	Keyword string `form:"keyword" json:"keyword" binding:"required"`
+}
+
+type UserBatchProfileReq struct {
+	UserIDs []string `form:"user_ids" json:"user_ids"`
 }
 
 //type Role int

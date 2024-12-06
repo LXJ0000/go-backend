@@ -20,13 +20,14 @@ type PostController struct {
 	domain.InteractionUseCase
 	domain.FeedUsecase
 	domain.UserUsecase
+	domain.CommentUsecase
 }
 
 func (col *PostController) CreateOrPublish(c *gin.Context) {
 	userID := c.MustGet(domain.XUserID).(int64)
 	var post domain.Post
 	if err := c.ShouldBind(&post); err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 	post.AuthorID = userID
@@ -42,7 +43,7 @@ func (col *PostController) ReaderList(c *gin.Context) {
 	//读者查看列表 只能查看已发布的文章
 	var req domain.PostListRequest
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 
@@ -76,10 +77,12 @@ func (col *PostController) ReaderList(c *gin.Context) {
 				slog.Error("parsePostResponse Error", "error", err.Error())
 				return
 			}
+			commentCount := col.getCommentCount(c, domain.BizPost, post.PostID)
 			resp = append(resp, domain.PostInfoResponse{
-				Post:        postResp,
-				Interaction: interaction,
-				Stat:        userInteractionInfo,
+				Post:         postResp,
+				Interaction:  interaction,
+				Stat:         userInteractionInfo,
+				CommentCount: commentCount,
 			})
 		}()
 	}
@@ -97,7 +100,7 @@ func (col *PostController) WriterList(c *gin.Context) {
 	//创作者查看列表 可以查看所有自己的帖子
 	var req domain.PostListRequest
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 	userID := c.MustGet(domain.XUserID).(int64)
@@ -124,10 +127,12 @@ func (col *PostController) WriterList(c *gin.Context) {
 				slog.Error("parsePostResponse Error", "error", err.Error())
 				return
 			}
+			commentCount := col.getCommentCount(c, domain.BizPost, post.PostID)
 			resp = append(resp, domain.PostInfoResponse{
-				Post:        postResp,
-				Interaction: interaction,
-				Stat:        userInteractionInfo,
+				Post:         postResp,
+				Interaction:  interaction,
+				Stat:         userInteractionInfo,
+				CommentCount: commentCount,
 			})
 		}()
 	}
@@ -145,12 +150,15 @@ func (col *PostController) Info(c *gin.Context) {
 	postID, err := lib.Str2Int64(c.Query("post_id"))
 	userID := c.MustGet(domain.XUserID).(int64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
-	var post domain.Post
-	var interaction domain.Interaction
-	var userInteractionInfo domain.UserInteractionStat
+	var (
+		post                domain.Post
+		interaction         domain.Interaction
+		userInteractionInfo domain.UserInteractionStat
+		commentCount        int
+	)
 	eg := errgroup.Group{}
 	eg.Go(func() error {
 		post, err = col.PostUsecase.Info(c, postID)
@@ -163,6 +171,10 @@ func (col *PostController) Info(c *gin.Context) {
 		}
 		return nil
 	})
+	eg.Go(func() error {
+		commentCount = col.getCommentCount(c, domain.BizPost, postID)
+		return nil
+	})
 	if err = eg.Wait(); err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp(err.Error(), err))
 		return
@@ -173,19 +185,20 @@ func (col *PostController) Info(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, domain.SuccessResp(domain.PostInfoResponse{
-		Post:        postResp,
-		Interaction: interaction,
-		Stat:        userInteractionInfo,
+		Post:         postResp,
+		Interaction:  interaction,
+		Stat:         userInteractionInfo,
+		CommentCount: commentCount,
 	}))
 }
 
-func (col *PostController) Like(c *gin.Context) {
+func (col *PostController) Like(c *gin.Context) { // TODO 抽象成资源操作而不是针对帖子的操作
 	req := struct {
 		IsLike bool  `json:"is_like" form:"is_like"`
 		PostID int64 `json:"post_id,string" form:"post_id"`
 	}{}
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 	postID := req.PostID
@@ -227,7 +240,7 @@ func (col *PostController) Collect(c *gin.Context) {
 		CollectID int64 `json:"collect_id,string" form:"collect_id"`
 	}{}
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 	postID := req.PostID
@@ -265,7 +278,7 @@ func (col *PostController) parsePostResponse(c context.Context, post domain.Post
 		return domain.PostResponse{}, err
 	}
 	postResp := domain.PostResponse{
-		Author: *author,
+		Author: author,
 	}
 	postResp.PostID = post.PostID
 	postResp.Title = post.Title
@@ -275,4 +288,13 @@ func (col *PostController) parsePostResponse(c context.Context, post domain.Post
 	postResp.CreatedAt = post.CreatedAt
 	postResp.UpdatedAt = post.UpdatedAt
 	return postResp, nil
+}
+
+func (col *PostController) getCommentCount(c *gin.Context, biz string, bizID int64) int {
+	count, err := col.CommentUsecase.Count(c, biz, bizID)
+	if err != nil {
+		slog.Error("CommentUsecase Count Error", "error", err.Error())
+		return 0
+	}
+	return count
 }

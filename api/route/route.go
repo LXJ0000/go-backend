@@ -17,6 +17,7 @@ import (
 	feedUsecase "github.com/LXJ0000/go-backend/internal/usecase/feed"
 	feedUsecaseHandler "github.com/LXJ0000/go-backend/internal/usecase/feed/handler"
 	"github.com/LXJ0000/go-backend/pkg/cache"
+	"github.com/LXJ0000/go-backend/pkg/chat"
 	"github.com/LXJ0000/go-backend/pkg/file"
 	"github.com/LXJ0000/go-backend/pkg/orm"
 
@@ -31,6 +32,8 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	producer event.Producer, saramaClient sarama.Client,
 	smsClient *sms.Client,
 	minioClient file.FileStorage,
+	doubaoChat chat.Chat,
+	apiCache func(timeout time.Duration) gin.HandlerFunc,
 ) {
 
 	server.Static(env.UrlStaticPath, env.LocalStaticPath)
@@ -64,8 +67,8 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	commentUc := usecase.NewCommentUsecase(commentRepo, timeout)
 	fileUc := usecase.NewFileUsecase(fileRepo, timeout, env.LocalStaticPath, env.UrlStaticPath, minioClient)
 	interactionUc := usecase.NewInteractionUsecase(interactionRepo, timeout)
-	postRankUc := usecase.NewPostRankUsecase(interactionRepo, postRepo, postRankRepo, timeout)
-	postUc := usecase.NewPostUsecase(postRepo, timeout, producer, postRankUc)
+	postRankUc := usecase.NewPostRankUsecase(timeout, interactionRepo, postRepo, postRankRepo, doubaoChat)
+	postUc := usecase.NewPostUsecase(postRepo, timeout, producer, postRankUc, doubaoChat)
 	relationUc := usecase.NewRelationUsecase(relationRepo, userRepo, timeout)
 	tagUc := usecase.NewTagUsecase(tagRepo, timeout)
 	taskUc := usecase.NewTaskUsecase(taskRepo, timeout)
@@ -94,14 +97,24 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 
 	localCodeService := local.NewService()
 	localCodeUc := usecase.NewCodeUsecase(codeRepo, localCodeService)
+
+	// Cron
+	cron := bootstrap.NewCron(timeout, postRankUc)
+	cron.Start()
+	defer func() {
+		// 优雅退出
+		ctx := cron.Stop()
+		<-ctx.Done()
+	}()
+
 	// User
 	NewUserRouter(env, userUc, relationUc, postUc, codeUc, localCodeUc, sync2OpenIMUc, fileUc, publicRouter, protectedRouter) // TODO 替换成 codeUc
 	// Task
 	NewTaskRouter(env, taskUc, protectedRouter)
 	// Post
-	NewPostRouter(postUc, interactionUc, feedUc, userUc, protectedRouter)
+	NewPostRouter(postUc, interactionUc, feedUc, userUc, commentUc, apiCache, protectedRouter)
 	// Comment
-	NewCommentRouter(env, commentUc, protectedRouter)
+	NewCommentRouter(env, commentUc, userUc, interactionUc, protectedRouter)
 	// Relation
 	NewRelationRouter(env, relationUc, protectedRouter)
 	// File
@@ -110,4 +123,6 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	NewTagRouter(env, tagUc, protectedRouter)
 	// Feed
 	NewFeedRouter(feedUc, protectedRouter)
+	// Intr
+	NewIntrRouter(interactionUc, feedUc, protectedRouter)
 }

@@ -1,10 +1,11 @@
 package controller
 
 import (
+	"net/http"
+
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/LXJ0000/go-backend/utils/snowflakeutil"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 type TagController struct {
@@ -37,7 +38,7 @@ func (col *TagController) CreateTagBiz(c *gin.Context) {
 	userID := c.MustGet(domain.XUserID).(int64)
 	var req domain.CreateTagBizRequest
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 	if err := col.TagUsecase.CreateTagBiz(c, userID, req.Biz, req.BizID, req.TagIDs); err != nil {
@@ -51,7 +52,7 @@ func (col *TagController) GetTagsByBiz(c *gin.Context) {
 	userID := c.MustGet(domain.XUserID).(int64)
 	var req domain.GetTagsByBizRequest
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 	tags, err := col.TagUsecase.GetTagsByBiz(c, userID, req.Biz, req.BizID)

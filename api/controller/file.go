@@ -14,7 +14,7 @@ type FileController struct {
 func (col *FileController) Upload(c *gin.Context) {
 	file, err := c.FormFile("file")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 	resp, err := col.FileUsecase.Upload(c, file)
@@ -28,7 +28,7 @@ func (col *FileController) Upload(c *gin.Context) {
 func (col *FileController) Uploads(c *gin.Context) {
 	form, err := c.MultipartForm()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 	files := form.File["file"]
@@ -44,7 +44,7 @@ func (col *FileController) Uploads(c *gin.Context) {
 func (col *FileController) FileList(c *gin.Context) {
 	var req domain.FileListRequest
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResp("Bad Params", err))
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
 	resp, cnt, err := col.FileUsecase.FileList(c, req.Type, req.Source, req.Page, req.Size)
