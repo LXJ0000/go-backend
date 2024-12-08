@@ -23,6 +23,31 @@ type PostController struct {
 	domain.CommentUsecase
 }
 
+func (col *PostController) PostDelete(c *gin.Context) {
+	//删除文章
+	var req domain.PostDeleteRequest
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
+		return
+	}
+	userID := c.MustGet(domain.XUserID).(int64)
+	postID := req.PostID
+	post, err := col.PostUsecase.Info(c, postID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, domain.ErrorResp("Post not found", err))
+		return
+	}
+	if post.AuthorID != userID {
+		c.JSON(http.StatusBadRequest, domain.ErrorResp("Permission denied", nil))
+		return
+	}
+	if err := col.PostUsecase.Delete(c, postID); err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Failed to delete post", err))
+		return
+	}
+	c.JSON(http.StatusOK, domain.SuccessResp(nil))
+}
+ 
 func (col *PostController) CreateOrPublish(c *gin.Context) {
 	userID := c.MustGet(domain.XUserID).(int64)
 	var post domain.Post

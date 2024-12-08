@@ -32,6 +32,7 @@ func (Post) TableName() string {
 //go:generate mockgen -source=./post.go -destination=./mock/post.go -package=domain_mock
 type PostRepository interface {
 	Create(c context.Context, post *Post) error
+	Delete(c context.Context, postID int64) error
 	GetByID(c context.Context, id int64) (Post, error)
 	FindMany(c context.Context, filter interface{}) ([]Post, error) // Modify
 	List(c context.Context, filter interface{}, page, size int) ([]Post, error)
@@ -42,6 +43,7 @@ type PostRepository interface {
 
 type PostUsecase interface {
 	Create(c context.Context, post *Post) error
+	Delete(c context.Context, postID int64) error
 	List(c context.Context, filter interface{}, page, size int) ([]Post, int64, error)
 	Info(c context.Context, postID int64) (Post, error)
 	TopN(c context.Context) ([]Post, error)
@@ -78,4 +80,8 @@ type PostInfoResponse struct {
 	Interaction  Interaction         `json:"interaction"`
 	Stat         UserInteractionStat `json:"stat"`
 	CommentCount int                 `json:"comment_count"`
+}
+
+type PostDeleteRequest struct {
+	PostID int64 `json:"post_id,string" form:"post_id"`
 }

@@ -26,6 +26,7 @@ func NewPostRouter(PostUsecase domain.PostUsecase,
 	}
 
 	group.POST("/post", c.CreateOrPublish)
+	group.POST("/post.delete", c.PostDelete)
 	group.GET("/post", c.Info)
 	group.GET("/post/reader", apiCache(time.Second), c.ReaderList)
 	group.GET("/post/writer", c.WriterList)
