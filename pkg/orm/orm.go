@@ -13,6 +13,7 @@ type Database interface {
 	FindPage(c context.Context, model interface{}, filter interface{}, page, size int, items interface{}) error
 	FindManyRev(c context.Context, model interface{}, filter interface{}, items interface{}) error
 	FindPageRev(c context.Context, model interface{}, filter interface{}, page, size int, items interface{}) error
+	FindByLastIDRev(c context.Context, model interface{}, filter interface{}, size int, last int64, items interface{}) error
 	Insert(c context.Context, model interface{}, item interface{}) error
 	DeleteOne(c context.Context, model interface{}, item interface{}) error
 	UpdateOne(c context.Context, model interface{}, filter interface{}, update interface{}) error
@@ -61,6 +62,13 @@ func (dao *database) FindPageRev(c context.Context, model interface{}, filter in
 		size = defaultSize
 	}
 	return dao.db.WithContext(c).Model(model).Where(filter).Order("id DESC").Offset((page - 1) * size).Limit(size).Find(items).Error
+}
+
+func (dao *database) FindByLastIDRev(c context.Context, model interface{}, filter interface{}, size int, last int64, items interface{}) error {
+	if size == 0 {
+		size = defaultSize
+	}
+	return dao.db.WithContext(c).Model(model).Where(filter).Where("created_at < ?", last).Order("id DESC").Limit(size).Find(items).Error
 }
 
 func (dao *database) Insert(c context.Context, model interface{}, item interface{}) error {

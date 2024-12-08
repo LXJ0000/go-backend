@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"log/slog"
+	"math"
 	"time"
 
 	"github.com/LXJ0000/go-backend/internal/domain"
@@ -65,6 +66,33 @@ func (uc *postUsecase) List(c context.Context, filter interface{}, page, size in
 	eg.Go(func() error {
 		var err error
 		items, err = uc.repo.List(ctx, filter, page, size)
+		return err
+	})
+	eg.Go(func() error {
+		var err error
+		cnt, err = uc.repo.Count(ctx, filter)
+		return err
+	})
+	if eg.Wait() != nil {
+		return nil, 0, eg.Wait()
+	}
+	return items, cnt, nil
+}
+
+func (uc *postUsecase) ListByLastID(c context.Context, filter interface{}, size int, last int64) ([]domain.Post, int64, error) {
+	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
+	defer cancel()
+	var (
+		items []domain.Post
+		cnt   int64
+	)
+	eg := errgroup.Group{}
+	eg.Go(func() error {
+		if last < 0 {
+			last = math.MaxInt64
+		}
+		var err error
+		items, err = uc.repo.ListByLastID(ctx, filter, size, last)
 		return err
 	})
 	eg.Go(func() error {

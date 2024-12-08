@@ -47,7 +47,7 @@ func (col *PostController) PostDelete(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, domain.SuccessResp(nil))
 }
- 
+
 func (col *PostController) CreateOrPublish(c *gin.Context) {
 	userID := c.MustGet(domain.XUserID).(int64)
 	var post domain.Post
@@ -79,7 +79,8 @@ func (col *PostController) ReaderList(c *gin.Context) {
 	if req.AuthorID != 0 {
 		filter.AuthorID = req.AuthorID
 	}
-	posts, count, err := col.PostUsecase.List(c, filter, req.Page, req.Size)
+	posts, count, err := col.PostUsecase.ListByLastID(c, filter, req.Size, req.Last)
+	// posts, count, err := col.PostUsecase.List(c, filter, req.Page, req.Size)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Failed to list posts", err))
 		return
@@ -130,7 +131,8 @@ func (col *PostController) WriterList(c *gin.Context) {
 	}
 	userID := c.MustGet(domain.XUserID).(int64)
 	filter := &domain.Post{AuthorID: userID}
-	posts, count, err := col.PostUsecase.List(c, filter, req.Page, req.Size)
+	posts, count, err := col.PostUsecase.ListByLastID(c, filter, req.Size, req.Last)
+	// posts, count, err := col.PostUsecase.List(c, filter, req.Page, req.Size)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Failed to list posts", err))
 		return

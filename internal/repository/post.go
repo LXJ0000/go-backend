@@ -18,6 +18,15 @@ func NewPostRepository(dao orm.Database, redisCache cache.RedisCache) domain.Pos
 	return &postRepository{dao: dao, redisCache: redisCache}
 }
 
+func (repo *postRepository) ListByLastID(c context.Context, filter interface{}, size int, last int64) ([]domain.Post, error) {
+	var items []domain.Post
+	err := repo.dao.FindByLastIDRev(c, &domain.Post{}, filter, size, last, &items)
+	if err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 func (repo *postRepository) Update(c context.Context, id int64, post *domain.Post) error {
 	return repo.dao.UpdateOne(c, &domain.Post{}, map[string]interface{}{"user_id": id}, post)
 }

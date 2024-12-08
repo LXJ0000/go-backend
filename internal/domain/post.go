@@ -36,6 +36,7 @@ type PostRepository interface {
 	GetByID(c context.Context, id int64) (Post, error)
 	FindMany(c context.Context, filter interface{}) ([]Post, error) // Modify
 	List(c context.Context, filter interface{}, page, size int) ([]Post, error)
+	ListByLastID(c context.Context, filter interface{}, size int, lastID int64) ([]Post, error)
 	FindTopNPage(c context.Context, page, size int, begin time.Time) ([]Post, error)
 	Count(c context.Context, filter interface{}) (int64, error)
 	Update(c context.Context, id int64, post *Post) error
@@ -45,6 +46,7 @@ type PostUsecase interface {
 	Create(c context.Context, post *Post) error
 	Delete(c context.Context, postID int64) error
 	List(c context.Context, filter interface{}, page, size int) ([]Post, int64, error)
+	ListByLastID(c context.Context, filter interface{}, size int, lastID int64) ([]Post, int64, error)
 	Info(c context.Context, postID int64) (Post, error)
 	TopN(c context.Context) ([]Post, error)
 	Count(c context.Context, filter interface{}) (int64, error)
@@ -54,8 +56,9 @@ type PostUsecase interface {
 type PostListRequest struct {
 	Page     int    `json:"page" form:"page"`
 	Size     int    `json:"size" form:"size"`
-	AuthorID int64  `json:"author_id" form:"author_id"`
+	AuthorID int64  `json:"author_id,string" form:"author_id"`
 	Status   string `json:"status" form:"status"`
+	Last     int64  `json:"last,string" form:"last"`
 }
 
 //type PostListResponse struct {
