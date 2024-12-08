@@ -278,7 +278,7 @@ func (col *UserController) Signup(c *gin.Context) {
 	}
 
 	if _, err := col.UserUsecase.GetUserByEmail(c, request.Email); err == nil {
-		c.JSON(http.StatusConflict, domain.ErrorResp("User already exists with the given email", err))
+		c.JSON(http.StatusOK, domain.ErrorResp("User already exists with the given email", err))
 		return
 	}
 
