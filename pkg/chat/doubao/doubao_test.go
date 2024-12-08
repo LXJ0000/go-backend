@@ -1,85 +1,91 @@
-// Usage:
-//
-// 1. go get -u github.com/volcengine/volc-sdk-golang
-// 2. VOLC_ACCESSKEY=XXXXX VOLC_SECRETKEY=YYYYY go run main.go
 package doubao
 
 import (
-	"encoding/json"
-	"errors"
+	"context"
 	"fmt"
+	"io"
 	"os"
 	"testing"
 
 	"github.com/joho/godotenv"
-	api "github.com/volcengine/volc-sdk-golang/service/maas/models/api/v2"
-	client "github.com/volcengine/volc-sdk-golang/service/maas/v2"
+	"github.com/volcengine/volcengine-go-sdk/service/arkruntime"
+	"github.com/volcengine/volcengine-go-sdk/service/arkruntime/model"
+	"github.com/volcengine/volcengine-go-sdk/volcengine"
 )
 
 func TestDoubao(t *testing.T) {
 	godotenv.Load()
-	r := client.NewInstance("maas-api.ml-platform-cn-beijing.volces.com", "cn-beijing")
+	client := arkruntime.NewClientWithApiKey(
+		os.Getenv("ARK_API_KEY"),
+		arkruntime.WithBaseUrl("https://ark.cn-beijing.volces.com/api/v3"),
+		arkruntime.WithRegion("cn-beijing"),
+	)
 
-	// fetch ak&sk from environmental variables
-	r.SetAccessKey(os.Getenv("VOLC_ACCESSKEY"))
-	r.SetSecretKey(os.Getenv("VOLC_SECRETKEY"))
-	t.Log(os.Getenv("VOLC_ACCESSKEY"))
-	req := &api.ChatReq{
-		Messages: []*api.Message{
+	ctx := context.Background()
+
+	fmt.Println("----- standard request -----")
+	req := model.ChatCompletionRequest{
+		Model: os.Getenv("VOLC_ENDPOINTID"),
+		Messages: []*model.ChatCompletionMessage{
 			{
-				Role:    api.ChatRoleAssistant,
-				Content: "你是豆包，是由字节跳动开发的 AI 人工智能助手",
+				Role: model.ChatMessageRoleSystem,
+				Content: &model.ChatCompletionMessageContent{
+					StringValue: volcengine.String("你是豆包，是由字节跳动开发的 AI 人工智能助手"),
+				},
 			},
 			{
-				Role:    api.ChatRoleUser,
-				Content: "花儿为什么这么香？",
+				Role: model.ChatMessageRoleUser,
+				Content: &model.ChatCompletionMessageContent{
+					StringValue: volcengine.String("常见的十字花科植物有哪些？"),
+				},
 			},
 		},
 	}
 
-	endpointId := os.Getenv("VOLC_ENDPOINTID")
-	NormalChat(r, endpointId, req)
-	StreamChat(r, endpointId, req)
-}
-
-func NormalChat(r *client.MaaS, endpointId string, req *api.ChatReq) {
-	got, status, err := r.Chat(endpointId, req)
+	resp, err := client.CreateChatCompletion(ctx, req)
 	if err != nil {
-		errVal := &api.Error{}
-		if errors.As(err, &errVal) { // the returned error always type of *api.Error
-			fmt.Printf("meet maas error=%v, status=%d\n", errVal, status)
-		}
+		fmt.Printf("standard chat error: %v\n", err)
 		return
 	}
-	fmt.Println("chat answer", mustMarshalJson(got))
-}
+	fmt.Println(*resp.Choices[0].Message.Content.StringValue)
 
-func StreamChat(r *client.MaaS, endpointId string, req *api.ChatReq) {
-	ch, err := r.StreamChat(endpointId, req)
+	fmt.Println("----- streaming request -----")
+	req = model.ChatCompletionRequest{
+		Model: os.Getenv("VOLC_ENDPOINTID"),
+		Messages: []*model.ChatCompletionMessage{
+			{
+				Role: model.ChatMessageRoleSystem,
+				Content: &model.ChatCompletionMessageContent{
+					StringValue: volcengine.String("你是豆包，是由字节跳动开发的 AI 人工智能助手"),
+				},
+			},
+			{
+				Role: model.ChatMessageRoleUser,
+				Content: &model.ChatCompletionMessageContent{
+					StringValue: volcengine.String("常见的十字花科植物有哪些？"),
+				},
+			},
+		},
+	}
+	stream, err := client.CreateChatCompletionStream(ctx, req)
 	if err != nil {
-		errVal := &api.Error{}
-		if errors.As(err, &errVal) { // the returned error always type of *api.Error
-			fmt.Println("meet maas error", errVal.Error())
-		}
+		fmt.Printf("stream chat error: %v\n", err)
 		return
 	}
+	defer stream.Close()
 
-	for resp := range ch {
-		if resp.Error != nil {
-			// it is possible that error occurs during response processing
-			fmt.Println(mustMarshalJson(resp.Error))
+	for {
+		recv, err := stream.Recv()
+		if err == io.EOF {
 			return
 		}
-		fmt.Println(mustMarshalJson(resp))
-		// last response may contain `usage`
-		if resp.Usage != nil {
-			// last message, will return full response including usage, role, finish_reason, etc.
-			fmt.Println(mustMarshalJson(resp.Usage))
+		if err != nil {
+			fmt.Printf("Stream chat error: %v\n", err)
+			return
+		}
+
+		if len(recv.Choices) > 0 {
+			fmt.Print(recv.Choices[0].Delta.Content)
 		}
 	}
-}
-
-func mustMarshalJson(v interface{}) string {
-	s, _ := json.Marshal(v)
-	return string(s)
 }

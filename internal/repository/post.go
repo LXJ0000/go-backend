@@ -28,7 +28,7 @@ func (repo *postRepository) ListByLastID(c context.Context, filter interface{}, 
 }
 
 func (repo *postRepository) Update(c context.Context, id int64, post *domain.Post) error {
-	return repo.dao.UpdateOne(c, &domain.Post{}, map[string]interface{}{"user_id": id}, post)
+	return repo.dao.UpdateOne(c, &domain.Post{}, map[string]interface{}{"post_id": id}, post)
 }
 
 func (repo *postRepository) Delete(c context.Context, postID int64) error {

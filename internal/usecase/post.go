@@ -151,11 +151,13 @@ func (uc *postUsecase) TopN(c context.Context) ([]domain.Post, error) {
 
 func (uc *postUsecase) GenerateAbstract(c context.Context, post *domain.Post) {
 	// 1. doubao
-	abstract, err := uc.doubao.NormalChat(domain.PromptOfPostAbstract, post.Content)
+	abstract, err := uc.doubao.NormalChat(c, domain.PromptOfPostAbstract, post.Content)
 	if err != nil {
 		slog.Warn("GenerateAbstract by doubao fail", "error", err.Error())
 		return
 	}
 	// 2. 入库
-	uc.repo.Update(c, post.PostID, &domain.Post{Abstract: abstract})
+	if err := uc.repo.Update(c, post.PostID, &domain.Post{Abstract: abstract}); err != nil {
+		slog.Warn("GenerateAbstract Update fail", "error", err.Error())
+	}
 }

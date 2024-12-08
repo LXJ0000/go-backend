@@ -5,18 +5,19 @@ import (
 
 	"github.com/LXJ0000/go-backend/pkg/chat"
 	"github.com/LXJ0000/go-backend/pkg/chat/doubao"
-	client "github.com/volcengine/volc-sdk-golang/service/maas/v2"
+	"github.com/volcengine/volcengine-go-sdk/service/arkruntime"
 )
 
 func NewDoubaoChat() chat.Chat {
-	r := client.NewInstance("maas-api.ml-platform-cn-beijing.volces.com", "cn-beijing")
-
-	r.SetAccessKey(os.Getenv("VOLC_ACCESSKEY"))
-	r.SetSecretKey(os.Getenv("VOLC_SECRETKEY"))
+	client := arkruntime.NewClientWithApiKey(
+		os.Getenv("ARK_API_KEY"),
+		arkruntime.WithBaseUrl("https://ark.cn-beijing.volces.com/api/v3"),
+		arkruntime.WithRegion("cn-beijing"),
+	)
 
 	endpointId := os.Getenv("VOLC_ENDPOINTID")
 
-	c := doubao.NewDoubaoChat(r, endpointId)
+	c := doubao.NewDoubaoChat(client, endpointId)
 
 	return c
 }
