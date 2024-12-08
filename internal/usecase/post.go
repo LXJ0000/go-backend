@@ -84,6 +84,14 @@ func (uc *postUsecase) Info(c context.Context, postID int64) (domain.Post, error
 	post, err := uc.repo.GetByID(ctx, postID)
 	if err == nil {
 		go func() {
+			defer func() {
+				if err := recover(); err != nil {
+					slog.Warn("ProduceReadEvent Panic", "err", err)
+				}
+			}()
+			if uc.producer == nil {
+				return
+			}
 			// TODO context
 			if err := uc.producer.ProduceReadEvent(context.Background(), event.ReadEvent{
 				PostID: post.PostID,
