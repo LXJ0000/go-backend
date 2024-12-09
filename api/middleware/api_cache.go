@@ -49,7 +49,7 @@ func NewAPICacheMiddleware(cache cache.RedisCache) func(timeout time.Duration) g
 			if value != "" {
 				var resp domain.Response
 				_ = json.Unmarshal([]byte(value), &resp)
-				slog.Info("api cache hit", "resp", resp)
+				// slog.Info("api cache hit", "resp", resp)
 				c.AbortWithStatusJSON(http.StatusOK, resp)
 				cancel()
 				return
