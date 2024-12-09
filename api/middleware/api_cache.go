@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -32,7 +33,7 @@ func (rw *cacheWrappedWriter) Write(body []byte) (int, error) {
 }
 
 // NewAPICacheMiddleware 创建一个 API 缓存中间件 用于缓存 API 请求结果 以 uri + method + reqBody 作为 key
-// 还没有自测 慎用
+// 还没有自测 慎用 还需要考虑不同用户的请求 以及数据一致性问题
 func NewAPICacheMiddleware(cache cache.RedisCache) func(timeout time.Duration) gin.HandlerFunc {
 	return func(timeout time.Duration) gin.HandlerFunc {
 		return func(c *gin.Context) {
@@ -48,6 +49,7 @@ func NewAPICacheMiddleware(cache cache.RedisCache) func(timeout time.Duration) g
 			if value != "" {
 				var resp domain.Response
 				_ = json.Unmarshal([]byte(value), &resp)
+				slog.Info("api cache hit", "resp", resp)
 				c.AbortWithStatusJSON(http.StatusOK, resp)
 				cancel()
 				return
@@ -64,6 +66,7 @@ func NewAPICacheMiddleware(cache cache.RedisCache) func(timeout time.Duration) g
 			ctx, cancel = context.WithTimeout(c.Request.Context(), time.Second)
 			defer cancel()
 			cache.SetNx(ctx, key, w.body.String(), timeout)
+			slog.Info("api cache set", "key", key, "value", w.body.String())
 		}
 	}
 }
