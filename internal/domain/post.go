@@ -20,7 +20,7 @@ type Post struct {
 
 	Title    string `json:"title" form:"title"`
 	Abstract string `json:"abstract" form:"abstract"`
-	Content  string `json:"content" form:"content" binding:"required"`
+	Content  string `json:"content" form:"content"`
 	AuthorID int64  `json:"author_id,string" form:"author_id"`
 	Status   string `json:"status" form:"status" binding:"required"`
 

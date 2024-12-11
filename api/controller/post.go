@@ -83,6 +83,11 @@ func (col *PostController) CreateOrPublish(c *gin.Context) {
 		post.Images = string(bytes)
 	}
 
+	if post.Content == "" && post.Images == "" {
+		c.JSON(http.StatusBadRequest, domain.ErrorResp("Content or images is required", nil))
+		return
+	}
+
 	post.AuthorID = userID
 	post.PostID = snowflake.GenID()
 	if err := col.PostUsecase.Create(c, &post); err != nil {
