@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -21,6 +22,7 @@ type PostController struct {
 	domain.FeedUsecase
 	domain.UserUsecase
 	domain.CommentUsecase
+	domain.FileUsecase
 }
 
 func (col *PostController) PostDelete(c *gin.Context) {
@@ -55,6 +57,32 @@ func (col *PostController) CreateOrPublish(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
+
+	// 单独处理图片
+	form, err := c.MultipartForm()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
+		return
+	}
+	files := form.File["files"]
+	fileResp, err := col.FileUsecase.Uploads(c, files)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Upload files fail", err))
+		return
+	}
+	images := make([]string, 0, len(files))
+	for _, resp := range fileResp.Data {
+		if file, ok := resp.(domain.File); ok {
+			images = append(images, file.Path)
+		}
+	}
+	bytes, err := json.Marshal(images)
+	if err != nil {
+		slog.Error("json.Marshal images error", "error", err.Error())
+	} else {
+		post.Images = string(bytes)
+	}
+
 	post.AuthorID = userID
 	post.PostID = snowflake.GenID()
 	if err := col.PostUsecase.Create(c, &post); err != nil {
@@ -79,43 +107,7 @@ func (col *PostController) ReaderList(c *gin.Context) {
 	if req.AuthorID != 0 {
 		filter.AuthorID = req.AuthorID
 	}
-	posts, count, err := col.PostUsecase.ListByLastID(c, filter, req.Size, req.Last)
-	// posts, count, err := col.PostUsecase.List(c, filter, req.Page, req.Size)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Failed to list posts", err))
-		return
-	}
-
-	resp := make([]domain.PostInfoResponse, 0, len(posts))
-	wg := sync.WaitGroup{}
-	wg.Add(len(posts))
-	for _, post := range posts {
-		go func() {
-			defer wg.Done()
-			// TODO 优化
-			interaction, userInteractionInfo, err := col.InteractionUseCase.Info(c, domain.BizPost, post.PostID, userID)
-			if err != nil {
-				slog.Warn("InteractionUseCase Info Error", "error", err.Error())
-				return
-			}
-			postResp, err := col.parsePostResponse(c, post)
-			if err != nil {
-				slog.Error("parsePostResponse Error", "error", err.Error())
-				return
-			}
-			commentCount := col.getCommentCount(c, domain.BizPost, post.PostID)
-			resp = append(resp, domain.PostInfoResponse{
-				Post:         postResp,
-				Interaction:  interaction,
-				Stat:         userInteractionInfo,
-				CommentCount: commentCount,
-			})
-		}()
-	}
-	wg.Wait()
-	sort.Slice(resp, func(i, j int) bool {
-		return resp[i].Post.CreatedAt > resp[j].Post.CreatedAt
-	})
+	count, resp := col.getPost(c, userID, filter, req)
 	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
 		"count":     count,
 		"post_list": resp,
@@ -131,42 +123,7 @@ func (col *PostController) WriterList(c *gin.Context) {
 	}
 	userID := c.MustGet(domain.XUserID).(int64)
 	filter := &domain.Post{AuthorID: userID}
-	posts, count, err := col.PostUsecase.ListByLastID(c, filter, req.Size, req.Last)
-	// posts, count, err := col.PostUsecase.List(c, filter, req.Page, req.Size)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Failed to list posts", err))
-		return
-	}
-
-	resp := make([]domain.PostInfoResponse, 0, len(posts))
-	wg := sync.WaitGroup{}
-	wg.Add(len(posts))
-	for _, post := range posts {
-		go func() {
-			defer wg.Done()
-			interaction, userInteractionInfo, err := col.InteractionUseCase.Info(c, domain.BizPost, post.PostID, userID)
-			if err != nil {
-				slog.Warn("InteractionUseCase Info Error", "error", err.Error())
-				return
-			}
-			postResp, err := col.parsePostResponse(c, post)
-			if err != nil {
-				slog.Error("parsePostResponse Error", "error", err.Error())
-				return
-			}
-			commentCount := col.getCommentCount(c, domain.BizPost, post.PostID)
-			resp = append(resp, domain.PostInfoResponse{
-				Post:         postResp,
-				Interaction:  interaction,
-				Stat:         userInteractionInfo,
-				CommentCount: commentCount,
-			})
-		}()
-	}
-	wg.Wait()
-	sort.Slice(resp, func(i, j int) bool {
-		return resp[i].Post.CreatedAt > resp[j].Post.CreatedAt
-	})
+	count, resp := col.getPost(c, userID, filter, req)
 	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
 		"count":     count,
 		"post_list": resp,
@@ -314,6 +271,12 @@ func (col *PostController) parsePostResponse(c context.Context, post domain.Post
 	postResp.Status = post.Status
 	postResp.CreatedAt = post.CreatedAt
 	postResp.UpdatedAt = post.UpdatedAt
+	images := make([]string, 0)
+	if err := json.Unmarshal([]byte(post.Images), &images); err != nil {
+		slog.Error("json.Unmarshal images error", "error", err.Error())
+	} else {
+		postResp.Images = images
+	}
 	return postResp, nil
 }
 
@@ -324,4 +287,43 @@ func (col *PostController) getCommentCount(c *gin.Context, biz string, bizID int
 		return 0
 	}
 	return count
+}
+
+func (col *PostController) getPost(c *gin.Context, userID int64, filter interface{}, req domain.PostListRequest) (int64, []domain.PostInfoResponse) {
+	posts, count, err := col.PostUsecase.ListByLastID(c, filter, req.Size, req.Last)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Failed to list posts", err))
+		return 0, nil
+	}
+
+	resp := make([]domain.PostInfoResponse, 0, len(posts))
+	wg := sync.WaitGroup{}
+	wg.Add(len(posts))
+	for _, post := range posts {
+		go func() {
+			defer wg.Done()
+			interaction, userInteractionInfo, err := col.InteractionUseCase.Info(c, domain.BizPost, post.PostID, userID)
+			if err != nil {
+				slog.Warn("InteractionUseCase Info Error", "error", err.Error())
+				return
+			}
+			postResp, err := col.parsePostResponse(c, post)
+			if err != nil {
+				slog.Error("parsePostResponse Error", "error", err.Error())
+				return
+			}
+			commentCount := col.getCommentCount(c, domain.BizPost, post.PostID)
+			resp = append(resp, domain.PostInfoResponse{
+				Post:         postResp,
+				Interaction:  interaction,
+				Stat:         userInteractionInfo,
+				CommentCount: commentCount,
+			})
+		}()
+	}
+	wg.Wait()
+	sort.Slice(resp, func(i, j int) bool {
+		return resp[i].Post.CreatedAt > resp[j].Post.CreatedAt
+	})
+	return count, resp
 }

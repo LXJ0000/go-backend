@@ -14,6 +14,7 @@ func NewPostRouter(PostUsecase domain.PostUsecase,
 	FeedUsecase domain.FeedUsecase,
 	UserUsecase domain.UserUsecase,
 	CommentUsecase domain.CommentUsecase,
+	FileUsecase domain.FileUsecase,
 	apiCache func(timeout time.Duration) gin.HandlerFunc,
 	group *gin.RouterGroup) {
 
@@ -23,6 +24,7 @@ func NewPostRouter(PostUsecase domain.PostUsecase,
 		FeedUsecase:        FeedUsecase,
 		UserUsecase:        UserUsecase,
 		CommentUsecase:     CommentUsecase,
+		FileUsecase:        FileUsecase,
 	}
 
 	group.POST("/post", c.CreateOrPublish)

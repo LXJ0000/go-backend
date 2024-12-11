@@ -23,6 +23,8 @@ type Post struct {
 	Content  string `json:"content" form:"content" binding:"required"`
 	AuthorID int64  `json:"author_id,string" form:"author_id"`
 	Status   string `json:"status" form:"status" binding:"required"`
+
+	Images string `json:"images" form:"images"`
 }
 
 func (Post) TableName() string {
@@ -74,8 +76,9 @@ type PostResponse struct {
 	Abstract string `json:"abstract"`
 	Content  string `json:"content" `
 	// AuthorID int64  `json:"author_id,string" form:"author_id"`
-	Status string  `json:"status"`
-	Author Profile `json:"author"`
+	Status string   `json:"status"`
+	Author Profile  `json:"author"`
+	Images []string `json:"images"`
 }
 
 type PostInfoResponse struct {

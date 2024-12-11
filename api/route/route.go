@@ -112,7 +112,7 @@ func Setup(env *bootstrap.Env, timeout time.Duration,
 	// Task
 	NewTaskRouter(env, taskUc, protectedRouter)
 	// Post
-	NewPostRouter(postUc, interactionUc, feedUc, userUc, commentUc, apiCache, protectedRouter)
+	NewPostRouter(postUc, interactionUc, feedUc, userUc, commentUc, fileUc, apiCache, protectedRouter)
 	// Comment
 	NewCommentRouter(env, commentUc, userUc, interactionUc, protectedRouter)
 	// Relation
