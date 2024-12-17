@@ -119,7 +119,7 @@ func (ru *PostRankUsecase) topN(c context.Context) ([]domain.Post, error) {
 		res[i] = post
 		go func() { // 异步生成 abstract 并入库
 			defer wg.Done()
-			if res[i].Abstract == "" {
+			if res[i].Abstract == "" || res[i].Abstract == "abstract" {
 				ru.GenerateAbstract(c, &res[i]) // 这里会直接修改 res[i] 中的 Abstract
 			}
 		}()

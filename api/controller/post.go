@@ -252,13 +252,13 @@ func (col *PostController) Collect(c *gin.Context) {
 func (col *PostController) Rank(c *gin.Context) {
 	posts, err := col.PostUsecase.TopN(c)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, domain.ErrorResp("GetTopN Fail", err))
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp(domain.ErrBusy.Error(), err))
 		return
 	}
-	c.JSON(http.StatusOK, map[string]interface{}{
+	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
 		"count": len(posts),
 		"posts": posts,
-	})
+	}))
 }
 
 func (col *PostController) parsePostResponse(c context.Context, post domain.Post) (domain.PostResponse, error) {

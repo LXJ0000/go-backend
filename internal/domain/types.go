@@ -5,6 +5,7 @@ import (
 )
 
 var (
+	ErrBusy        = errors.New("系统繁忙")
 	ErrSystemError = errors.New("系统错误")
 	ErrUnKnowError = errors.New("未知错误")
 	ErrBadParams   = errors.New("参数错误")

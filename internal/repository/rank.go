@@ -29,7 +29,7 @@ func (repo *postRankRepository) ReplaceTopN(c context.Context, items []domain2.P
 	if err != nil {
 		return err
 	}
-	return repo.redisCache.Set(c, domain2.PostTopNKey, data, expiration)
+	return repo.redisCache.Set(c, domain2.PostTopNKey, data, 0)
 }
 
 func (repo *postRankRepository) GetTopN(c context.Context) ([]domain2.Post, error) {
