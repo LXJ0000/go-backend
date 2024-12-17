@@ -3,17 +3,18 @@ package repository
 import (
 	"context"
 	"fmt"
+	"log/slog"
+
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/LXJ0000/go-backend/pkg/cache"
 	"github.com/LXJ0000/go-backend/script"
-	"log/slog"
 )
 
 type codeRepository struct {
-	cache cache.RedisCache
+	cache *cache.RedisCache
 }
 
-func NewCodeRepository(cache cache.RedisCache) domain.CodeRepository {
+func NewCodeRepository(cache *cache.RedisCache) domain.CodeRepository {
 	return &codeRepository{
 		cache: cache,
 	}

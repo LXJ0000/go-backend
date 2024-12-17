@@ -3,17 +3,18 @@ package repository
 import (
 	"context"
 	"encoding/json"
+	"time"
+
 	domain2 "github.com/LXJ0000/go-backend/internal/domain"
 	cache "github.com/LXJ0000/go-backend/pkg/cache"
-	"time"
 )
 
 type postRankRepository struct {
-	localCache cache.LocalCache
-	redisCache cache.RedisCache
+	localCache *cache.RistrettoCache
+	redisCache *cache.RedisCache
 }
 
-func NewPostRankRepository(localCache cache.LocalCache, redisCache cache.RedisCache) domain2.RankRepository {
+func NewPostRankRepository(localCache *cache.RistrettoCache, redisCache *cache.RedisCache) domain2.RankRepository {
 	return &postRankRepository{
 		localCache: localCache,
 		redisCache: redisCache,

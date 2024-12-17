@@ -34,7 +34,7 @@ func (rw *cacheWrappedWriter) Write(body []byte) (int, error) {
 
 // NewAPICacheMiddleware 创建一个 API 缓存中间件 用于缓存 API 请求结果 以 uri + method + reqBody 作为 key
 // 还没有自测 慎用 还需要考虑不同用户的请求 以及数据一致性问题
-func NewAPICacheMiddleware(cache cache.RedisCache) func(timeout time.Duration) gin.HandlerFunc {
+func NewAPICacheMiddleware(cache *cache.RistrettoCache) func(timeout time.Duration) gin.HandlerFunc {
 	return func(timeout time.Duration) gin.HandlerFunc {
 		return func(c *gin.Context) {
 			reqBody, _ := io.ReadAll(c.Request.Body)

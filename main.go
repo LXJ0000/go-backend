@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"time"
 
 	"github.com/LXJ0000/go-backend/api/middleware"
@@ -46,8 +47,10 @@ func main() {
 	server.Use(middleware.CORSMiddleware())
 	server.Use(middleware.RateLimitMiddleware(env))
 	server.Use(middleware.PrometheusMiddleware())
-	apiCache := middleware.NewAPICacheMiddleware(cache)
+	apiCache := middleware.NewAPICacheMiddleware(localCache)
 	route.Setup(env, timeout, db, cache, localCache, server, producer, saramaClient, smsClient, minioClient, daobaoChat, apiCache)
 
-	_ = server.Run(env.ServerAddr)
+	if err := server.Run(env.ServerAddr); err != nil {
+		log.Fatal(err)
+	}
 }

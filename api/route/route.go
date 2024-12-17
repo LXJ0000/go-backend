@@ -27,7 +27,7 @@ import (
 )
 
 func Setup(env *bootstrap.Env, timeout time.Duration,
-	db orm.Database, redisCache cache.RedisCache, localCache cache.LocalCache,
+	db orm.Database, redisCache *cache.RedisCache, localCache *cache.RistrettoCache,
 	server *gin.Engine,
 	producer event.Producer, saramaClient sarama.Client,
 	smsClient *sms.Client,

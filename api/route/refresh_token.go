@@ -13,7 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewRefreshTokenRouter(env *bootstrap.Env, timeout time.Duration, db orm.Database, redisCache cache.RedisCache,
+func NewRefreshTokenRouter(env *bootstrap.Env, timeout time.Duration, db orm.Database, redisCache *cache.RedisCache,
 	group *gin.RouterGroup) {
 	ur := repository.NewUserRepository(db, redisCache)
 	

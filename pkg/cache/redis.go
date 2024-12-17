@@ -12,8 +12,8 @@ type RedisCache struct {
 	expiration time.Duration // 默认过期时间
 }
 
-func NewRedisCache(cmd redis.Cmdable, expiration time.Duration) RedisCache {
-	return RedisCache{cmd: cmd, expiration: expiration}
+func NewRedisCache(cmd redis.Cmdable, expiration time.Duration) *RedisCache {
+	return &RedisCache{cmd: cmd, expiration: expiration}
 }
 
 func (c *RedisCache) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error {

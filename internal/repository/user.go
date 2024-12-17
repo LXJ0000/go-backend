@@ -11,11 +11,11 @@ import (
 
 type userRepository struct {
 	dao   orm.Database
-	cache cache.RedisCache
+	cache *cache.RedisCache
 	//collection string
 }
 
-func NewUserRepository(dao orm.Database, cache cache.RedisCache) domain.UserRepository {
+func NewUserRepository(dao orm.Database, cache *cache.RedisCache) domain.UserRepository {
 	return &userRepository{
 		dao:   dao,
 		cache: cache,

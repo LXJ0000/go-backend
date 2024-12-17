@@ -29,7 +29,7 @@ func NewPostRouter(PostUsecase domain.PostUsecase,
 
 	group.POST("/post", c.CreateOrPublish)
 	group.POST("/post.delete", c.PostDelete)
-	group.GET("/post", c.Info)
+	group.GET("/post", apiCache(time.Second*30), c.Info)
 	group.GET("/post/reader", apiCache(time.Second*30), c.ReaderList)
 	group.GET("/post/writer", c.WriterList)
 	group.POST("/post/like", c.Like)

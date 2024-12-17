@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func JwtAuthMiddleware(secret string, cache cache.RedisCache) gin.HandlerFunc {
+func JwtAuthMiddleware(secret string, cache *cache.RedisCache) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.Request.Header.Get("Authorization")
 		t := strings.Split(authHeader, " ")

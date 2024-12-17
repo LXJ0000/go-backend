@@ -19,8 +19,8 @@ type Application struct {
 	Env *Env
 	//Mongo mongo.Client
 	Orm        orm.Database
-	Cache      cache.RedisCache
-	LocalCache cache.LocalCache
+	Cache      *cache.RedisCache
+	LocalCache *cache.RistrettoCache
 
 	Producer event.Producer
 
@@ -41,6 +41,7 @@ func App() Application {
 	//app.Mongo = NewMongoDatabase(app.Env)
 	app.Orm = NewOrmDatabase(app.Env)
 	app.Cache = NewRedisCache(app.Env)
+	app.LocalCache = NewLocalCache(app.Env)
 	// app.LocalCache = NewLocalCache(app.Env)
 	logutil.Init(app.Env.AppEnv)
 	snowflakeutil.Init(app.Env.SnowflakeStartTime, app.Env.SnowflakeMachineID)

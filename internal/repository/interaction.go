@@ -3,6 +3,9 @@ package repository
 import (
 	"errors"
 	"fmt"
+	"log/slog"
+	"strconv"
+
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/LXJ0000/go-backend/pkg/cache"
 	"github.com/LXJ0000/go-backend/pkg/orm"
@@ -10,16 +13,14 @@ import (
 	"golang.org/x/net/context"
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm"
-	"log/slog"
-	"strconv"
 )
 
 type interactionRepository struct {
 	dao   orm.Database
-	cache cache.RedisCache
+	cache *cache.RedisCache
 }
 
-func NewInteractionRepository(dao orm.Database, cache cache.RedisCache) domain.InteractionRepository {
+func NewInteractionRepository(dao orm.Database, cache *cache.RedisCache) domain.InteractionRepository {
 	return &interactionRepository{
 		dao:   dao,
 		cache: cache,
