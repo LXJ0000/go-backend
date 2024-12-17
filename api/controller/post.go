@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"sort"
 	"sync"
+	"time"
 
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/LXJ0000/go-backend/utils/lib"
@@ -181,6 +182,7 @@ func (col *PostController) Info(c *gin.Context) {
 	}))
 }
 
+// Like 废弃方法 转移到 interaction 里
 func (col *PostController) Like(c *gin.Context) { // TODO 抽象成资源操作而不是针对帖子的操作
 	req := struct {
 		IsLike bool  `json:"is_like" form:"is_like"`
@@ -205,6 +207,14 @@ func (col *PostController) Like(c *gin.Context) { // TODO 抽象成资源操作�
 	}
 	go func() {
 		// TODO 发消息
+		// 获取帖子的作者
+		ctx, cancel := context.WithTimeout(c, time.Second)
+		defer cancel()
+		post, err := col.PostUsecase.Info(ctx, postID)
+		if err != nil {
+			slog.Error("FeedUsecase CreateFeedEvent Error Because PostUsecase Info Error", "error", err.Error())
+			return
+		}
 		feed := domain.Feed{
 			UserID: userID,
 			Type:   domain.FeedLikeEvent,
@@ -212,9 +222,10 @@ func (col *PostController) Like(c *gin.Context) { // TODO 抽象成资源操作�
 				"biz_id": fmt.Sprintf("%d", postID),
 				"biz":    domain.BizPost,
 				"liker":  fmt.Sprintf("%d", userID),
-				"liked":  fmt.Sprintf("%d", postID),
+				"liked":  fmt.Sprintf("%d", post.AuthorID),
 			}, // liker liked biz bizID
 		}
+		// liker 点赞了 biz_id
 		if err := col.FeedUsecase.CreateFeedEvent(context.Background(), feed); err != nil {
 			slog.Warn("FeedUsecase CreateFeedEvent Error", "error", err.Error())
 		}
@@ -222,6 +233,7 @@ func (col *PostController) Like(c *gin.Context) { // TODO 抽象成资源操作�
 	c.JSON(http.StatusOK, domain.SuccessResp(nil))
 }
 
+// Collect 废弃方法 转移到 interaction 里
 func (col *PostController) Collect(c *gin.Context) {
 	req := struct {
 		IsCollect bool  `json:"is_collect" form:"is_collect"`

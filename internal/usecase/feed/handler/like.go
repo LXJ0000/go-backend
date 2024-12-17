@@ -17,6 +17,7 @@ func NewFeedLikeHandler(feedRepo domain.FeedRepository) domain.FeedHandler {
 }
 
 // CreateFeedEvent need: liker liked biz bizID
+// liker 点赞者 liked 被点赞者 biz 被点赞的资源类型 bizID 被点赞的资源ID
 func (h *FeedLikeHandler) CreateFeedEvent(c context.Context, t string, content domain.FeedContent) error {
 	ctx, cancel := context.WithTimeout(c, time.Second)
 	defer cancel()
@@ -24,6 +25,7 @@ func (h *FeedLikeHandler) CreateFeedEvent(c context.Context, t string, content d
 	if err != nil {
 		return err
 	}
+	// 写到被点赞者的收件箱 userID 是被点赞者 即 userID = liked
 	return h.feedRepo.CreatePush(ctx, domain.Feed{
 		UserID:  userID, // 收件人 被点赞的人
 		Type:    domain.FeedLikeEvent,

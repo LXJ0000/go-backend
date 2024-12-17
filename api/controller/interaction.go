@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/gin-gonic/gin"
@@ -13,6 +14,7 @@ import (
 type IntrController struct {
 	domain.InteractionUseCase
 	domain.FeedUsecase
+	domain.PostUsecase
 }
 
 func (col *IntrController) Like(c *gin.Context) { // TODO 抽象成资源操作而不是针对帖子的操作
@@ -42,14 +44,26 @@ func (col *IntrController) Like(c *gin.Context) { // TODO 抽象成资源操作�
 	}
 	go func() {
 		// TODO 发消息
+		var authorID int64
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		switch biz {
+		case domain.BizPost:
+			post, err := col.PostUsecase.Info(ctx, bizID)
+			if err != nil {
+				slog.Error("FeedUsecase CreateFeedEvent Error Because PostUsecase Info Error", "error", err.Error())
+				return
+			}
+			authorID = post.AuthorID
+		}
 		feed := domain.Feed{
 			UserID: userID,
 			Type:   domain.FeedLikeEvent,
 			Content: domain.FeedContent{
 				"biz_id": fmt.Sprintf("%d", bizID),
 				"biz":    domain.BizPost,
-				"liker":  fmt.Sprintf("%d", userID),
-				"liked":  fmt.Sprintf("%d", bizID),
+				"liker":  fmt.Sprintf("%d", userID),   // 点赞者
+				"liked":  fmt.Sprintf("%d", authorID), // biz's author id 被点赞者
 			}, // liker liked biz bizID
 		}
 		if err := col.FeedUsecase.CreateFeedEvent(context.Background(), feed); err != nil {

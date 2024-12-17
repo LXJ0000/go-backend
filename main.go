@@ -98,6 +98,7 @@ func wire(env *bootstrap.Env,
 	userUc := usecase.NewUserUsecase(userRepo, timeout)
 	sync2OpenIMUc := usecase.NewSync2OpenIMUsecase(env.OpenIMServerDoamin)
 	// Feed handler and usecase
+	feedDefaulthdl := feedUsecaseHandler.NewFeedDefaultHandler(feedRepo)
 	feedLikeHdl := feedUsecaseHandler.NewFeedLikeHandler(feedRepo)
 	feedPostHandler := feedUsecaseHandler.NewFeedPostHandler(feedRepo, relationUc)
 	feedFollowHandler := feedUsecaseHandler.NewFeedFollowHandler(feedRepo)
@@ -105,6 +106,7 @@ func wire(env *bootstrap.Env,
 		domain.FeedLikeEvent:   feedLikeHdl,
 		domain.FeedPostEvent:   feedPostHandler,
 		domain.FeedFollowEvent: feedFollowHandler,
+		domain.FeedUnkonwnEvent: feedDefaulthdl,
 	}
 	feedUc := feedUsecase.NewFeedUsecase(handlerMap, relationUc, feedRepo)
 

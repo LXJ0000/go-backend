@@ -16,6 +16,7 @@ func NewFeedDefaultHandler(feedRepo domain.FeedRepository) domain.FeedHandler {
 	return &defaultHandler{feedRepo: feedRepo}
 }
 
+// CreateFeedEvent 默认将事件写到 user_id 对应的收件箱中
 func (h *defaultHandler) CreateFeedEvent(c context.Context, t string, content domain.FeedContent) error {
 	ctx, cancel := context.WithTimeout(c, time.Second)
 	defer cancel()

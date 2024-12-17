@@ -36,9 +36,9 @@ func (r *feedRepository) FindPull(c context.Context, userIDs []int64, timestamp,
 	var items []domain.FeedPull
 	db := r.dao.Raw(c)
 	if err := db.Model(&domain.FeedPull{}).
-		Where("user_id in (?) and timestamp > ?", userIDs, timestamp).
-		Order("timestamp desc").
-		Limit(int(limit)).Where(&items).Error; err != nil {
+		Where("user_id in (?) and created_at > ?", userIDs, timestamp).
+		Order("created_at desc").
+		Limit(int(limit)).Find(&items).Error; err != nil {
 		return nil, err
 	}
 	feeds := make([]domain.Feed, 0, len(items))
@@ -52,9 +52,9 @@ func (r *feedRepository) FindPush(c context.Context, userID, timestamp, limit in
 	var items []domain.FeedPush
 	db := r.dao.Raw(c)
 	if err := db.Model(&domain.FeedPush{}).
-		Where("user_id = ? and timestamp > ?", userID, timestamp).
-		Order("timestamp desc").
-		Limit(int(limit)).Where(&items).Error; err != nil {
+		Where("user_id = ? and created_at > ?", userID, timestamp).
+		Order("created_at desc").
+		Limit(int(limit)).Find(&items).Error; err != nil {
 		return nil, err
 	}
 	feeds := make([]domain.Feed, 0, len(items))
@@ -68,9 +68,9 @@ func (r *feedRepository) FindPullWithType(c context.Context, event string, userI
 	var items []domain.FeedPull
 	db := r.dao.Raw(c)
 	if err := db.Model(&domain.FeedPull{}).
-		Where("user_id in (?) and timestamp > ? and type = ?", userIDs, timestamp, event).
-		Order("timestamp desc").
-		Limit(int(limit)).Where(&items).Error; err != nil {
+		Where("user_id in (?) and created_at > ? and type = ?", userIDs, timestamp, event).
+		Order("created_at desc").
+		Limit(int(limit)).Find(&items).Error; err != nil {
 		return nil, err
 	}
 	feeds := make([]domain.Feed, 0, len(items))
@@ -83,9 +83,9 @@ func (r *feedRepository) FindPushWithType(c context.Context, event string, userI
 	var items []domain.FeedPush
 	db := r.dao.Raw(c)
 	if err := db.Model(&domain.FeedPush{}).
-		Where("user_id = ? and timestamp > ? and type = ?", userID, timestamp, event).
-		Order("timestamp desc").
-		Limit(int(limit)).Where(&items).Error; err != nil {
+		Where("user_id = ? and created_at > ? and type = ?", userID, timestamp, event).
+		Order("created_at desc").
+		Limit(int(limit)).Find(&items).Error; err != nil {
 		return nil, err
 	}
 	feeds := make([]domain.Feed, 0, len(items))

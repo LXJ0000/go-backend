@@ -10,11 +10,13 @@ import (
 func NewIntrRouter(
 	InteractionUseCase domain.InteractionUseCase,
 	FeedUsecase domain.FeedUsecase,
+	PostUsecase domain.PostUsecase,
 	group *gin.RouterGroup) {
 
 	c := &controller.IntrController{
 		InteractionUseCase: InteractionUseCase,
 		FeedUsecase:        FeedUsecase,
+		PostUsecase:        PostUsecase,
 	}
 
 	group.POST("/intr/like", c.Like)

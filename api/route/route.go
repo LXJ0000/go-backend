@@ -60,7 +60,7 @@ func Setup(server *gin.Engine, app *App) {
 	// Feed
 	NewFeedRouter(app.FeedUc, protectedRouter)
 	// Intr
-	NewIntrRouter(app.InterUc, app.FeedUc, protectedRouter)
+	NewIntrRouter(app.InterUc, app.FeedUc, app.PostUc, protectedRouter)
 	// RefreshToken
 	NewRefreshTokenRouter(app.Env, app.UserUc, app.RefreshTokenUc, publicRouter)
 

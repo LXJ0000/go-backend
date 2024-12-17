@@ -6,9 +6,16 @@ import (
 )
 
 const (
-	FeedLikeEvent   string = "feed-like"
-	FeedPostEvent   string = "feed-post"
-	FeedFollowEvent string = "feed-follow"
+	FeedLikeEvent      string = "feed-like"
+	FeedUnlikeEvent    string = "feed-unlike"
+	FeedCommentEvent   string = "feed-comment"
+	FeedReplyEvent     string = "feed-reply"
+	FeedCollectEvent   string = "feed-collect"
+	FeedUncollectEvent string = "feed-uncollect"
+	FeedPostEvent      string = "feed-post"
+	FeedFollowEvent    string = "feed-follow"
+	FeedUnfollowEvent  string = "feed-unfollow"
+	FeedUnkonwnEvent   string = "feed-unknown"
 
 	THRESHOLD int = 1000 // 读写扩散阈值
 )
@@ -73,4 +80,9 @@ type FeedRepository interface {
 
 	FindPullWithType(c context.Context, event string, userIDs []int64, timestamp, limit int64) ([]Feed, error)
 	FindPushWithType(c context.Context, event string, userID, timestamp, limit int64) ([]Feed, error)
+}
+
+type GetFeedEventListReq struct {
+	Last  int64 `json:"last,string" form:"last"`
+	Limit int64 `json:"limit,string" form:"limit"`
 }
