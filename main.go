@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/IBM/sarama"
 	"github.com/LXJ0000/go-backend/api/middleware"
 	"github.com/LXJ0000/go-backend/api/route"
 	"github.com/LXJ0000/go-backend/bootstrap"
@@ -14,6 +15,11 @@ import (
 	"github.com/LXJ0000/go-backend/internal/usecase"
 	"github.com/LXJ0000/go-backend/internal/usecase/sms/aliyun"
 	"github.com/LXJ0000/go-backend/internal/usecase/sms/local"
+	"github.com/LXJ0000/go-backend/pkg/cache"
+	"github.com/LXJ0000/go-backend/pkg/chat"
+	"github.com/LXJ0000/go-backend/pkg/file"
+	"github.com/LXJ0000/go-backend/pkg/orm"
+	"github.com/alibabacloud-go/dysmsapi-20170525/v4/client"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 
@@ -37,6 +43,7 @@ func main() {
 	doubaoChat := app.DoubaoChat
 	timeout := time.Duration(env.ContextTimeout) * time.Minute // 接口超时时间
 
+	// HTTP Server
 	server := gin.Default()
 	gin.SetMode(gin.ReleaseMode)
 
@@ -44,9 +51,26 @@ func main() {
 	server.Use(middleware.CORSMiddleware())
 	server.Use(middleware.RateLimitMiddleware(env))
 	server.Use(middleware.PrometheusMiddleware())
-	apiCache := middleware.NewAPICacheMiddleware(localCache)
-	jwtAuth := middleware.JwtAuthMiddleware(app.Env.AccessTokenSecret, redisCache)
 
+	// Router
+	route.Setup(server, wire(env, db, redisCache, localCache, producer, saramaClient, smsClient, minioClient, doubaoChat, timeout))
+
+	if err := server.Run(env.ServerAddr); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func wire(env *bootstrap.Env,
+	db orm.Database, redisCache *cache.RedisCache, localCache *cache.RistrettoCache,
+	producer event.Producer, saramaClient sarama.Client,
+	smsClient *client.Client,
+	minioClient file.FileStorage,
+	doubaoChat chat.Chat,
+	timeout time.Duration,
+) *route.App {
+	// Middleware
+	apiCache := middleware.NewAPICacheMiddleware(localCache)
+	jwtAuth := middleware.JwtAuthMiddleware(env.AccessTokenSecret, redisCache)
 	// wire 复用对象
 	// Repository
 	codeRepo := repository.NewCodeRepository(redisCache)
@@ -105,8 +129,7 @@ func main() {
 		<-ctx.Done()
 	}()
 
-	// 组装对象
-	obj := &route.App{
+	return &route.App{
 		Env:            env,
 		CodeUc:         codeUc,
 		CommentUc:      commentUc,
@@ -123,11 +146,5 @@ func main() {
 		UserUc:         userUc,
 		JwtAuth:        jwtAuth,
 		ApiCache:       apiCache,
-	}
-
-	route.Setup(server, obj)
-
-	if err := server.Run(env.ServerAddr); err != nil {
-		log.Fatal(err)
 	}
 }
