@@ -33,8 +33,11 @@ func (col *PostController) Search(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
-	userID := c.MustGet(domain.XUserID).(int64)
-	count, resp := userID, userID // TODO 搜索文章
+	resp, count, err := col.PostUsecase.Search(c, req.Keyword, req.Page, req.Size)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Failed to search posts", err))
+		return
+	}
 	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
 		"count":     count,
 		"post_list": resp,

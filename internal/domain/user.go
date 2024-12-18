@@ -123,8 +123,8 @@ type UserBatchProfileReq struct {
 }
 
 type ResetPasswordReq struct {
-	FromPassword      string `form:"from_password" json:"from_password" binding:"required"`
-	ToPassword string `form:"to_password" json:"to_password" binding:"required"`
+	FromPassword string `form:"from_password" json:"from_password" binding:"required"`
+	ToPassword   string `form:"to_password" json:"to_password" binding:"required"`
 }
 
 //type Role int
