@@ -52,7 +52,7 @@ func Setup(server *gin.Engine, app *App) {
 	// Comment
 	NewCommentRouter(app.Env, app.CommentUc, app.UserUc, app.InterUc, protectedRouter)
 	// Relation
-	NewRelationRouter(app.Env, app.RelationUc, protectedRouter)
+	NewRelationRouter(app.Env, app.RelationUc, app.FeedUc, protectedRouter)
 	// File
 	NewFileRouter(app.Env, app.FileUs, protectedRouter)
 	// Tag

@@ -58,13 +58,17 @@ func (col *IntrController) Like(c *gin.Context) { // TODO 抽象成资源操作�
 		}
 		feed := domain.Feed{
 			UserID: userID,
-			Type:   domain.FeedLikeEvent,
 			Content: domain.FeedContent{
 				"biz_id": fmt.Sprintf("%d", bizID),
 				"biz":    domain.BizPost,
 				"liker":  fmt.Sprintf("%d", userID),   // 点赞者
 				"liked":  fmt.Sprintf("%d", authorID), // biz's author id 被点赞者
 			}, // liker liked biz bizID
+		}
+		if isLike {
+			feed.Type = domain.FeedLikeEvent
+		} else {
+			feed.Type = domain.FeedUnlikeEvent
 		}
 		if err := col.FeedUsecase.CreateFeedEvent(context.Background(), feed); err != nil {
 			slog.Warn("FeedUsecase CreateFeedEvent Error", "error", err.Error())

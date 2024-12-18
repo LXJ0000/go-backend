@@ -107,13 +107,17 @@ func wire(env *bootstrap.Env,
 	// Feed handler and usecase
 	feedDefaulthdl := feedUsecaseHandler.NewFeedDefaultHandler(feedRepo)
 	feedLikeHdl := feedUsecaseHandler.NewFeedLikeHandler(feedRepo)
+	feedUnlikeHdl := feedUsecaseHandler.NewFeedUnLikeHandler(feedRepo)
 	feedPostHandler := feedUsecaseHandler.NewFeedPostHandler(feedRepo, relationUc)
 	feedFollowHandler := feedUsecaseHandler.NewFeedFollowHandler(feedRepo)
+	feedUnFollowHandler := feedUsecaseHandler.NewFeedUnFollowHandler(feedRepo)
 	handlerMap := map[string]domain.FeedHandler{
-		domain.FeedLikeEvent:    feedLikeHdl,
-		domain.FeedPostEvent:    feedPostHandler,
-		domain.FeedFollowEvent:  feedFollowHandler,
-		domain.FeedUnkonwnEvent: feedDefaulthdl,
+		domain.FeedLikeEvent:     feedLikeHdl,
+		domain.FeedUnlikeEvent:   feedUnlikeHdl,
+		domain.FeedPostEvent:     feedPostHandler,
+		domain.FeedFollowEvent:   feedFollowHandler,
+		domain.FeedUnfollowEvent: feedUnFollowHandler,
+		domain.FeedUnkonwnEvent:  feedDefaulthdl,
 	}
 	feedUc := feedUsecase.NewFeedUsecase(handlerMap, relationUc, feedRepo)
 

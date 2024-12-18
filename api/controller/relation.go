@@ -1,7 +1,10 @@
 package controller
 
 import (
+	"context"
+	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/LXJ0000/go-backend/internal/domain"
 	"github.com/LXJ0000/go-backend/utils/lib"
@@ -9,7 +12,8 @@ import (
 )
 
 type RelationController struct {
-	RelationUsecase domain.RelationUsecase
+	domain.RelationUsecase
+	domain.FeedUsecase
 }
 
 func (col *RelationController) Follow(c *gin.Context) {
@@ -30,6 +34,23 @@ func (col *RelationController) Follow(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Follow Failed", err))
 		return
 	}
+	go func() {
+		// Send message to feed service
+		// follower 关注 followee
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		feed := domain.Feed{
+			UserID: userID,
+			Type:   domain.FeedFollowEvent,
+			Content: domain.FeedContent{
+				"follower": lib.Int642Str(userID),
+				"followee": lib.Int642Str(req.Followee),
+			},
+		}
+		if err := col.FeedUsecase.CreateFeedEvent(ctx, feed); err != nil {
+			slog.Warn("FeedUsecase CreateFeedEvent Error", "error", err.Error())
+		}
+	}()
 	c.JSON(http.StatusOK, domain.SuccessResp(nil))
 }
 
@@ -51,6 +72,23 @@ func (col *RelationController) CancelFollow(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("CancelFollow Failed", err))
 		return
 	}
+	go func() {
+		// Send message to feed service
+		// follower 取消关注 followee
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		feed := domain.Feed{
+			UserID: userID,
+			Type:   domain.FeedUnfollowEvent,
+			Content: domain.FeedContent{
+				"follower": lib.Int642Str(userID),
+				"followee": lib.Int642Str(req.Followee),
+			},
+		}
+		if err := col.FeedUsecase.CreateFeedEvent(ctx, feed); err != nil {
+			slog.Warn("FeedUsecase CreateFeedEvent Error", "error", err.Error())
+		}
+	}()
 	c.JSON(http.StatusOK, domain.SuccessResp(nil))
 }
 

@@ -7,10 +7,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewRelationRouter(env *bootstrap.Env, relationUc domain.RelationUsecase,
+func NewRelationRouter(env *bootstrap.Env,
+	relationUc domain.RelationUsecase, feedUc domain.FeedUsecase,
 	group *gin.RouterGroup) {
 	col := &controller.RelationController{
 		RelationUsecase: relationUc,
+		FeedUsecase:     feedUc,
 	}
 
 	group.POST("/relation/follow", col.Follow)
