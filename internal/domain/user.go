@@ -56,6 +56,7 @@ type UserUsecase interface {
 	Logout(c context.Context, SSID string, tokenExpiry time.Duration) error
 
 	GetUserByEmail(c context.Context, email string) (User, error)
+	GetUserByUserID(c context.Context, userID int64) (User, error)
 	CreateAccessToken(user User, ssid string, secret string, expiry int) (accessToken string, err error)
 	CreateRefreshToken(user User, ssid string, secret string, expiry int) (refreshToken string, err error)
 
@@ -119,6 +120,11 @@ type UserSearchReq struct {
 
 type UserBatchProfileReq struct {
 	UserIDs []string `form:"user_ids" json:"user_ids"`
+}
+
+type ResetPasswordReq struct {
+	FromPassword      string `form:"from_password" json:"from_password" binding:"required"`
+	ToPassword string `form:"to_password" json:"to_password" binding:"required"`
 }
 
 //type Role int

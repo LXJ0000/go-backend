@@ -30,6 +30,35 @@ type UserController struct {
 	Env *bootstrap.Env
 }
 
+func (col *UserController) ResetPassword(c *gin.Context) {
+	var req domain.ResetPasswordReq
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
+		return
+	}
+	userID := c.MustGet(domain.XUserID).(int64)
+	user, err := col.UserUsecase.GetUserByUserID(c, userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Get user by user_id fail with db error", err))
+		return
+	}
+	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.FromPassword)) != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Old password is incorrect", err))
+		return
+	}
+	newPassword, err := genPassword(req.ToPassword)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Generate new password fail", err))
+		return
+	}
+	err = col.UserUsecase.UpdateProfile(c, userID, &domain.User{Password: newPassword})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Update password fail with db error", err))
+		return
+	}
+	c.JSON(http.StatusOK, domain.SuccessResp(nil))
+}
+
 func (col *UserController) Avatar(c *gin.Context) {
 	// 调用 fileStorage 上传文件
 	file, err := c.FormFile("avatar")

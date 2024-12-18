@@ -22,6 +22,12 @@ func NewUserUsecase(userRepository domain.UserRepository, timeout time.Duration)
 	}
 }
 
+func (uc *userUsecase) GetUserByUserID(c context.Context, userID int64) (domain.User, error) {
+	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
+	defer cancel()
+	return uc.repo.GetByID(ctx, userID)
+}
+
 func (uc *userUsecase) BatchGetProfileByID(c context.Context, userIDs []int64) ([]domain.Profile, error) {
 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
@@ -60,7 +66,7 @@ func (uc *userUsecase) GetProfileByID(c context.Context, userID int64) (domain.P
 	}
 
 	return domain.Profile{
-		UserID: user.UserID,
+		UserID:   user.UserID,
 		UserName: user.UserName, Email: user.Email,
 		AboutMe: user.AboutMe, Birthday: user.Birthday,
 		NickName: user.NickName, Avatar: user.Avatar,
