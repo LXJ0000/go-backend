@@ -124,7 +124,8 @@ func wire(env *bootstrap.Env,
 
 	// Cron
 	cron := bootstrap.NewCron(timeout, postRankUc)
-	cron.Start()
+	// cron.Start()
+	cron.Run()
 	defer func() {
 		// 优雅退出
 		ctx := cron.Stop()
