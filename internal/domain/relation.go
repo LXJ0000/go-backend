@@ -21,10 +21,10 @@ func (Relation) TableName() string {
 }
 
 type RelationStat struct {
-	UserID   int64 `json:"user_id,string" gorm:"unique"`
-	Follower int   `json:"follower"`  // 粉丝数
-	Followee int   `json:"followee"`  // 关注数
-	InFollow bool  `json:"in_follow"` // 是否关注
+	UserID       int64 `json:"user_id,string" gorm:"unique"`
+	Follower     int   `json:"follower"`      // 粉丝数
+	Followee     int   `json:"followee"`      // 关注数
+	FollowStatus int   `json:"follow_status"` // 0 未关注 1 已关注 2 互相关注
 }
 
 type RelationUsecase interface {

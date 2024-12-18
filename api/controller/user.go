@@ -12,6 +12,7 @@ import (
 	snowflake "github.com/LXJ0000/go-backend/utils/snowflakeutil"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm"
 
 	"github.com/LXJ0000/go-backend/bootstrap"
@@ -135,18 +136,49 @@ func (col *UserController) Profile(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
-	profile, err := col.UserUsecase.GetProfileByID(c, userID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Get profile by user_id fail with db error", err))
+	eg := errgroup.Group{}
+	var (
+		profile   domain.Profile
+		stat      domain.RelationStat
+		inFollow1 bool
+		inFollow2 bool
+		msg       string
+	)
+	eg.Go(func() error {
+		var err error
+		profile, err = col.UserUsecase.GetProfileByID(c, userID)
+		if err != nil {
+			msg = "Get profile by user_id fail with db error"
+		}
+		return err
+	})
+	eg.Go(func() error {
+		var err error
+		stat, err = col.RelationUsecase.Stat(c, userID)
+		if err != nil {
+			msg = "Get relation stat fail with db error"
+		}
+		return err
+	})
+	eg.Go(func() error {
+		inFollow1 = col.RelationUsecase.Detail(c, c.MustGet(domain.XUserID).(int64), userID)
+		return nil
+	})
+	eg.Go(func() error {
+		inFollow2 = col.RelationUsecase.Detail(c, userID, c.MustGet(domain.XUserID).(int64))
+		return nil
+	})
+	if err := eg.Wait(); err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResp(msg, err))
 		return
 	}
-	stat, err := col.RelationUsecase.Stat(c, userID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Get relation stat fail with db error", err))
-		return
+	if inFollow1 && inFollow2 {
+		stat.FollowStatus = 2
+	} else if inFollow1 {
+		stat.FollowStatus = 1
+	} else {
+		stat.FollowStatus = 0
 	}
-	inFollow := col.RelationUsecase.Detail(c, c.MustGet(domain.XUserID).(int64), userID)
-	stat.InFollow = inFollow
 	profile.RelationStat = stat
 	postCnt, err := col.PostUsecase.Count(c, map[string]interface{}{
 		"author_id": userID,
