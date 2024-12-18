@@ -77,7 +77,7 @@ func InitCronRankJob(rankJob *RankJob) *cron.Cron {
 
 	cronRankJob := NewCronRankJob(rankJob)
 	go cronRankJob.Run()
-	if _, err := expr.AddJob("@every 30s", cronRankJob); err != nil { // 30s 启动一次
+	if _, err := expr.AddJob("@every 5s", cronRankJob); err != nil { // 30s 启动一次
 		panic(err)
 	}
 

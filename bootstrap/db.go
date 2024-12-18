@@ -30,7 +30,8 @@ func NewOrmDatabase(env *Env) orm.Database {
 		env.MySQLDB,
 	)
 	db, err := gorm.Open(mysql.Open(dns), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		// Logger: logger.Default.LogMode(logger.Info),
+		Logger: logger.Default.LogMode(logger.Silent),
 	})
 	if err != nil {
 		log.Fatal(err)

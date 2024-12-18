@@ -28,6 +28,9 @@ import (
 	feedUsecaseHandler "github.com/LXJ0000/go-backend/internal/usecase/feed/handler"
 )
 
+// done
+var cronDone = make(chan struct{})
+
 func main() {
 	_ = godotenv.Load()
 
@@ -51,6 +54,10 @@ func main() {
 	server.Use(middleware.CORSMiddleware())
 	server.Use(middleware.RateLimitMiddleware(env))
 	server.Use(middleware.PrometheusMiddleware())
+
+	defer func() {
+		cronDone <- struct{}{}
+	}()
 
 	// Router
 	route.Setup(server, wire(env, db, redisCache, localCache, producer, saramaClient, smsClient, minioClient, doubaoChat, timeout))
@@ -103,9 +110,9 @@ func wire(env *bootstrap.Env,
 	feedPostHandler := feedUsecaseHandler.NewFeedPostHandler(feedRepo, relationUc)
 	feedFollowHandler := feedUsecaseHandler.NewFeedFollowHandler(feedRepo)
 	handlerMap := map[string]domain.FeedHandler{
-		domain.FeedLikeEvent:   feedLikeHdl,
-		domain.FeedPostEvent:   feedPostHandler,
-		domain.FeedFollowEvent: feedFollowHandler,
+		domain.FeedLikeEvent:    feedLikeHdl,
+		domain.FeedPostEvent:    feedPostHandler,
+		domain.FeedFollowEvent:  feedFollowHandler,
 		domain.FeedUnkonwnEvent: feedDefaulthdl,
 	}
 	feedUc := feedUsecase.NewFeedUsecase(handlerMap, relationUc, feedRepo)
@@ -124,10 +131,10 @@ func wire(env *bootstrap.Env,
 
 	// Cron
 	cron := bootstrap.NewCron(timeout, postRankUc)
-	// cron.Start()
-	cron.Run()
-	defer func() {
+	cron.Start()
+	go func() {
 		// 优雅退出
+		<-cronDone
 		ctx := cron.Stop()
 		<-ctx.Done()
 	}()
