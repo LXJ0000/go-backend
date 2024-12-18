@@ -18,6 +18,24 @@ func NewPostRepository(dao orm.Database, redisCache *cache.RedisCache) domain.Po
 	return &postRepository{dao: dao, redisCache: redisCache}
 }
 
+func (u *postRepository) Search(c context.Context, keyword string, page, size int) ([]domain.Post, int, error) {
+	var (
+		items []domain.Post
+		count int64
+	)
+	db := u.dao.Raw(c)
+	q := db.Model(&domain.Post{}).Where("title LIKE ? or content LIKE ? or abstract LIKE ?", "%"+keyword+"%", "%"+keyword+"%", "%"+keyword+"%")
+	
+	if err := q.Count(&count).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if err := q.Offset((page - 1) * size).Limit(size).Find(&items).Error; err != nil {
+		return nil, 0, err
+	}
+	return items, int(count), nil
+}
+
 func (repo *postRepository) ListByLastID(c context.Context, filter interface{}, size int, last int64) ([]domain.Post, error) {
 	var items []domain.Post
 	err := repo.dao.FindByLastIDRev(c, &domain.Post{}, filter, size, last, &items)

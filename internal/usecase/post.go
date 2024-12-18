@@ -161,3 +161,15 @@ func (uc *postUsecase) GenerateAbstract(c context.Context, post *domain.Post) {
 		slog.Warn("GenerateAbstract Update fail", "error", err.Error())
 	}
 }
+
+func (uc *postUsecase) Search(c context.Context, keyword string, page, size int) ([]domain.Post, int, error) {
+	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
+	defer cancel()
+	if page <= 0 {
+		page = domain.DefaultPage
+	}
+	if size <= 0 {
+		size = domain.DefaultSize
+	}
+	return uc.repo.Search(ctx, keyword, page, size)
+}
