@@ -162,7 +162,7 @@ func (uc *postUsecase) GenerateAbstract(c context.Context, post *domain.Post) {
 	}
 }
 
-func (uc *postUsecase) Search(c context.Context, keyword string, page, size int) ([]domain.Post, int, error) {
+func (uc *postUsecase) Search(c context.Context, keyword string, page, size int, rule []domain.SortRule) ([]domain.Post, int, error) {
 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
 	if page <= 0 {
@@ -171,5 +171,5 @@ func (uc *postUsecase) Search(c context.Context, keyword string, page, size int)
 	if size <= 0 {
 		size = domain.DefaultSize
 	}
-	return uc.repo.Search(ctx, keyword, page, size)
+	return uc.repo.Search(ctx, keyword, page, size, rule)
 }

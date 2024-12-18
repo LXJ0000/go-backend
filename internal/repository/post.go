@@ -18,14 +18,20 @@ func NewPostRepository(dao orm.Database, redisCache *cache.RedisCache) domain.Po
 	return &postRepository{dao: dao, redisCache: redisCache}
 }
 
-func (u *postRepository) Search(c context.Context, keyword string, page, size int) ([]domain.Post, int, error) {
+func (u *postRepository) Search(c context.Context, keyword string, page, size int, rule []domain.SortRule) ([]domain.Post, int, error) {
 	var (
 		items []domain.Post
 		count int64
 	)
 	db := u.dao.Raw(c)
 	q := db.Model(&domain.Post{}).Where("title LIKE ? or content LIKE ? or abstract LIKE ?", "%"+keyword+"%", "%"+keyword+"%", "%"+keyword+"%")
-	
+
+	if len(rule) > 0 {
+		for _, r := range rule {
+			q = q.Order(r.Column + " " + r.Order)
+		}
+	}
+
 	if err := q.Count(&count).Error; err != nil {
 		return nil, 0, err
 	}

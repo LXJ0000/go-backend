@@ -30,3 +30,8 @@ type BasePageRequest struct {
 	Page int `json:"page" form:"page"`
 	Size int `json:"size" form:"size"`
 }
+
+type SortRule struct {
+	Column string `json:"column" form:"column"`
+	Order  string `json:"order" form:"order"`
+}

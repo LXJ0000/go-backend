@@ -42,7 +42,7 @@ type PostRepository interface {
 	FindTopNPage(c context.Context, page, size int, begin time.Time) ([]Post, error)
 	Count(c context.Context, filter interface{}) (int64, error)
 	Update(c context.Context, id int64, post *Post) error
-	Search(c context.Context, keyword string, page, size int) ([]Post, int, error)
+	Search(c context.Context, keyword string, page, size int, rule []SortRule) ([]Post, int, error)
 }
 
 type PostUsecase interface {
@@ -53,7 +53,7 @@ type PostUsecase interface {
 	Info(c context.Context, postID int64) (Post, error)
 	TopN(c context.Context) ([]Post, error)
 	Count(c context.Context, filter interface{}) (int64, error)
-	Search(c context.Context, keyword string, page, size int) ([]Post, int, error)
+	Search(c context.Context, keyword string, page, size int, rule []SortRule) ([]Post, int, error)
 	//ReplaceTopN(c context.Context, items []Post, expiration time.Duration) error
 }
 
@@ -95,7 +95,8 @@ type PostDeleteRequest struct {
 }
 
 type PostSearchRequest struct {
-	Keyword string `json:"keyword" form:"keyword"`
-	Page    int    `json:"page" form:"page"`
-	Size    int    `json:"size" form:"size"`
+	Keyword string     `json:"keyword" form:"keyword"`
+	Page    int        `json:"page" form:"page"`
+	Size    int        `json:"size" form:"size"`
+	Sort    []SortRule `json:"sort" form:"sort"`
 }

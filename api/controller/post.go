@@ -33,7 +33,7 @@ func (col *PostController) Search(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
 		return
 	}
-	resp, count, err := col.PostUsecase.Search(c, req.Keyword, req.Page, req.Size)
+	resp, count, err := col.PostUsecase.Search(c, req.Keyword, req.Page, req.Size, req.Sort)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Failed to search posts", err))
 		return
