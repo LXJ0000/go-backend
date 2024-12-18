@@ -91,3 +91,9 @@ type PostInfoResponse struct {
 type PostDeleteRequest struct {
 	PostID int64 `json:"post_id,string" form:"post_id"`
 }
+
+type PostSearchRequest struct {
+	Keyword string `json:"keyword" form:"keyword"`
+	Page    int    `json:"page" form:"page"`
+	Size    int    `json:"size" form:"size"`
+}

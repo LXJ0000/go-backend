@@ -26,6 +26,21 @@ type PostController struct {
 	domain.FileUsecase
 }
 
+func (col *PostController) Search(c *gin.Context) {
+	//搜索文章
+	var req domain.PostSearchRequest
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, domain.ErrorResp(domain.ErrBadParams.Error(), err))
+		return
+	}
+	userID := c.MustGet(domain.XUserID).(int64)
+	count, resp := userID, userID // TODO 搜索文章
+	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
+		"count":     count,
+		"post_list": resp,
+	}))
+}
+
 func (col *PostController) PostDelete(c *gin.Context) {
 	//删除文章
 	var req domain.PostDeleteRequest

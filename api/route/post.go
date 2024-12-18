@@ -27,12 +27,16 @@ func NewPostRouter(PostUsecase domain.PostUsecase,
 		FileUsecase:        FileUsecase,
 	}
 
-	group.POST("/post", c.CreateOrPublish)
-	group.POST("/post.delete", c.PostDelete)
 	group.GET("/post", c.Info) // 这里加接口缓存会导致阅读计数无法生效
 	group.GET("/post/reader", apiCache(time.Second*5), c.ReaderList)
 	group.GET("/post/writer", apiCache(time.Second*5), c.WriterList)
+	group.GET("/post/rank", c.Rank)
+
+	group.POST("/post", c.CreateOrPublish)
+	group.POST("/post.delete", c.PostDelete)
+	group.POST("/post.search", c.Search)
+
+
 	group.POST("/post/like", c.Like)       // 转移到 interaction 里
 	group.POST("/post/collect", c.Collect) // 转移到 interaction 里
-	group.GET("/post/rank", c.Rank)
 }
