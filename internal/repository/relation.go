@@ -47,15 +47,16 @@ func (uc *relationRepository) GetFollowee(c context.Context, userID int64, page,
 	return items, err
 }
 
-func (uc *relationRepository) Detail(c context.Context, follower, followee int64) (domain.Relation, error) {
+func (uc *relationRepository) Detail(c context.Context, follower, followee int64) bool {
 	filter := map[string]interface{}{
 		"follower": follower,
 		"followee": followee,
-		"status":   domain.Follow,
+		// "status":   domain.Follow,
 	}
 	var item domain.Relation
-	err := uc.dao.FindOne(c, &domain.Relation{}, filter, item)
-	return item, err
+	uc.dao.FindOne(c, &domain.Relation{}, filter, &item)
+	// 发生错误也返回 false
+	return item.Status
 }
 
 func (uc *relationRepository) FollowerCnt(c context.Context, userID int64) (int64, error) {

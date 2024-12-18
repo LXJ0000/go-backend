@@ -145,6 +145,8 @@ func (col *UserController) Profile(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Get relation stat fail with db error", err))
 		return
 	}
+	inFollow := col.RelationUsecase.Detail(c, c.MustGet(domain.XUserID).(int64), userID)
+	stat.InFollow = inFollow
 	profile.RelationStat = stat
 	postCnt, err := col.PostUsecase.Count(c, map[string]interface{}{
 		"author_id": userID,

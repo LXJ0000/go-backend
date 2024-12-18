@@ -62,7 +62,7 @@ func (uc *relationUsecase) GetFollowee(c context.Context, userID int64, page, si
 	return items, len(userIDs), err
 }
 
-func (uc *relationUsecase) Detail(c context.Context, follower, followee int64) (domain.Relation, error) {
+func (uc *relationUsecase) Detail(c context.Context, follower, followee int64) bool {
 	ctx, cancel := context.WithTimeout(c, uc.contextTimeout)
 	defer cancel()
 	return uc.repo.Detail(ctx, follower, followee)

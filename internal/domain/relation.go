@@ -22,8 +22,9 @@ func (Relation) TableName() string {
 
 type RelationStat struct {
 	UserID   int64 `json:"user_id,string" gorm:"unique"`
-	Follower int   `json:"follower"` // 粉丝数
-	Followee int   `json:"followee"` // 关注数
+	Follower int   `json:"follower"`  // 粉丝数
+	Followee int   `json:"followee"`  // 关注数
+	InFollow bool  `json:"in_follow"` // 是否关注
 }
 
 type RelationUsecase interface {
@@ -31,7 +32,7 @@ type RelationUsecase interface {
 	CancelFollow(c context.Context, follower, followee int64) error
 	GetFollower(c context.Context, userID int64, page, size int) ([]User, int, error) // 粉丝列表
 	GetFollowee(c context.Context, userID int64, page, size int) ([]User, int, error) // 关注者列表
-	Detail(c context.Context, follower, followee int64) (Relation, error)             // 关注状态
+	Detail(c context.Context, follower, followee int64) bool                          // 关注状态
 	Stat(c context.Context, userID int64) (RelationStat, error)
 }
 
@@ -40,7 +41,7 @@ type RelationRepository interface {
 	CancelFollow(c context.Context, follower, followee int64) error
 	GetFollower(c context.Context, follower int64, page, size int) ([]Relation, error) // 粉丝列表
 	GetFollowee(c context.Context, follower int64, page, size int) ([]Relation, error) // 关注者列表
-	Detail(c context.Context, follower, followee int64) (Relation, error)              // 关注状态
+	Detail(c context.Context, follower, followee int64) bool                           // 关注状态
 	FollowerCnt(c context.Context, userID int64) (int64, error)                        // 粉丝数
 	FolloweeCnt(c context.Context, userID int64) (int64, error)                        // 关注数
 }
