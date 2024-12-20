@@ -34,7 +34,16 @@ func Setup(server *gin.Engine, app *App) {
 
 	server.Static(app.Env.UrlStaticPath, app.Env.LocalStaticPath)
 	server.GET("/ping", func(ctx *gin.Context) {
-		ctx.String(200, "success")
+		req := struct {
+			Msg  string `json:"msg"`
+			Code int    `json:"code"`
+		}{}
+		ctx.ShouldBind(&req)
+		ctx.JSON(200, gin.H{
+			"msg":  req.Msg,
+			"code": req.Code,
+			"data": "success",
+		})
 	})
 
 	// Public APIs
