@@ -44,6 +44,7 @@ func (uc *userUsecase) BatchGetProfileByID(c context.Context, userIDs []int64) (
 			UserName: user.UserName, Email: user.Email,
 			AboutMe: user.AboutMe, Birthday: user.Birthday,
 			NickName: user.NickName, Avatar: user.Avatar,
+			CreatedAt: time.Unix(user.CreatedAt, 0),
 		})
 	}
 
@@ -70,6 +71,7 @@ func (uc *userUsecase) GetProfileByID(c context.Context, userID int64) (domain.P
 		UserName: user.UserName, Email: user.Email,
 		AboutMe: user.AboutMe, Birthday: user.Birthday,
 		NickName: user.NickName, Avatar: user.Avatar,
+		CreatedAt: time.Unix(user.CreatedAt, 0),
 	}, nil
 }
 

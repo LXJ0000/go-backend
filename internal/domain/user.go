@@ -76,6 +76,7 @@ type Profile struct {
 	Avatar       string       `json:"avatar"`
 	RelationStat RelationStat `json:"relation_stat"`
 	PostCnt      int64        `json:"post_cnt"`
+	CreatedAt    time.Time    `json:"created_at"`
 }
 
 type LoginReq struct {
