@@ -22,7 +22,7 @@ func NewUserRouter(env *bootstrap.Env,
 		Env:                env,
 		PostUsecase:        postUc,
 		RelationUsecase:    relationUc,
-		CodeUsecase:        localCodeUc,
+		CodeUsecase:        codeUc,
 		Sync2OpenIMUsecase: sync2OpenIMUc,
 		FileUsecase:        fileUsecase,
 	}

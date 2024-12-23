@@ -98,8 +98,15 @@ func (col *UserController) Search(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResp("Search user fail with db error", err))
 		return
 	}
+	resp := make([]domain.User, 0, len(users))
+	for _, user := range users {
+		user.Password = ""
+		if user.UserID != c.MustGet(domain.XUserID).(int64) {
+			resp = append(resp, user)
+		}
+	}
 	c.JSON(http.StatusOK, domain.SuccessResp(map[string]interface{}{
-		"users": users,
+		"users": resp,
 		"count": count,
 	}))
 }
